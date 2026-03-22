@@ -9,7 +9,7 @@ import { useLocationTracking } from '../hooks/useLocationTracking';
 import { useCacheManagement } from '../hooks/useCacheManagement';
 import TargetPanel from '../components/TargetPanel';
 import { DISCOVERY_RADIUS } from '../constants/appConstants';
-import styles from '../styles/appStyles';
+import { appStyles as styles } from '../styles/appStyles';
 
 export default function MapScreen() {
   const { location, error: locationError } = useLocationTracking();
