@@ -1,6 +1,6 @@
 
 
-const BASE_URL = 'http://mark0s.com/geoquest/v1/api';
+const BASE_URL = 'https://mark0s.com/geoquest/v1/api'; // Changed http to https
 const API_KEY = '16gv8f'; // Public test key
 
 /**
@@ -26,22 +26,13 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
   }
 };
 
-/**
- * Fetches all public caches.
- * Caches contain properties like CacheLatitude, CacheLongitude, CachePoints, and CacheClue.
- */
 export const getPublicCaches = () => fetchAPI('/caches');
 
-/**
- * Logs a new discovery (Find).
- * @param {string} playerId - The ID of the player making the find.
- * @param {string} cacheId - The ID of the cache found.
- */
 export const logFind = (playerId, cacheId) => {
   const findData = {
     FindPlayerID: playerId,
     FindCacheID: cacheId,
-    FindDatetime: new Date().toISOString(), // Must be ISO 8601 format
+    FindDatetime: new Date().toISOString(), 
   };
   return fetchAPI('/finds', 'POST', findData);
 };
