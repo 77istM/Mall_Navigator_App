@@ -1,0 +1,68 @@
+import React from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+
+/**
+ * TargetPanel Component
+ * Displays the selected cache details and log discovery button
+ */
+export const TargetPanel = ({
+  selectedCache,
+  distanceToCache,
+  isWithinRange,
+  isLogging,
+  onLogDiscovery,
+}) => {
+  if (!selectedCache) {
+    return null;
+  }
+
+  return (
+    <View style={styles.targetPanel}>
+      <Text style={styles.panelTitle}>Target: {selectedCache.CacheName}</Text>
+      <Text style={styles.panelDistance}>
+        Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
+      </Text>
+      
+      <TouchableOpacity 
+        style={[styles.logButton, !isWithinRange && styles.logButtonDisabled]}
+        disabled={!isWithinRange || isLogging}
+        onPress={onLogDiscovery}
+      >
+        {isLogging ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.logButtonText}>
+            {isWithinRange ? "Log Discovery!" : "Get Closer to Log"}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  targetPanel: {
+    position: 'absolute',
+    bottom: 40,
+    left: 20,
+    right: 20,
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  panelTitle: { fontSize: 18, fontWeight: 'bold' },
+  panelDistance: { fontSize: 16, marginVertical: 10, color: '#555' },
+  logButton: {
+    backgroundColor: '#28a745',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  logButtonDisabled: { backgroundColor: '#cccccc' },
+  logButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 }
+});
