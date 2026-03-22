@@ -1,0 +1,17 @@
+/**
+ * App-wide constants
+ */
+export const DISCOVERY_RADIUS = 5000000; // User must be within 5000000 meters to log
+
+export const LOCATION_PERMISSIONS = {
+  HIGH_ACCURACY: true,
+  TIME_INTERVAL: 5000, // Update every 5 seconds
+  DISTANCE_INTERVAL: 5, // Or every 5 meters
+};
+
+export const MAP_REGION = {
+  LATITUDE_DELTA: 0.01, // Zoomed in a bit closer for walking
+  LONGITUDE_DELTA: 0.01,
+};
+
+export const PLAYER_ID = 3; // Dummy player ID for testing
