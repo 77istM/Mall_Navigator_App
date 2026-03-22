@@ -1,5 +1,11 @@
--App is now in running condition. 22 MAR
-
+### Status report (Always write before sign off)
+1. App condition: Running
+2. Date: 22 MAR
+3. Work has been done:
+     1. api working, location-target shows on map
+     2. data is consistent
+     3. Basic UI. (need to work on leaderboard). start from phase 3.
+---
 -Always use branch for development, never push code that is not working. Don't use github copilot (github will keep track of it).
 
 -When code is in working condition then push to master branch.
