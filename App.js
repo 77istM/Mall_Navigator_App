@@ -41,6 +41,8 @@ export default function App() {
     );
   }
 
+  const isWithinRange = distanceToCache !== null && distanceToCache <= DISCOVERY_RADIUS;
+
   return (
     <View style={appStyles.container}>
       <MapView 
