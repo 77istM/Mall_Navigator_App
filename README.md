@@ -4,4 +4,11 @@
 
 -When code is in working condition then push to master branch.
 
--Avoid modifying api.js (unless integrating new api), app.json, index.js, package-lock.json, package.json.
+-Avoid modifying api.js (unless integrating new api), app.json, index.js, package-lock.json, package.json that will crash the app.
+
+-Here's what I do:
+1. Create a new brach from master.
+2. Write, update, modify code using VS Code.
+3. If the app is running then 'commit & push' to current branch. If it's not working then fix the errors.
+4. When app is working & I want to move to build new feature then 'pull request' > 'merge & sqash'.
+5. Start again from 1.
