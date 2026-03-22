@@ -97,11 +97,19 @@ export default function App() {
     
     setIsLogging(true);
     try {
-      // Using dummy PlayerID 1 for now based on the GeoQuest API docs
+      // Using PlayerID 3, and passing the dummy image URL in api.js
       await logFind(3, selectedCache.CacheID);
+      
       Alert.alert("Success!", `You found ${selectedCache.CacheName} and earned ${selectedCache.CachePoints} points!`);
-      // Optionally: Remove the cache from the map or mark it as 'found' visually
+      
+      // NEW: Filter out the found cache from the map
+      setCaches((prevCaches) => 
+        prevCaches.filter((cache) => cache.CacheID !== selectedCache.CacheID)
+      );
+      
+      // Close the targeting panel
       setSelectedCache(null); 
+      
     } catch (error) {
       Alert.alert("Error", "Failed to log discovery. Try again.");
     } finally {
