@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ActivityIndicator, Alert } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { getPublicCaches } from './src/services/api'; // Adjust path if needed
+import { getPublicCaches } from './api';
 
 export default function App() {
   const [location, setLocation] = useState(null);
