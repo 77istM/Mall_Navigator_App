@@ -1,91 +1,38 @@
+// App.js
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { Text, View, ActivityIndicator } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons'; // Built-in Expo icons
 
-// Custom Hooks
-import { useLocationTracking } from './hooks/useLocationTracking';
-import { useCacheManagement } from './hooks/useCacheManagement';
+// Import our new screens
+import MapScreen from './screens/MapScreen';
+import LeaderboardScreen from './screens/LeaderboardScreen';
 
-// Components
-import { TargetPanel } from './components/TargetPanel';
-
-// Utils
-import { appStyles } from './styles/appStyles';
-import { DISCOVERY_RADIUS, MAP_REGION } from './constants/appConstants';
+const Tab = createBottomTabNavigator();
 
 export default function App() {
-  // Location tracking hook
-  const { location, loading: locationLoading, error: locationError } = useLocationTracking();
-
-  // Cache management hook
-  const {
-    caches,
-    loading: cachesLoading,
-    selectedCache,
-    distanceToCache,
-    handleSelectCache,
-    handleLogDiscovery,
-    isLogging,
-  } = useCacheManagement(location);
-
-  const isWithinRange = distanceToCache !== null && distanceToCache <= DISCOVERY_RADIUS;
-
-  // Show loading screen while acquiring GPS and caches
-  if (locationLoading || cachesLoading || !location) {
-    return (
-      <View style={appStyles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Acquiring GPS and Caches...</Text>
-      </View>
-    );
-  }
-
-  const isWithinRange = distanceToCache !== null && distanceToCache <= DISCOVERY_RADIUS;
-
   return (
-    <View style={appStyles.container}>
-      <MapView 
-        style={appStyles.map}
-        initialRegion={{
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: MAP_REGION.LATITUDE_DELTA,
-          longitudeDelta: MAP_REGION.LONGITUDE_DELTA,
-        }}
-        showsUserLocation={true}
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          // Consistent design: Set up dynamic icons based on the active tab
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+            if (route.name === 'Map') {
+              iconName = focused ? 'map' : 'map-outline';
+            } else if (route.name === 'Leaderboard') {
+              iconName = focused ? 'trophy' : 'trophy-outline';
+            }
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#28a745', // Green to match your 'Log Discovery' button
+          tabBarInactiveTintColor: 'gray',
+          headerShown: false, // We hide the top header for a cleaner fullscreen look
+        })}
       >
-        {caches.map((cache) => (
-          <Marker
-            key={cache.CacheID}
-            coordinate={{
-              latitude: cache.CacheLatitude,
-              longitude: cache.CacheLongitude,
-            }}
-            title={cache.CacheName}
-            pinColor={selectedCache?.CacheID === cache.CacheID ? "blue" : "gold"}
-            onPress={() => handleSelectCache(cache)}
-          >
-            <Callout>
-              <View style={appStyles.calloutView}>
-                <Text style={appStyles.calloutTitle}>{cache.CacheName}</Text>
-                <Text>Clue: {cache.CacheClue}</Text>
-              </View>
-            </Callout>
-          </Marker>
-        ))}
-      </MapView>
-
-      {/* Target & Navigation Panel */}
-      <TargetPanel
-        selectedCache={selectedCache}
-        distanceToCache={distanceToCache}
-        isWithinRange={isWithinRange}
-        isLogging={isLogging}
-        onLogDiscovery={handleLogDiscovery}
-      />
-
-      <StatusBar style="auto" />
-    </View>
+        <Tab.Screen name="Map" component={MapScreen} />
+        <Tab.Screen name="Leaderboard" component={LeaderboardScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 }
