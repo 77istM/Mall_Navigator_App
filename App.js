@@ -98,7 +98,7 @@ export default function App() {
     setIsLogging(true);
     try {
       // Using dummy PlayerID 1 for now based on the GeoQuest API docs
-      await logFind(1, selectedCache.CacheID);
+      await logFind(3, selectedCache.CacheID);
       Alert.alert("Success!", `You found ${selectedCache.CacheName} and earned ${selectedCache.CachePoints} points!`);
       // Optionally: Remove the cache from the map or mark it as 'found' visually
       setSelectedCache(null); 
