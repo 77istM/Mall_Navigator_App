@@ -66,3 +66,5 @@ const styles = StyleSheet.create({
   logButtonDisabled: { backgroundColor: '#cccccc' },
   logButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 }
 });
+
+export default TargetPanel;
