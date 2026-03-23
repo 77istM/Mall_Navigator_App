@@ -74,10 +74,10 @@ export default function PrivateDashboardScreen({ navigation }) {
   };
 
   useEffect(() => {
-    if (activeEventId) {
-      loadProgress(activeEventId);
+    if (ownedEventId) {
+      loadProgress(ownedEventId);
     }
-  }, [activeEventId]);
+  }, [ownedEventId]);
 
   const handleJoinEvent = async () => {
     const code = inviteCode.trim();

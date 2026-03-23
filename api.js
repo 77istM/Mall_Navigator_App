@@ -19,6 +19,11 @@ const isTransientApiFailure = (statusCode, errorText) => {
   return statusCode >= 500 || text.includes('error code: 1033');
 };
 
+const isNoRecordsFound = (statusCode, errorText) => {
+  const text = (errorText || '').toLowerCase();
+  return statusCode === 404 && text.includes('no record(s) found');
+};
+
 const buildApiError = (statusCode, errorText, transient = false) => {
   const error = new Error(`API Error: ${statusCode} - ${errorText}`);
   error.statusCode = statusCode;
@@ -63,6 +68,12 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
             break;
           }
 
+          // Several list endpoints return 404 for "no data" instead of an empty list.
+          // Treat this as a normal API miss, not an application error log.
+          if (isNoRecordsFound(response.status, errorText)) {
+            throw buildApiError(response.status, errorText, false);
+          }
+
           console.error(`API Error Response from ${requestLabel}:`, errorText);
           throw buildApiError(response.status, errorText, false);
         }
@@ -75,12 +86,13 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
         return await response.text();
       } catch (error) {
         lastError = error;
-        console.warn(`Fetch attempt failed for ${endpoint} (${baseUrl}):`, error?.message || error);
 
         // Validation/other 4xx API errors should not be retried or duplicated across hosts.
         if (error?.statusCode && !error?.transient) {
           throw error;
         }
+
+        console.warn(`Fetch attempt failed for ${endpoint} (${baseUrl}):`, error?.message || error);
 
         // For network-level failures, retry then fall back to the next host.
         if (attempt < MAX_RETRIES_PER_HOST) {
@@ -99,6 +111,9 @@ const fetchListWithFallback = async (endpoint) => {
     const data = await fetchAPI(endpoint);
     return Array.isArray(data) ? data : [];
   } catch (error) {
+    if (isNoRecordsFound(error?.statusCode, error?.errorText)) {
+      return [];
+    }
     // Keep the app usable during transient upstream outages.
     console.warn(`Using empty fallback for ${endpoint}:`, error?.message || error);
     return [];
@@ -156,9 +171,16 @@ export const createPrivateEvent = (eventData) => {
  * Associates PlayerUserID to PlayerEventID[cite: 19].
  */
 export const joinEvent = (userId, eventId) => {
+  const normalizedUserId = Number(userId);
+  const normalizedEventId = Number(eventId);
+
+  if (Number.isNaN(normalizedUserId) || Number.isNaN(normalizedEventId)) {
+    return Promise.reject(new Error('Invalid user ID or invite code.'));
+  }
+
   const playerData = {
-    PlayerUserID: userId,
-    PlayerEventID: eventId
+    PlayerUserID: normalizedUserId,
+    PlayerEventID: normalizedEventId
   };
   return fetchAPI('/players', 'POST', playerData);
 };
@@ -199,10 +221,16 @@ export const getEventPlayers = async (eventId) => {
     const players = await fetchAPI(`/players/events/${normalizedEventId}`);
     return Array.isArray(players) ? players : [];
   } catch (error) {
+    if (isNoRecordsFound(error?.statusCode, error?.errorText)) {
+      return [];
+    }
     try {
       const players = await fetchAPI(`/players?eventId=${normalizedEventId}`);
       return Array.isArray(players) ? players : [];
     } catch (fallbackError) {
+      if (isNoRecordsFound(fallbackError?.statusCode, fallbackError?.errorText)) {
+        return [];
+      }
       console.warn(`Unable to fetch players for event ${normalizedEventId}:`, fallbackError?.message || fallbackError);
       return [];
     }
