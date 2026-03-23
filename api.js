@@ -45,3 +45,9 @@ export const logFind = (playerId, cacheId) => {
   };
   return fetchAPI('/finds', 'POST', findData);
 };
+
+/**
+ * Fetches all finds to build the leaderboard.
+ * Finds contain the Player details and the Cache details (including Points).
+ */
+export const getAllFinds = () => fetchAPI('/finds');
