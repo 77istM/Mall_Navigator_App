@@ -14,7 +14,10 @@ import PrivateDashboardScreen from './screens/PrivateDashboardScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-function GlobalTabsNavigator() {
+function GlobalTabsNavigator({ route }) {
+  const eventId = route?.params?.eventId ?? null;
+  const eventName = route?.params?.eventName ?? null;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -33,8 +36,12 @@ function GlobalTabsNavigator() {
         headerShown: false, // We hide the top header for a cleaner fullscreen look
       })}
     >
-      <Tab.Screen name="Map" component={MapScreen} />
-      <Tab.Screen name="Leaderboard" component={LeaderboardScreen} />
+      <Tab.Screen name="Map">
+        {(props) => <MapScreen {...props} eventId={eventId} eventName={eventName} />}
+      </Tab.Screen>
+      <Tab.Screen name="Leaderboard">
+        {(props) => <LeaderboardScreen {...props} eventId={eventId} eventName={eventName} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

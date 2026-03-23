@@ -11,7 +11,9 @@ import TargetPanel from '../components/TargetPanel';
 import { DISCOVERY_RADIUS } from '../constants/appConstants';
 import { appStyles as styles } from '../styles/appStyles';
 
-export default function MapScreen() {
+export default function MapScreen({ route, eventId: eventIdProp, eventName: eventNameProp }) {
+  const activeEventId = eventIdProp ?? route?.params?.eventId ?? null;
+  const activeEventName = eventNameProp ?? route?.params?.eventName ?? null;
   const { location, error: locationError } = useLocationTracking();
   const {
     caches,
@@ -21,7 +23,7 @@ export default function MapScreen() {
     isLogging,
     handleSelectCache,
     handleLogDiscovery,
-  } = useCacheManagement(location);
+  } = useCacheManagement(location, activeEventId);
 
   if (loading || !location) {
     return (
@@ -36,6 +38,15 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
+      {activeEventId ? (
+        <View style={styles.privateModeBanner}>
+          <Text style={styles.privateModeBannerText}>
+            {activeEventName
+              ? `Private Event: ${activeEventName} (#${activeEventId})`
+              : `Private Event #${activeEventId}`}
+          </Text>
+        </View>
+      ) : null}
       <MapView
         style={styles.map}
         initialRegion={{

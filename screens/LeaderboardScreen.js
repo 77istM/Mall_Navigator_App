@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
-import { getAllFinds } from '../api'; // Ensure this path correctly points to your api.js
+import { getAllFinds, getEventLeaderboard } from '../api';
 
-export default function LeaderboardScreen() {
+export default function LeaderboardScreen({ route, eventId: eventIdProp }) {
+  const activeEventId = eventIdProp ?? route?.params?.eventId ?? null;
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -10,10 +11,16 @@ export default function LeaderboardScreen() {
   // Fetch data when the screen mounts
   useEffect(() => {
     fetchLeaderboardData();
-  }, []);
+  }, [activeEventId]);
 
   const fetchLeaderboardData = async () => {
     try {
+      if (activeEventId) {
+        const eventLeaderboard = await getEventLeaderboard(activeEventId);
+        setLeaderboard(eventLeaderboard);
+        return;
+      }
+
       const finds = await getAllFinds();
 
       // Dictionary to aggregate points and counts per player
@@ -72,7 +79,7 @@ export default function LeaderboardScreen() {
       
       <View style={styles.playerInfo}>
         {/* Using Player ID since nested User data might not always be exposed by the basic endpoint */}
-        <Text style={styles.playerName}>Player #{item.playerId}</Text>
+        <Text style={styles.playerName}>{item.playerName || `Player #${item.playerId}`}</Text>
         <Text style={styles.playerStats}>{item.findsCount} Caches Found</Text>
       </View>
 
@@ -85,7 +92,9 @@ export default function LeaderboardScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Global Leaderboard</Text>
+        <Text style={styles.title}>
+          {activeEventId ? `Event Leaderboard #${activeEventId}` : 'Global Leaderboard'}
+        </Text>
       </View>
 
       <FlatList

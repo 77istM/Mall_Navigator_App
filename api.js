@@ -169,3 +169,106 @@ export const joinEvent = (userId, eventId) => {
 export const getEventCaches = (eventId) => {
   return fetchListWithFallback(`/caches/events/${eventId}`);
 };
+
+export const createEventCache = (eventId, cacheData) => {
+  const normalizedEventId = Number(eventId);
+  const normalizedName = (cacheData?.CacheName || '').trim();
+  const normalizedClue = (cacheData?.CacheClue || '').trim();
+
+  const payload = {
+    ...cacheData,
+    CacheEventID: normalizedEventId,
+    CacheName: normalizedName,
+    CacheClue: normalizedClue,
+    CacheLatitude: Number(cacheData?.CacheLatitude),
+    CacheLongitude: Number(cacheData?.CacheLongitude),
+    CachePoints: Number(cacheData?.CachePoints ?? 10),
+  };
+
+  return fetchAPI('/caches', 'POST', payload).then((response) => {
+    if (Array.isArray(response)) {
+      return response[0] || null;
+    }
+    return response;
+  });
+};
+
+export const getEventPlayers = async (eventId) => {
+  const normalizedEventId = Number(eventId);
+  try {
+    const players = await fetchAPI(`/players/events/${normalizedEventId}`);
+    return Array.isArray(players) ? players : [];
+  } catch (error) {
+    try {
+      const players = await fetchAPI(`/players?eventId=${normalizedEventId}`);
+      return Array.isArray(players) ? players : [];
+    } catch (fallbackError) {
+      console.warn(`Unable to fetch players for event ${normalizedEventId}:`, fallbackError?.message || fallbackError);
+      return [];
+    }
+  }
+};
+
+export const getEventLeaderboard = async (eventId) => {
+  const normalizedEventId = Number(eventId);
+  const [players, finds] = await Promise.all([
+    getEventPlayers(normalizedEventId),
+    fetchListWithFallback('/finds'),
+  ]);
+
+  const eventPlayersById = {};
+  players.forEach((player) => {
+    const playerId = Number(player?.PlayerID);
+    if (!Number.isNaN(playerId)) {
+      eventPlayersById[playerId] = {
+        playerId,
+        playerName: player?.PlayerUser?.UserName || player?.PlayerName || `Player #${playerId}`,
+        totalPoints: 0,
+        findsCount: 0,
+      };
+    }
+  });
+
+  finds.forEach((find) => {
+    const playerId = Number(find?.FindPlayerID);
+    if (Number.isNaN(playerId)) {
+      return;
+    }
+
+    const nestedPlayer = find?.FindPlayer || find?.Player;
+    const nestedPlayerEventId = Number(
+      nestedPlayer?.PlayerEventID ??
+      find?.PlayerEventID ??
+      find?.FindPlayerEventID
+    );
+
+    const isEventFind = (
+      (!Number.isNaN(nestedPlayerEventId) && nestedPlayerEventId === normalizedEventId) ||
+      Boolean(eventPlayersById[playerId])
+    );
+
+    if (!isEventFind) {
+      return;
+    }
+
+    if (!eventPlayersById[playerId]) {
+      eventPlayersById[playerId] = {
+        playerId,
+        playerName: `Player #${playerId}`,
+        totalPoints: 0,
+        findsCount: 0,
+      };
+    }
+
+    const points = Number(find?.FindCache?.CachePoints ?? find?.Cache?.CachePoints ?? 0);
+    eventPlayersById[playerId].totalPoints += Number.isNaN(points) ? 0 : points;
+    eventPlayersById[playerId].findsCount += 1;
+  });
+
+  return Object.values(eventPlayersById).sort((a, b) => {
+    if (b.totalPoints !== a.totalPoints) {
+      return b.totalPoints - a.totalPoints;
+    }
+    return b.findsCount - a.findsCount;
+  });
+};
