@@ -196,12 +196,16 @@ export const createEventCache = (eventId, cacheData) => {
   const normalizedEventId = Number(eventId);
   const normalizedName = (cacheData?.CacheName || '').trim();
   const normalizedClue = (cacheData?.CacheClue || '').trim();
+  const normalizedDescription = (cacheData?.CacheDescription || '').trim();
+  const normalizedImageUrl = (cacheData?.CacheImageURL || '').trim();
 
   const payload = {
     ...cacheData,
     CacheEventID: normalizedEventId,
     CacheName: normalizedName,
     CacheClue: normalizedClue,
+    CacheDescription: normalizedDescription || `Cache for event #${normalizedEventId}`,
+    CacheImageURL: normalizedImageUrl || 'https://picsum.photos/400/300',
     CacheLatitude: Number(cacheData?.CacheLatitude),
     CacheLongitude: Number(cacheData?.CacheLongitude),
     CachePoints: Number(cacheData?.CachePoints ?? 10),

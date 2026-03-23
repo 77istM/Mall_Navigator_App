@@ -37,6 +37,8 @@ export default function PrivateDashboardScreen({ navigation }) {
   const [ownedEventId, setOwnedEventId] = useState(null);
   const [cacheName, setCacheName] = useState('');
   const [cacheClue, setCacheClue] = useState('');
+  const [cacheDescription, setCacheDescription] = useState('');
+  const [cacheImageURL, setCacheImageURL] = useState('');
   const [cacheLatitude, setCacheLatitude] = useState('');
   const [cacheLongitude, setCacheLongitude] = useState('');
   const [cachePoints, setCachePoints] = useState('10');
@@ -157,12 +159,23 @@ export default function PrivateDashboardScreen({ navigation }) {
 
     const trimmedCacheName = cacheName.trim();
     const trimmedCacheClue = cacheClue.trim();
+    const trimmedCacheDescription = cacheDescription.trim();
+    const trimmedCacheImageURL = cacheImageURL.trim();
     const latitude = Number(cacheLatitude);
     const longitude = Number(cacheLongitude);
     const points = asPositiveNumber(cachePoints);
 
     if (!trimmedCacheName || !trimmedCacheClue) {
       return Alert.alert('Error', 'Cache name and clue are required.');
+    }
+    if (trimmedCacheClue.length < 4) {
+      return Alert.alert('Error', 'Cache clue must be at least 4 characters long.');
+    }
+    if (!trimmedCacheDescription) {
+      return Alert.alert('Error', 'Cache description is required.');
+    }
+    if (!trimmedCacheImageURL) {
+      return Alert.alert('Error', 'Cache image URL is required.');
     }
     if (Number.isNaN(latitude) || latitude < -90 || latitude > 90) {
       return Alert.alert('Error', 'Latitude must be a valid value between -90 and 90.');
@@ -178,6 +191,8 @@ export default function PrivateDashboardScreen({ navigation }) {
       await createEventCache(ownedEventId, {
         CacheName: trimmedCacheName,
         CacheClue: trimmedCacheClue,
+        CacheDescription: trimmedCacheDescription,
+        CacheImageURL: trimmedCacheImageURL,
         CacheLatitude: latitude,
         CacheLongitude: longitude,
         CachePoints: points,
@@ -186,6 +201,8 @@ export default function PrivateDashboardScreen({ navigation }) {
       Alert.alert('Success', 'Cache created for this private event.');
       setCacheName('');
       setCacheClue('');
+      setCacheDescription('');
+      setCacheImageURL('');
       setCacheLatitude('');
       setCacheLongitude('');
       setCachePoints('10');
@@ -295,6 +312,19 @@ export default function PrivateDashboardScreen({ navigation }) {
           placeholder="Cache Clue"
           value={cacheClue}
           onChangeText={setCacheClue}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Cache Description"
+          value={cacheDescription}
+          onChangeText={setCacheDescription}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Cache Image URL"
+          value={cacheImageURL}
+          onChangeText={setCacheImageURL}
+          autoCapitalize="none"
         />
         <View style={styles.row}>
           <TextInput
