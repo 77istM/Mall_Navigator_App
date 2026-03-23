@@ -9,6 +9,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import {
   createPrivateEvent,
   joinEvent,
@@ -17,6 +18,7 @@ import {
 } from '../api';
 
 const EVENT_TYPES = ['Families', 'Schools', 'Companies', 'University Activities'];
+const TEST_IMAGE_URL = 'https://imgs.search.brave.com/QepbmUa7ANhll-Fjdx6_3dxZxzRVSNNg5JCt8Nbiehk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTI5/OTQ5MjY4Mi9waG90/by9jYXQtaW4teW91/ci1mYWNlLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz05WDAt/VlRQRktHakN0QzFa/Tkc4YUUxb2hoaU1z/c3V0RDgwWEtBZk9P/X3VvPQ';
 
 const asPositiveNumber = (value) => {
   const parsed = Number(value);
@@ -38,10 +40,11 @@ export default function PrivateDashboardScreen({ navigation }) {
   const [cacheName, setCacheName] = useState('');
   const [cacheClue, setCacheClue] = useState('');
   const [cacheDescription, setCacheDescription] = useState('');
-  const [cacheImageURL, setCacheImageURL] = useState('');
+  const [cacheImageURL, setCacheImageURL] = useState(TEST_IMAGE_URL);
   const [cacheLatitude, setCacheLatitude] = useState('');
   const [cacheLongitude, setCacheLongitude] = useState('');
   const [cachePoints, setCachePoints] = useState('10');
+  const [isMapPickerVisible, setIsMapPickerVisible] = useState(false);
 
   const [progress, setProgress] = useState([]);
   const [progressLoading, setProgressLoading] = useState(false);
@@ -174,9 +177,6 @@ export default function PrivateDashboardScreen({ navigation }) {
     if (!trimmedCacheDescription) {
       return Alert.alert('Error', 'Cache description is required.');
     }
-    if (!trimmedCacheImageURL) {
-      return Alert.alert('Error', 'Cache image URL is required.');
-    }
     if (Number.isNaN(latitude) || latitude < -90 || latitude > 90) {
       return Alert.alert('Error', 'Latitude must be a valid value between -90 and 90.');
     }
@@ -202,7 +202,7 @@ export default function PrivateDashboardScreen({ navigation }) {
       setCacheName('');
       setCacheClue('');
       setCacheDescription('');
-      setCacheImageURL('');
+      setCacheImageURL(TEST_IMAGE_URL);
       setCacheLatitude('');
       setCacheLongitude('');
       setCachePoints('10');
@@ -220,6 +220,33 @@ export default function PrivateDashboardScreen({ navigation }) {
       eventId: activeEventId,
       eventName: eventName.trim() || undefined,
     });
+  };
+
+  const handleMapPress = (event) => {
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+    setCacheLatitude(latitude.toFixed(6));
+    setCacheLongitude(longitude.toFixed(6));
+  };
+
+  const getPickerRegion = () => {
+    const latitude = Number(cacheLatitude);
+    const longitude = Number(cacheLongitude);
+
+    if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
+      return {
+        latitude,
+        longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+    }
+
+    return {
+      latitude: 1.3521,
+      longitude: 103.8198,
+      latitudeDelta: 0.2,
+      longitudeDelta: 0.2,
+    };
   };
 
   return (
@@ -321,11 +348,40 @@ export default function PrivateDashboardScreen({ navigation }) {
         />
         <TextInput
           style={styles.input}
-          placeholder="Cache Image URL"
+          placeholder="Cache Image URL (optional)"
           value={cacheImageURL}
           onChangeText={setCacheImageURL}
           autoCapitalize="none"
         />
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => setIsMapPickerVisible((prev) => !prev)}
+        >
+          <Text style={styles.secondaryButtonText}>
+            {isMapPickerVisible ? 'Hide Map Picker' : 'Use Map to Pinpoint Location'}
+          </Text>
+        </TouchableOpacity>
+
+        {isMapPickerVisible ? (
+          <View style={styles.mapPickerContainer}>
+            <Text style={styles.mapPickerHint}>Tap on map to set cache coordinates</Text>
+            <MapView
+              style={styles.mapPicker}
+              initialRegion={getPickerRegion()}
+              onPress={handleMapPress}
+            >
+              {cacheLatitude && cacheLongitude ? (
+                <Marker
+                  coordinate={{
+                    latitude: Number(cacheLatitude),
+                    longitude: Number(cacheLongitude),
+                  }}
+                />
+              ) : null}
+            </MapView>
+          </View>
+        ) : null}
+
         <View style={styles.row}>
           <TextInput
             style={[styles.input, styles.rowInput]}
@@ -498,6 +554,19 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#495057',
     fontWeight: '700',
+  },
+  mapPickerContainer: {
+    marginBottom: 10,
+  },
+  mapPickerHint: {
+    color: '#6c757d',
+    marginBottom: 6,
+    fontSize: 13,
+  },
+  mapPicker: {
+    width: '100%',
+    height: 220,
+    borderRadius: 8,
   },
   buttonText: {
     color: '#fff',

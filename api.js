@@ -6,6 +6,7 @@ const BASE_URLS = [
 ];
 const API_KEY = '16gv8f'; // Public test key
 const MAX_RETRIES_PER_HOST = 1;
+const TEST_IMAGE_URL = 'https://imgs.search.brave.com/QepbmUa7ANhll-Fjdx6_3dxZxzRVSNNg5JCt8Nbiehk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTI5/OTQ5MjY4Mi9waG90/by9jYXQtaW4teW91/ci1mYWNlLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz05WDAt/VlRQRktHakN0QzFa/Tkc4YUUxb2hoaU1z/c3V0RDgwWEtBZk9P/X3VvPQ';
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -128,7 +129,7 @@ export const logFind = (playerId, cacheId) => {
     FindPlayerID: playerId,
     FindCacheID: cacheId,
     FindDatetime: new Date().toISOString(), // ISO 8601 format
-    FindImageURL: "https://imgs.search.brave.com/QepbmUa7ANhll-Fjdx6_3dxZxzRVSNNg5JCt8Nbiehk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTI5/OTQ5MjY4Mi9waG90/by9jYXQtaW4teW91/ci1mYWNlLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz05WDAt/VlRQRktHakN0QzFa/Tkc4YUUxb2hoaU1z/c3V0RDgwWEtBZk9P/X3VvPQ" // Adding this as an empty string in case it's required
+    FindImageURL: TEST_IMAGE_URL
   };
   return fetchAPI('/finds', 'POST', findData);
 };
@@ -205,7 +206,7 @@ export const createEventCache = (eventId, cacheData) => {
     CacheName: normalizedName,
     CacheClue: normalizedClue,
     CacheDescription: normalizedDescription || `Cache for event #${normalizedEventId}`,
-    CacheImageURL: normalizedImageUrl || 'https://picsum.photos/400/300',
+    CacheImageURL: normalizedImageUrl || TEST_IMAGE_URL,
     CacheLatitude: Number(cacheData?.CacheLatitude),
     CacheLongitude: Number(cacheData?.CacheLongitude),
     CachePoints: Number(cacheData?.CachePoints ?? 10),
