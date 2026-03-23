@@ -112,3 +112,33 @@ export const getPublicCaches = () => fetchListWithFallback('/caches');
  * Finds contain the Player details and the Cache details (including Points).
  */
 export const getAllFinds = () => fetchListWithFallback('/finds');
+
+// api.js (Additions)
+
+/**
+ * Creates a new private event.
+ * Maps to the Event entity requiring EventName, EventDescription, EventOwnerID, etc. [cite: 11, 13, 14]
+ */
+export const createPrivateEvent = (eventData) => {
+  // Ensure EventIspublic is false or handled according to your privacy rules [cite: 15]
+  return fetchAPI('/events', 'POST', eventData);
+};
+
+/**
+ * Joins a user to an event by creating a Player entity.
+ * Associates PlayerUserID to PlayerEventID[cite: 19].
+ */
+export const joinEvent = (userId, eventId) => {
+  const playerData = {
+    PlayerUserID: userId,
+    PlayerEventID: eventId
+  };
+  return fetchAPI('/players', 'POST', playerData);
+};
+
+/**
+ * Fetches caches specific to a private event to filter the map view.
+ */
+export const getEventCaches = (eventId) => {
+  return fetchListWithFallback(`/caches/events/${eventId}`);
+};
