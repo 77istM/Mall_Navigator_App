@@ -19,6 +19,12 @@ import {
 
 const EVENT_TYPES = ['Families', 'Schools', 'Companies', 'University Activities'];
 const TEST_IMAGE_URL = 'https://imgs.search.brave.com/QepbmUa7ANhll-Fjdx6_3dxZxzRVSNNg5JCt8Nbiehk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTI5/OTQ5MjY4Mi9waG90/by9jYXQtaW4teW91/ci1mYWNlLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz05WDAt/VlRQRktHakN0QzFa/Tkc4YUUxb2hoaU1z/c3V0RDgwWEtBZk9P/X3VvPQ';
+const WORLD_PICKER_REGION = {
+  latitude: 51.5074,
+  longitude: -0.1278,
+  latitudeDelta: 110,
+  longitudeDelta: 180,
+};
 
 const asPositiveNumber = (value) => {
   const parsed = Number(value);
@@ -241,12 +247,7 @@ export default function PrivateDashboardScreen({ navigation }) {
       };
     }
 
-    return {
-      latitude: 1.3521,
-      longitude: 103.8198,
-      latitudeDelta: 0.2,
-      longitudeDelta: 0.2,
-    };
+    return WORLD_PICKER_REGION;
   };
 
   return (
