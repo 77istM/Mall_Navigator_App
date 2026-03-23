@@ -19,6 +19,14 @@ const isTransientApiFailure = (statusCode, errorText) => {
   return statusCode >= 500 || text.includes('error code: 1033');
 };
 
+const buildApiError = (statusCode, errorText, transient = false) => {
+  const error = new Error(`API Error: ${statusCode} - ${errorText}`);
+  error.statusCode = statusCode;
+  error.errorText = errorText;
+  error.transient = transient;
+  return error;
+};
+
 /**
  * Helper function to handle fetch requests
  */
@@ -47,7 +55,7 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
           const transientError = isTransientApiFailure(response.status, errorText);
           if (transientError) {
             console.warn(`Transient API error from ${requestLabel}:`, errorText || `HTTP ${response.status}`);
-            lastError = new Error(`API Error: ${response.status} - ${errorText}`);
+            lastError = buildApiError(response.status, errorText, true);
             if (attempt < MAX_RETRIES_PER_HOST) {
               await delay(500);
               continue;
@@ -56,7 +64,7 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
           }
 
           console.error(`API Error Response from ${requestLabel}:`, errorText);
-          throw new Error(`API Error: ${response.status} - ${errorText}`);
+          throw buildApiError(response.status, errorText, false);
         }
 
         const contentType = response.headers.get('content-type') || '';
@@ -68,6 +76,11 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
       } catch (error) {
         lastError = error;
         console.warn(`Fetch attempt failed for ${endpoint} (${baseUrl}):`, error?.message || error);
+
+        // Validation/other 4xx API errors should not be retried or duplicated across hosts.
+        if (error?.statusCode && !error?.transient) {
+          throw error;
+        }
 
         // For network-level failures, retry then fall back to the next host.
         if (attempt < MAX_RETRIES_PER_HOST) {
@@ -120,8 +133,17 @@ export const getAllFinds = () => fetchListWithFallback('/finds');
  * Maps to the Event entity requiring EventName, EventDescription, EventOwnerID, etc. [cite: 11, 13, 14]
  */
 export const createPrivateEvent = (eventData) => {
-  // Ensure EventIspublic is false or handled according to your privacy rules [cite: 15]
-  return fetchAPI('/events', 'POST', eventData);
+  const normalizedName = (eventData?.EventName || '').trim();
+  const payload = {
+    ...eventData,
+    EventName: normalizedName,
+    EventDescription: eventData?.EventDescription || 'A private treasure hunt',
+    EventOwnerID: Number(eventData?.EventOwnerID),
+    EventIspublic: false,
+    EventStatusID: eventData?.EventStatusID ?? 1,
+  };
+
+  return fetchAPI('/events', 'POST', payload);
 };
 
 /**

@@ -24,20 +24,26 @@ export default function PrivateDashboardScreen({ navigation }) {
   };
 
   const handleCreateEvent = async () => {
-    if (!eventName) return Alert.alert('Error', 'Event name is required');
+    const trimmedName = eventName.trim();
+    if (!trimmedName) return Alert.alert('Error', 'Event name is required');
+    if (trimmedName.length < 8) {
+      return Alert.alert('Error', 'Event name must be at least 8 characters long.');
+    }
+
     try {
       const newEvent = {
-        EventName: eventName,
+        EventName: trimmedName,
         EventDescription: 'A private treasure hunt',
-        EventOwnerID: currentUserId, // The UserID of the user who created the event [cite: 14]
+        EventOwnerID: Number(currentUserId), // The UserID of the user who created the event [cite: 14]
         EventIspublic: false, // Ensures it requires an invite [cite: 15]
+        EventStatusID: 1, // Pending status, required by API schema
         EventStart: new Date().toISOString(), // Using ISO 8601 format [cite: 33, 34]
         EventFinish: new Date(Date.now() + 86400000).toISOString(), // +24 hours
       };
       const response = await createPrivateEvent(newEvent);
       Alert.alert('Event Created', `Share this ID with participants: ${response.EventID}`);
     } catch (error) {
-      Alert.alert('Error', 'Failed to create event.');
+      Alert.alert('Error', error?.message || 'Failed to create event.');
     }
   };
 
