@@ -41,7 +41,13 @@ export default function PrivateDashboardScreen({ navigation }) {
         EventFinish: new Date(Date.now() + 86400000).toISOString(), // +24 hours
       };
       const response = await createPrivateEvent(newEvent);
-      Alert.alert('Event Created', `Share this ID with participants: ${response.EventID}`);
+      const createdEventId = response?.EventID ?? response?.[0]?.EventID;
+      Alert.alert(
+        'Event Created',
+        createdEventId
+          ? `Share this ID with participants: ${createdEventId}`
+          : 'Event created successfully, but no Event ID was returned by the API.'
+      );
     } catch (error) {
       Alert.alert('Error', error?.message || 'Failed to create event.');
     }

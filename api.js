@@ -143,7 +143,12 @@ export const createPrivateEvent = (eventData) => {
     EventStatusID: eventData?.EventStatusID ?? 1,
   };
 
-  return fetchAPI('/events', 'POST', payload);
+  return fetchAPI('/events', 'POST', payload).then((response) => {
+    if (Array.isArray(response)) {
+      return response[0] || null;
+    }
+    return response;
+  });
 };
 
 /**
