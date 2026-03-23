@@ -1,13 +1,28 @@
 
 
-const BASE_URL = 'https://mark0s.com/geoquest/v1/api';
+const BASE_URLS = [
+  'https://mark0s.com/geoquest/v1/api',
+  'https://www.mark0s.com/geoquest/v1/api',
+];
 const API_KEY = '16gv8f'; // Public test key
+const MAX_RETRIES_PER_HOST = 1;
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const buildUrl = (baseUrl, endpoint) => {
+  const queryJoinChar = endpoint.includes('?') ? '&' : '?';
+  return `${baseUrl}${endpoint}${queryJoinChar}key=${API_KEY}`;
+};
+
+const isTransientApiFailure = (statusCode, errorText) => {
+  const text = (errorText || '').toLowerCase();
+  return statusCode >= 500 || text.includes('error code: 1033');
+};
 
 /**
  * Helper function to handle fetch requests
  */
 const fetchAPI = async (endpoint, method = 'GET', body = null) => {
-  const url = `${BASE_URL}${endpoint}?key=${API_KEY}`;
   const options = {
     method,
     headers: {
@@ -16,22 +31,66 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
   };
   if (body) options.body = JSON.stringify(body);
 
-  try {
-    const response = await fetch(url, options);
-    if (!response.ok) {
-      // Extract the actual error message from the server
-      const errorText = await response.text(); 
-      console.error(`API Error Response from ${endpoint}:`, errorText);
-      throw new Error(`API Error: ${response.status} - ${errorText}`);
+  let lastError = null;
+
+  for (const baseUrl of BASE_URLS) {
+    for (let attempt = 0; attempt <= MAX_RETRIES_PER_HOST; attempt += 1) {
+      const url = buildUrl(baseUrl, endpoint);
+
+      try {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          const requestLabel = `${endpoint} (${baseUrl})`;
+
+          const transientError = isTransientApiFailure(response.status, errorText);
+          if (transientError) {
+            console.warn(`Transient API error from ${requestLabel}:`, errorText || `HTTP ${response.status}`);
+            lastError = new Error(`API Error: ${response.status} - ${errorText}`);
+            if (attempt < MAX_RETRIES_PER_HOST) {
+              await delay(500);
+              continue;
+            }
+            break;
+          }
+
+          console.error(`API Error Response from ${requestLabel}:`, errorText);
+          throw new Error(`API Error: ${response.status} - ${errorText}`);
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          return await response.json();
+        }
+
+        return await response.text();
+      } catch (error) {
+        lastError = error;
+        console.warn(`Fetch attempt failed for ${endpoint} (${baseUrl}):`, error?.message || error);
+
+        // For network-level failures, retry then fall back to the next host.
+        if (attempt < MAX_RETRIES_PER_HOST) {
+          await delay(500);
+          continue;
+        }
+      }
     }
-    return await response.json();
-  } catch (error) {
-    console.error(`Fetch failed for ${endpoint}:`, error);
-    throw error;
   }
+
+  throw lastError || new Error(`Failed to fetch ${endpoint} from all configured hosts`);
 };
 
-export const getPublicCaches = () => fetchAPI('/caches');
+const fetchListWithFallback = async (endpoint) => {
+  try {
+    const data = await fetchAPI(endpoint);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    // Keep the app usable during transient upstream outages.
+    console.warn(`Using empty fallback for ${endpoint}:`, error?.message || error);
+    return [];
+  }
+};
 
 /**
  * Logs a new discovery (Find).
@@ -46,8 +105,10 @@ export const logFind = (playerId, cacheId) => {
   return fetchAPI('/finds', 'POST', findData);
 };
 
+export const getPublicCaches = () => fetchListWithFallback('/caches');
+
 /**
  * Fetches all finds to build the leaderboard.
  * Finds contain the Player details and the Cache details (including Points).
  */
-export const getAllFinds = () => fetchAPI('/finds');
+export const getAllFinds = () => fetchListWithFallback('/finds');
