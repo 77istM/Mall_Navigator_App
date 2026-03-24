@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
-import { getPublicCaches, logFind } from '../api';
+import { getPublicCaches, getEventCaches, logFind } from '../api';
 import { getDistanceInMeters } from '../utils/distanceCalculator';
 import { PLAYER_ID } from '../constants/appConstants';
 
@@ -8,9 +8,10 @@ import { PLAYER_ID } from '../constants/appConstants';
  * Custom Hook: useCacheManagement
  * Manages cache data, selection, and discovery logging
  * @param {Object} location - Current user location {latitude, longitude}
+ * @param {number|null} eventId - Active private event ID
  * @returns {Object} { caches, loading, error, selectedCache, distanceToCache, handleSelectCache, handleLogDiscovery, isLogging }
  */
-export const useCacheManagement = (location) => {
+export const useCacheManagement = (location, eventId = null) => {
   const [caches, setCaches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,8 +22,10 @@ export const useCacheManagement = (location) => {
   // Fetch caches on mount
   useEffect(() => {
     (async () => {
+      setLoading(true);
+      setSelectedCache(null);
       try {
-        const cacheData = await getPublicCaches();
+        const cacheData = eventId ? await getEventCaches(eventId) : await getPublicCaches();
         setCaches(cacheData);
         setError(null);
       } catch (err) {
@@ -33,7 +36,7 @@ export const useCacheManagement = (location) => {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [eventId]);
 
   // Recalculate distance whenever location OR selected cache changes
   useEffect(() => {
