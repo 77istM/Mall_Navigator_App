@@ -39,8 +39,8 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
   return (
     <View style={styles.container}>
       {activeEventId ? (
-        <View style={styles.privateModeBanner}>
-          <Text style={styles.privateModeBannerText}>
+        <View style={styles.PrivateModeBanner}>
+          <Text style={styles.PrivateModeBannerText}>
             {activeEventName
               ? `Private Event: ${activeEventName} (#${activeEventId})`
               : `Private Event #${activeEventId}`}

@@ -4,7 +4,7 @@ export const appStyles = StyleSheet.create({
   container: { 
     flex: 1 
   },
-  privateModeBanner: {
+  PrivateModeBanner: {
     position: 'absolute',
     top: 18,
     left: 14,
@@ -15,7 +15,7 @@ export const appStyles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
-  privateModeBannerText: {
+  PrivateModeBannerText: {
     color: '#d1e7dd',
     fontWeight: '700',
     textAlign: 'center',

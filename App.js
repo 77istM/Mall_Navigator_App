@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons'; // Built-in Expo icons
 import MapScreen from './screens/MapScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
 import HomeScreen from './screens/HomeScreen';
-import PrivateDashboardScreen from './screens/PrivateDashboardScreen';
+import PrivateDashboardScreen from './screens/PrivateScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
