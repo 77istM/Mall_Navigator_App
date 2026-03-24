@@ -1,10 +1,12 @@
 ### Status report (Always write before sign off)
 1. App condition: Running
-2. Date: 22 MAR
+2. Date: 24 MAR
 3. Work has been done:
      1. api working, location-target shows on map
      2. data is consistent
-     3. Basic UI. (need to work on leaderboard). start from phase 3.
+     3. Basic UI.
+     4. Private event mode added *needs refractoring.
+     6. 2nd Sensor functionality  (need to work on).
 ---
 -Always use branch for development, never push code that is not working. Don't use github copilot (github will keep track of it).
 
