@@ -119,6 +119,8 @@ const fetchListWithFallback = async (endpoint) => {
     console.warn(`Using empty fallback for ${endpoint}:`, error?.message || error);
     return [];
   }
+
+  throw lastError || new Error(`Failed to fetch ${endpoint} from all configured hosts`);
 };
 
 /**
