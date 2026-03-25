@@ -15,3 +15,8 @@ export const MAP_REGION = {
 };
 
 export const PLAYER_ID = 3; // Dummy player ID for testing
+
+export const COMPASS_SETTINGS = {
+  ON_TARGET_THRESHOLD_DEGREES: 10,
+  UPDATE_INTERVAL_MS: 1000,
+};

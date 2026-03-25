@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Magnetometer } from 'expo-sensors';
+import { COMPASS_SETTINGS } from '../constants/appConstants';
 
 /**
  * Custom Hook: useCompassHeading
@@ -27,7 +28,7 @@ export const useCompassHeading = () => {
         setIsHeadingAvailable(true);
         setSensorError(null);
 
-        Magnetometer.setUpdateInterval(500);
+        Magnetometer.setUpdateInterval(COMPASS_SETTINGS.UPDATE_INTERVAL_MS);
 
         subscription = Magnetometer.addListener(({ x, y }) => {
           // Convert magnetic vector to a compass heading in degrees (0-359)

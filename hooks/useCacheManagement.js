@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { getPublicCaches, getEventCaches, logFind } from '../api';
 import { getDistanceInMeters } from '../utils/distanceCalculator';
 import { getBearingInDegrees } from '../utils/bearingCalculator';
-import { PLAYER_ID } from '../constants/appConstants';
+import { PLAYER_ID, COMPASS_SETTINGS } from '../constants/appConstants';
 
 /**
  * Custom Hook: useCacheManagement
@@ -86,7 +86,7 @@ export const useCacheManagement = (location, eventId = null, heading = null) => 
     const roundedDelta = Math.round(delta);
     setTurnDelta(roundedDelta);
 
-    if (Math.abs(roundedDelta) <= 10) {
+    if (Math.abs(roundedDelta) <= COMPASS_SETTINGS.ON_TARGET_THRESHOLD_DEGREES) {
       setDirectionHint('On target');
     } else if (roundedDelta > 0) {
       setDirectionHint(`Turn right ${Math.abs(roundedDelta)}°`);
