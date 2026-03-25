@@ -99,12 +99,12 @@ export const useCacheManagement = (location, eventId = null, heading = null) => 
     setSelectedCache(cache);
   };
 
-  const handleLogDiscovery = async () => {
+  const handleLogDiscovery = async (imageUrl = null) => {
     if (!selectedCache) return;
     
     setIsLogging(true);
     try {
-      await logFind(PLAYER_ID, selectedCache.CacheID);
+      await logFind(PLAYER_ID, selectedCache.CacheID, imageUrl);
       
       Alert.alert(
         "Success!", 

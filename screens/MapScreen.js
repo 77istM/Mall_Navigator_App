@@ -118,7 +118,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           captureError={captureError}
           onCaptureProof={capturePhotoProof}
           onClearProof={clearCapturedPhotoProof}
-          onLogDiscovery={handleLogDiscovery}
+          onLogDiscovery={() => handleLogDiscovery(capturedImage?.uri || null)}
         />
       )}
       <StatusBar style="auto" />
