@@ -27,7 +27,11 @@ export const TargetPanel = ({
     ? sensorError
     : hasDirection
       ? directionHint
-      : 'Calibrating compass...';
+      : 'Compass calibrating.';
+  const calibrationHelpText =
+    !hasDirection && !sensorError
+      ? 'Move your phone in a figure-8 motion to calibrate compass.'
+      : null;
 
   return (
     <View style={styles.targetPanel}>
@@ -48,6 +52,9 @@ export const TargetPanel = ({
         <View style={styles.directionTextContainer}>
           <Text style={styles.directionTitle}>Compass Guidance</Text>
           <Text style={styles.directionHint}>{directionStatusText}</Text>
+          {calibrationHelpText ? (
+            <Text style={styles.directionMeta}>{calibrationHelpText}</Text>
+          ) : null}
           {hasDirection ? (
             <Text style={styles.directionMeta}>
               Heading: {heading}° | Target: {targetBearing}°
