@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Magnetometer } from 'expo-sensors';
 import { COMPASS_SETTINGS } from '../constants/appConstants';
 
@@ -11,6 +11,23 @@ export const useCompassHeading = () => {
   const [heading, setHeading] = useState(null);
   const [isHeadingAvailable, setIsHeadingAvailable] = useState(false);
   const [sensorError, setSensorError] = useState(null);
+  const lastSmoothedHeadingRef = useRef(null);
+
+  const normalizeHeading = (value) => ((value % 360) + 360) % 360;
+  const getShortestDelta = (from, to) => ((to - from + 540) % 360) - 180;
+
+  const smoothHeading = (rawHeading) => {
+    const smoothingFactor = 0.2;
+    const previousHeading = lastSmoothedHeadingRef.current;
+
+    if (previousHeading === null) {
+      return rawHeading;
+    }
+
+    const delta = getShortestDelta(previousHeading, rawHeading);
+    const blendedHeading = normalizeHeading(previousHeading + delta * smoothingFactor);
+    return blendedHeading;
+  };
 
   useEffect(() => {
     let subscription;
@@ -33,8 +50,11 @@ export const useCompassHeading = () => {
         subscription = Magnetometer.addListener(({ x, y }) => {
           // Convert magnetic vector to a compass heading in degrees (0-359)
           const headingInDegrees = (Math.atan2(y, x) * 180) / Math.PI;
-          const normalizedHeading = Math.round((headingInDegrees + 360) % 360);
-          setHeading(normalizedHeading);
+          const normalizedHeading = normalizeHeading(headingInDegrees);
+          const smoothedHeading = smoothHeading(normalizedHeading);
+
+          lastSmoothedHeadingRef.current = smoothedHeading;
+          setHeading(Math.round(smoothedHeading));
         });
       } catch (err) {
         console.error('Compass sensor error:', err);
@@ -49,6 +69,7 @@ export const useCompassHeading = () => {
       if (subscription) {
         subscription.remove();
       }
+      lastSmoothedHeadingRef.current = null;
     };
   }, []);
 
