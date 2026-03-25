@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 
 // Adjusting imports to step out of the 'screens' folder
 import { useLocationTracking } from '../hooks/useLocationTracking';
+import { useCompassHeading } from '../hooks/useCompassHeading';
 import { useCacheManagement } from '../hooks/useCacheManagement';
 import TargetPanel from '../components/TargetPanel';
 import { DISCOVERY_RADIUS } from '../constants/appConstants';
@@ -15,15 +16,19 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
   const activeEventId = eventIdProp ?? route?.params?.eventId ?? null;
   const activeEventName = eventNameProp ?? route?.params?.eventName ?? null;
   const { location, error: locationError } = useLocationTracking();
+  const { heading, isHeadingAvailable, sensorError } = useCompassHeading();
   const {
     caches,
     loading,
     selectedCache,
     distanceToCache,
+    targetBearing,
+    turnDelta,
+    directionHint,
     isLogging,
     handleSelectCache,
     handleLogDiscovery,
-  } = useCacheManagement(location, activeEventId);
+  } = useCacheManagement(location, activeEventId, heading);
 
   if (loading || !location) {
     return (
@@ -82,6 +87,12 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
         <TargetPanel
           selectedCache={selectedCache}
           distanceToCache={distanceToCache}
+          heading={heading}
+          isHeadingAvailable={isHeadingAvailable}
+          sensorError={sensorError}
+          targetBearing={targetBearing}
+          turnDelta={turnDelta}
+          directionHint={directionHint}
           isWithinRange={isWithinRange}
           isLogging={isLogging}
           onLogDiscovery={handleLogDiscovery}
