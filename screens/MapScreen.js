@@ -48,6 +48,11 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     }
   }, [selectedCache, clearCapturedPhotoProof]);
 
+  useEffect(() => {
+    clearCapturedPhotoProof();
+    lastSelectedCacheIdRef.current = null;
+  }, [activeEventId, clearCapturedPhotoProof]);
+
   if (loading || !location) {
     return (
       <View style={styles.loadingContainer}>

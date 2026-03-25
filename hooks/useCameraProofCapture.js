@@ -16,8 +16,11 @@ export const useCameraProofCapture = () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert('Permission denied', 'Camera permission is required to capture photo proof.');
-      setCaptureError('Camera permission denied');
+      Alert.alert(
+        'Camera Permission Needed',
+        'Camera access was denied. You can still log a discovery without photo proof.'
+      );
+      setCaptureError('Camera access denied. Logging without photo is still available.');
       return false;
     }
 
@@ -25,6 +28,10 @@ export const useCameraProofCapture = () => {
   }, []);
 
   const capturePhotoProof = useCallback(async () => {
+    if (isCapturing) {
+      return null;
+    }
+
     setCaptureError(null);
     setIsCapturing(true);
 
@@ -44,26 +51,27 @@ export const useCameraProofCapture = () => {
       const normalizedAsset = normalizeCapturedImageAsset(pickerResult);
 
       if (!normalizedAsset) {
+        setCaptureError('Photo capture canceled. You can log discovery without proof.');
         return null;
       }
 
       if (!isValidCapturedImageAsset(normalizedAsset)) {
-        setCaptureError('Invalid image captured');
-        Alert.alert('Capture failed', 'The captured image was invalid. Please try again.');
+        setCaptureError('Captured image was invalid. Please retake the photo.');
+        Alert.alert('Invalid Photo', 'The captured image could not be used. Please try again.');
         return null;
       }
 
       setCapturedImage(normalizedAsset);
       return normalizedAsset;
     } catch (error) {
-      const message = error?.message || 'Unable to capture image.';
-      setCaptureError(message);
-      Alert.alert('Capture error', message);
+      const message = error?.message || 'Unable to capture a photo right now.';
+      setCaptureError(`Capture failed: ${message}`);
+      Alert.alert('Capture Failed', `${message} You can continue and log without photo proof.`);
       return null;
     } finally {
       setIsCapturing(false);
     }
-  }, [requestCameraPermission]);
+  }, [isCapturing, requestCameraPermission]);
 
   const clearCapturedPhotoProof = useCallback(() => {
     setCapturedImage(null);

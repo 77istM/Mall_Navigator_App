@@ -100,7 +100,7 @@ export const useCacheManagement = (location, eventId = null, heading = null) => 
   };
 
   const handleLogDiscovery = async (imageUrl = null) => {
-    if (!selectedCache) return;
+    if (!selectedCache || isLogging) return;
     
     setIsLogging(true);
     try {
@@ -121,7 +121,7 @@ export const useCacheManagement = (location, eventId = null, heading = null) => 
       
     } catch (err) {
       console.error('Error logging discovery:', err);
-      Alert.alert("Error", "Failed to log discovery. Try again.");
+      Alert.alert('Log Failed', err?.message || 'Unable to log discovery right now. Please try again.');
     } finally {
       setIsLogging(false);
     }

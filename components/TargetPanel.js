@@ -28,6 +28,7 @@ export const TargetPanel = ({
   }
 
   const hasDirection = isHeadingAvailable && turnDelta !== null && !!directionHint;
+  const isPanelBusy = isLogging || isCapturing;
   const directionStatusText = sensorError
     ? sensorError
     : hasDirection
@@ -109,14 +110,18 @@ export const TargetPanel = ({
       
       <TouchableOpacity 
         style={[styles.logButton, !isWithinRange && styles.logButtonDisabled]}
-        disabled={!isWithinRange || isLogging}
+        disabled={!isWithinRange || isPanelBusy}
         onPress={onLogDiscovery}
       >
         {isLogging ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <Text style={styles.logButtonText}>
-            {isWithinRange ? "Log Discovery!" : "Get Closer to Log"}
+            {isCapturing
+              ? 'Capturing Photo...'
+              : isWithinRange
+                ? 'Log Discovery!'
+                : 'Get Closer to Log'}
           </Text>
         )}
       </TouchableOpacity>
