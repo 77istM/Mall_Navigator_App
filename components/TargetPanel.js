@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Image } from 'react-native';
 
 /**
  * TargetPanel Component
@@ -16,6 +16,11 @@ export const TargetPanel = ({
   directionHint,
   isWithinRange,
   isLogging,
+  capturedImage,
+  isCapturing,
+  captureError,
+  onCaptureProof,
+  onClearProof,
   onLogDiscovery,
 }) => {
   if (!selectedCache) {
@@ -23,6 +28,7 @@ export const TargetPanel = ({
   }
 
   const hasDirection = isHeadingAvailable && turnDelta !== null && !!directionHint;
+  const isPanelBusy = isLogging || isCapturing;
   const directionStatusText = sensorError
     ? sensorError
     : hasDirection
@@ -62,17 +68,60 @@ export const TargetPanel = ({
           ) : null}
         </View>
       </View>
+
+      <View style={styles.proofContainer}>
+        <Text style={styles.proofTitle}>Camera Proof (Optional)</Text>
+        <Text style={styles.proofSubtitle}>
+          Capture a photo as extra evidence before logging your discovery.
+        </Text>
+
+        {capturedImage?.uri ? (
+          <Image source={{ uri: capturedImage.uri }} style={styles.proofPreview} resizeMode="cover" />
+        ) : null}
+
+        {captureError ? <Text style={styles.proofErrorText}>{captureError}</Text> : null}
+
+        <View style={styles.proofButtonRow}>
+          <TouchableOpacity
+            style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
+            disabled={isCapturing || isLogging}
+            onPress={() => onCaptureProof?.()}
+          >
+            {isCapturing ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.captureButtonText}>
+                {capturedImage?.uri ? 'Retake Proof Photo' : 'Capture Proof Photo'}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {capturedImage?.uri ? (
+            <TouchableOpacity
+              style={styles.clearProofButton}
+              disabled={isCapturing || isLogging}
+              onPress={() => onClearProof?.()}
+            >
+              <Text style={styles.clearProofButtonText}>Remove</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
       
       <TouchableOpacity 
         style={[styles.logButton, !isWithinRange && styles.logButtonDisabled]}
-        disabled={!isWithinRange || isLogging}
-        onPress={onLogDiscovery}
+        disabled={!isWithinRange || isPanelBusy}
+        onPress={() => onLogDiscovery?.()}
       >
         {isLogging ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <Text style={styles.logButtonText}>
-            {isWithinRange ? "Log Discovery!" : "Get Closer to Log"}
+            {isCapturing
+              ? 'Capturing Photo...'
+              : isWithinRange
+                ? 'Log Discovery!'
+                : 'Get Closer to Log'}
           </Text>
         )}
       </TouchableOpacity>
@@ -138,6 +187,70 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     marginTop: 2,
+  },
+  proofContainer: {
+    marginBottom: 12,
+    backgroundColor: '#f9fafb',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    padding: 10,
+  },
+  proofTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  proofSubtitle: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 3,
+    marginBottom: 8,
+  },
+  proofPreview: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#e5e7eb',
+  },
+  proofErrorText: {
+    color: '#b91c1c',
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  proofButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: 8,
+  },
+  captureButton: {
+    flex: 1,
+    backgroundColor: '#2563eb',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  captureButtonDisabled: {
+    backgroundColor: '#93c5fd',
+  },
+  captureButtonText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  clearProofButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    backgroundColor: '#ffffff',
+  },
+  clearProofButtonText: {
+    fontSize: 13,
+    color: '#374151',
+    fontWeight: '600',
   },
   logButton: {
     backgroundColor: '#28a745',

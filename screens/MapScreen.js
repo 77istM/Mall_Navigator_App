@@ -1,5 +1,5 @@
 // screens/MapScreen.js
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useLocationTracking } from '../hooks/useLocationTracking';
 import { useCompassHeading } from '../hooks/useCompassHeading';
 import { useCacheManagement } from '../hooks/useCacheManagement';
+import { useCameraProofCapture } from '../hooks/useCameraProofCapture';
 import TargetPanel from '../components/TargetPanel';
 import { DISCOVERY_RADIUS } from '../constants/appConstants';
 import { appStyles as styles } from '../styles/appStyles';
@@ -29,6 +30,28 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     handleSelectCache,
     handleLogDiscovery,
   } = useCacheManagement(location, activeEventId, heading);
+  const {
+    capturedImage,
+    isCapturing,
+    captureError,
+    capturePhotoProof,
+    clearCapturedPhotoProof,
+  } = useCameraProofCapture();
+  const lastSelectedCacheIdRef = useRef(null);
+
+  useEffect(() => {
+    const currentCacheId = selectedCache?.CacheID ?? null;
+
+    if (lastSelectedCacheIdRef.current !== currentCacheId) {
+      clearCapturedPhotoProof();
+      lastSelectedCacheIdRef.current = currentCacheId;
+    }
+  }, [selectedCache, clearCapturedPhotoProof]);
+
+  useEffect(() => {
+    clearCapturedPhotoProof();
+    lastSelectedCacheIdRef.current = null;
+  }, [activeEventId, clearCapturedPhotoProof]);
 
   if (loading || !location) {
     return (
@@ -95,7 +118,12 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           directionHint={directionHint}
           isWithinRange={isWithinRange}
           isLogging={isLogging}
-          onLogDiscovery={handleLogDiscovery}
+          capturedImage={capturedImage}
+          isCapturing={isCapturing}
+          captureError={captureError}
+          onCaptureProof={capturePhotoProof}
+          onClearProof={clearCapturedPhotoProof}
+          onLogDiscovery={() => handleLogDiscovery(capturedImage?.uri || null)}
         />
       )}
       <StatusBar style="auto" />

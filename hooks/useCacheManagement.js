@@ -99,12 +99,12 @@ export const useCacheManagement = (location, eventId = null, heading = null) => 
     setSelectedCache(cache);
   };
 
-  const handleLogDiscovery = async () => {
-    if (!selectedCache) return;
+  const handleLogDiscovery = async (imageUrl = null) => {
+    if (!selectedCache || isLogging) return;
     
     setIsLogging(true);
     try {
-      await logFind(PLAYER_ID, selectedCache.CacheID);
+      await logFind(PLAYER_ID, selectedCache.CacheID, imageUrl);
       
       Alert.alert(
         "Success!", 
@@ -121,7 +121,7 @@ export const useCacheManagement = (location, eventId = null, heading = null) => 
       
     } catch (err) {
       console.error('Error logging discovery:', err);
-      Alert.alert("Error", "Failed to log discovery. Try again.");
+      Alert.alert('Log Failed', err?.message || 'Unable to log discovery right now. Please try again.');
     } finally {
       setIsLogging(false);
     }

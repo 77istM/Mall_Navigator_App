@@ -126,12 +126,14 @@ const fetchListWithFallback = async (endpoint) => {
 /**
  * Logs a new discovery (Find).
  */
-export const logFind = (playerId, cacheId) => {
+export const logFind = (playerId, cacheId, imageUrl = null) => {
+  const normalizedImageUrl = typeof imageUrl === 'string' ? imageUrl.trim() : '';
+
   const findData = {
     FindPlayerID: playerId,
     FindCacheID: cacheId,
     FindDatetime: new Date().toISOString(), // ISO 8601 format
-    FindImageURL: TEST_IMAGE_URL
+    FindImageURL: normalizedImageUrl || TEST_IMAGE_URL
   };
   return fetchAPI('/finds', 'POST', findData);
 };
