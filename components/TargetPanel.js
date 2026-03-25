@@ -85,7 +85,7 @@ export const TargetPanel = ({
           <TouchableOpacity
             style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
             disabled={isCapturing || isLogging}
-            onPress={onCaptureProof}
+            onPress={() => onCaptureProof?.()}
           >
             {isCapturing ? (
               <ActivityIndicator color="#fff" />
@@ -100,7 +100,7 @@ export const TargetPanel = ({
             <TouchableOpacity
               style={styles.clearProofButton}
               disabled={isCapturing || isLogging}
-              onPress={onClearProof}
+              onPress={() => onClearProof?.()}
             >
               <Text style={styles.clearProofButtonText}>Remove</Text>
             </TouchableOpacity>
@@ -111,7 +111,7 @@ export const TargetPanel = ({
       <TouchableOpacity 
         style={[styles.logButton, !isWithinRange && styles.logButtonDisabled]}
         disabled={!isWithinRange || isPanelBusy}
-        onPress={onLogDiscovery}
+        onPress={() => onLogDiscovery?.()}
       >
         {isLogging ? (
           <ActivityIndicator color="#fff" />
