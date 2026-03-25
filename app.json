@@ -22,6 +22,15 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       }
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow GeoQuest to use your camera to capture optional cache proof photos.",
+          "photosPermission": "Allow GeoQuest to access your photos for optional cache proof images."
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }
