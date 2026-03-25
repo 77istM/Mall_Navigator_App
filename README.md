@@ -2,8 +2,8 @@
 1. App condition: Running
 2. Date: 25 MAR
 3. Work has been done:
-     1. api working, location-target shows on map
-     2. data is consistent
+     1. API working, location-target shows on map
+     2. Data is consistent
      3. Basic UI.
      4. Private event mode added *needs refractoring.
      6. Sensor - GPS, Compass, Camera added. (future work on- Accelerometer or step counter)
