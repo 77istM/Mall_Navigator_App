@@ -31,7 +31,10 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     isLogging,
     handleSelectCache,
     handleLogDiscovery,
-  } = useCacheManagement(location, activeEventId, heading);
+  } = useCacheManagement(location, activeEventId, heading, {
+    motionState,
+    motionMagnitude: smoothedMagnitude,
+  });
   const {
     capturedImage,
     isCapturing,

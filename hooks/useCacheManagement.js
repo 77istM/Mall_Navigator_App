@@ -3,7 +3,12 @@ import { Alert } from 'react-native';
 import { getPublicCaches, getEventCaches, logFind } from '../api';
 import { getDistanceInMeters } from '../utils/distanceCalculator';
 import { getBearingInDegrees } from '../utils/bearingCalculator';
-import { PLAYER_ID, COMPASS_SETTINGS } from '../constants/appConstants';
+import {
+  PLAYER_ID,
+  COMPASS_SETTINGS,
+  MOTION_FEATURES,
+  MOTION_GAMEPLAY_SETTINGS,
+} from '../constants/appConstants';
 
 /**
  * Custom Hook: useCacheManagement
@@ -11,9 +16,10 @@ import { PLAYER_ID, COMPASS_SETTINGS } from '../constants/appConstants';
  * @param {Object} location - Current user location {latitude, longitude}
  * @param {number|null} eventId - Active private event ID
  * @param {number|null} heading - Current device heading (0-359)
+ * @param {Object} motionContext - Optional movement context { motionState, motionMagnitude }
  * @returns {Object} { caches, loading, error, selectedCache, distanceToCache, handleSelectCache, handleLogDiscovery, isLogging }
  */
-export const useCacheManagement = (location, eventId = null, heading = null) => {
+export const useCacheManagement = (location, eventId = null, heading = null, motionContext = {}) => {
   const [caches, setCaches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,6 +29,29 @@ export const useCacheManagement = (location, eventId = null, heading = null) => 
   const [turnDelta, setTurnDelta] = useState(null);
   const [directionHint, setDirectionHint] = useState(null);
   const [isLogging, setIsLogging] = useState(false);
+  const [movementConfidence, setMovementConfidence] = useState(null);
+
+  const motionState = motionContext?.motionState || null;
+  const motionMagnitude = motionContext?.motionMagnitude;
+
+  const calculateMovementConfidence = () => {
+    if (!MOTION_FEATURES.ENABLE_ACCELEROMETER || !MOTION_GAMEPLAY_SETTINGS.ENABLE_MOVEMENT_CONFIDENCE) {
+      return null;
+    }
+
+    const stateBaseScore = {
+      stationary: 20,
+      walking: 65,
+      active: 85,
+    };
+
+    const baseScore = stateBaseScore[motionState] ?? 45;
+    const magnitudeBonus = Number.isFinite(motionMagnitude)
+      ? Math.min(Math.max(motionMagnitude * 120, 0), 15)
+      : 0;
+
+    return Math.round(Math.min(baseScore + magnitudeBonus, 100));
+  };
 
   // Fetch caches on mount
   useEffect(() => {
@@ -101,14 +130,22 @@ export const useCacheManagement = (location, eventId = null, heading = null) => 
 
   const handleLogDiscovery = async (imageUrl = null) => {
     if (!selectedCache || isLogging) return;
+
+    const confidenceSnapshot = calculateMovementConfidence();
+    setMovementConfidence(confidenceSnapshot);
     
     setIsLogging(true);
     try {
       await logFind(PLAYER_ID, selectedCache.CacheID, imageUrl);
+
+      const confidenceMessage =
+        MOTION_GAMEPLAY_SETTINGS.SHOW_CONFIDENCE_IN_SUCCESS_MESSAGE && Number.isFinite(confidenceSnapshot)
+          ? `\nMovement confidence: ${confidenceSnapshot}%`
+          : '';
       
       Alert.alert(
         "Success!", 
-        `You found ${selectedCache.CacheName} and earned ${selectedCache.CachePoints} points!`
+        `You found ${selectedCache.CacheName} and earned ${selectedCache.CachePoints} points!${confidenceMessage}`
       );
       
       // Filter out the found cache from the map
@@ -136,6 +173,7 @@ export const useCacheManagement = (location, eventId = null, heading = null) => 
     targetBearing,
     turnDelta,
     directionHint,
+    movementConfidence,
     handleSelectCache,
     handleLogDiscovery,
     isLogging,
