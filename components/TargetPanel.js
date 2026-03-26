@@ -11,6 +11,8 @@ export const TargetPanel = ({
   heading,
   isHeadingAvailable,
   sensorError,
+  motionState,
+  motionMagnitude,
   targetBearing,
   turnDelta,
   directionHint,
@@ -34,6 +36,12 @@ export const TargetPanel = ({
     : hasDirection
       ? directionHint
       : 'Compass calibrating.';
+  const motionStatusText = motionState
+    ? `State: ${motionState}`
+    : 'Motion data unavailable.';
+  const motionMagnitudeText = Number.isFinite(motionMagnitude)
+    ? `Intensity: ${motionMagnitude.toFixed(3)}`
+    : 'Intensity: -';
   const calibrationHelpText =
     !hasDirection && !sensorError
       ? 'Move your phone in a figure-8 motion to calibrate compass.'
@@ -67,6 +75,12 @@ export const TargetPanel = ({
             </Text>
           ) : null}
         </View>
+      </View>
+
+      <View style={styles.motionContainer}>
+        <Text style={styles.motionTitle}>Motion Sensor</Text>
+        <Text style={styles.motionStatus}>{motionStatusText}</Text>
+        <Text style={styles.motionMeta}>{motionMagnitudeText}</Text>
       </View>
 
       <View style={styles.proofContainer}>
@@ -184,6 +198,28 @@ const styles = StyleSheet.create({
     color: '#1f2937',
   },
   directionMeta: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  motionContainer: {
+    backgroundColor: '#f6f7f9',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+  },
+  motionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 2,
+  },
+  motionStatus: {
+    fontSize: 14,
+    color: '#111827',
+    fontWeight: '600',
+  },
+  motionMeta: {
     fontSize: 12,
     color: '#6b7280',
     marginTop: 2,
