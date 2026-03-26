@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useLocationTracking } from '../hooks/useLocationTracking';
 import { useCompassHeading } from '../hooks/useCompassHeading';
 import { useMotionTracking } from '../hooks/useMotionTracking';
+import { useStepCounter } from '../hooks/useStepCounter';
 import { useCacheManagement } from '../hooks/useCacheManagement';
 import { useCameraProofCapture } from '../hooks/useCameraProofCapture';
 import TargetPanel from '../components/TargetPanel';
@@ -20,6 +21,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
   const { location, error: locationError } = useLocationTracking();
   const { heading, isHeadingAvailable, sensorError } = useCompassHeading();
   const { motionState, smoothedMagnitude } = useMotionTracking();
+  const { sessionSteps, isAvailable: isStepCounterAvailable, stepError } = useStepCounter();
   const {
     caches,
     loading,
@@ -120,6 +122,9 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           sensorError={sensorError}
           motionState={motionState}
           motionMagnitude={smoothedMagnitude}
+          sessionSteps={sessionSteps}
+          isStepCounterAvailable={isStepCounterAvailable}
+          stepError={stepError}
           targetBearing={targetBearing}
           turnDelta={turnDelta}
           directionHint={directionHint}
