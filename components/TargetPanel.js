@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Image } from 'react-native';
+import { MOTION_GUIDANCE_SETTINGS } from '../constants/appConstants';
 
 /**
  * TargetPanel Component
@@ -11,6 +12,8 @@ export const TargetPanel = ({
   heading,
   isHeadingAvailable,
   sensorError,
+  motionState,
+  motionMagnitude,
   targetBearing,
   turnDelta,
   directionHint,
@@ -23,6 +26,20 @@ export const TargetPanel = ({
   onClearProof,
   onLogDiscovery,
 }) => {
+  const [stableMotionState, setStableMotionState] = useState(motionState || 'unknown');
+
+  useEffect(() => {
+    if (!motionState) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      setStableMotionState(motionState);
+    }, MOTION_GUIDANCE_SETTINGS.HINT_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [motionState]);
+
   if (!selectedCache) {
     return null;
   }
@@ -34,6 +51,23 @@ export const TargetPanel = ({
     : hasDirection
       ? directionHint
       : 'Compass calibrating.';
+  const motionStatusText = stableMotionState
+    ? `State: ${stableMotionState}`
+    : 'Motion data unavailable.';
+  const hasMotionMagnitude = Number.isFinite(motionMagnitude);
+  const isLowMovement =
+    stableMotionState === 'stationary' ||
+    (hasMotionMagnitude && motionMagnitude < MOTION_GUIDANCE_SETTINGS.LOW_MOVEMENT_INTENSITY_THRESHOLD);
+  const motionAdvisoryText = isLowMovement
+    ? 'Move steadily toward target for smoother guidance.'
+    : stableMotionState === 'walking'
+      ? 'Good pace. Keep moving toward the target.'
+      : stableMotionState === 'active'
+        ? 'Great momentum. Keep your compass heading aligned.'
+        : null;
+  const motionMagnitudeText = Number.isFinite(motionMagnitude)
+    ? `Intensity: ${motionMagnitude.toFixed(3)}`
+    : 'Intensity: -';
   const calibrationHelpText =
     !hasDirection && !sensorError
       ? 'Move your phone in a figure-8 motion to calibrate compass.'
@@ -67,6 +101,13 @@ export const TargetPanel = ({
             </Text>
           ) : null}
         </View>
+      </View>
+
+      <View style={styles.motionContainer}>
+        <Text style={styles.motionTitle}>Motion Sensor</Text>
+        <Text style={styles.motionStatus}>{motionStatusText}</Text>
+        <Text style={styles.motionMeta}>{motionMagnitudeText}</Text>
+        {motionAdvisoryText ? <Text style={styles.motionAdvisory}>{motionAdvisoryText}</Text> : null}
       </View>
 
       <View style={styles.proofContainer}>
@@ -187,6 +228,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     marginTop: 2,
+  },
+  motionContainer: {
+    backgroundColor: '#f6f7f9',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+  },
+  motionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 2,
+  },
+  motionStatus: {
+    fontSize: 14,
+    color: '#111827',
+    fontWeight: '600',
+  },
+  motionMeta: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  motionAdvisory: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#1d4ed8',
+    fontWeight: '600',
   },
   proofContainer: {
     marginBottom: 12,
