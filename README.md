@@ -1,12 +1,13 @@
 ### Status report (Always write before sign off)
 1. App condition: Running
-2. Date: 25 MAR
+2. Date: 27 MAR
 3. Work has been done:
      1. API working, location-target shows on map
      2. Data is consistent
      3. Basic UI.
      4. Private event mode added *needs refractoring.
-     6. Sensor - GPS, Compass, Camera added. (future work on- Accelerometer or step counter)
+     6. Sensor - GPS, Compass, Camera, accelerometer, step counter*needs testing added. 
+     Future work on- refractoring big files into smaller chunks.
 ---
 -Always use branch for development, never push code that is not working. Don't use github copilot (github will keep track of it).
 
