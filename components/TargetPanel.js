@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Image, Animated, Easing } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+  Image,
+  Animated,
+  Easing,
+  PanResponder,
+} from 'react-native';
 import { MOTION_GUIDANCE_SETTINGS } from '../constants/appConstants';
 
 const COLLAPSED_PANEL_VISIBLE_HEIGHT = 88;
@@ -36,6 +46,7 @@ export const TargetPanel = ({
   const [stableMotionState, setStableMotionState] = useState(motionState || 'unknown');
   const [panelHeight, setPanelHeight] = useState(0);
   const panelTranslateY = useRef(new Animated.Value(0)).current;
+  const dragStartOffsetRef = useRef(0);
 
   useEffect(() => {
     if (!motionState) {
@@ -50,15 +61,72 @@ export const TargetPanel = ({
   }, [motionState]);
 
   const collapsedOffset = Math.max(panelHeight - COLLAPSED_PANEL_VISIBLE_HEIGHT, 0);
+  const isPanelCollapsed = !!isCollapsed;
 
-  useEffect(() => {
+  const animatePanelTo = (toValue) => {
     Animated.timing(panelTranslateY, {
-      toValue: isCollapsed ? collapsedOffset : 0,
-      duration: 260,
+      toValue,
+      duration: 220,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
-  }, [collapsedOffset, isCollapsed, panelTranslateY]);
+  };
+
+  useEffect(() => {
+    animatePanelTo(isPanelCollapsed ? collapsedOffset : 0);
+  }, [collapsedOffset, isPanelCollapsed, panelTranslateY]);
+
+  const panelPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_event, gestureState) => Math.abs(gestureState.dy) > 6,
+      onPanResponderGrant: () => {
+        panelTranslateY.stopAnimation((currentValue) => {
+          dragStartOffsetRef.current = currentValue;
+        });
+      },
+      onPanResponderMove: (_event, gestureState) => {
+        const nextOffset = Math.min(
+          Math.max(dragStartOffsetRef.current + gestureState.dy, 0),
+          collapsedOffset,
+        );
+
+        panelTranslateY.setValue(nextOffset);
+      },
+      onPanResponderRelease: (_event, gestureState) => {
+        const releaseOffset = Math.min(
+          Math.max(dragStartOffsetRef.current + gestureState.dy, 0),
+          collapsedOffset,
+        );
+        const velocityThreshold = 0.45;
+        const shouldCollapse = gestureState.vy > velocityThreshold
+          ? true
+          : gestureState.vy < -velocityThreshold
+            ? false
+            : releaseOffset > collapsedOffset * 0.5;
+        const targetOffset = shouldCollapse ? collapsedOffset : 0;
+
+        animatePanelTo(targetOffset);
+
+        if (shouldCollapse !== isPanelCollapsed) {
+          onToggleCollapse?.();
+        }
+      },
+      onPanResponderTerminate: (_event, gestureState) => {
+        const terminateOffset = Math.min(
+          Math.max(dragStartOffsetRef.current + gestureState.dy, 0),
+          collapsedOffset,
+        );
+        const shouldCollapse = terminateOffset > collapsedOffset * 0.5;
+
+        animatePanelTo(shouldCollapse ? collapsedOffset : 0);
+
+        if (shouldCollapse !== isPanelCollapsed) {
+          onToggleCollapse?.();
+        }
+      },
+    }),
+  ).current;
 
   if (!selectedCache) {
     return null;
@@ -102,6 +170,7 @@ export const TargetPanel = ({
   return (
     <Animated.View
       style={[styles.targetPanel, { transform: [{ translateY: panelTranslateY }] }]}
+      {...panelPanResponder.panHandlers}
       onLayout={(event) => {
         const measuredHeight = event.nativeEvent.layout.height;
 
@@ -110,6 +179,18 @@ export const TargetPanel = ({
         }
       }}
     >
+      <View style={styles.panelHandleRow}>
+        <View style={styles.panelHandle} />
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={isPanelCollapsed ? 'Expand cache details' : 'Collapse cache details'}
+          style={styles.panelToggleButton}
+          onPress={() => onToggleCollapse?.()}
+        >
+          <Text style={styles.panelToggleText}>{isPanelCollapsed ? 'Expand' : 'Collapse'}</Text>
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.panelTitle}>Target: {selectedCache.CacheName}</Text>
       <Text style={styles.panelDistance}>
         Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
@@ -220,6 +301,28 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  panelHandleRow: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  panelHandle: {
+    width: 46,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#d1d5db',
+    marginBottom: 8,
+  },
+  panelToggleButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: '#f3f4f6',
+  },
+  panelToggleText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#374151',
   },
   panelTitle: { fontSize: 18, fontWeight: 'bold' },
   panelDistance: { fontSize: 16, marginVertical: 10, color: '#555' },
