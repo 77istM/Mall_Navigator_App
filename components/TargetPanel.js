@@ -189,6 +189,39 @@ export const TargetPanel = ({
   const collapsedStatusText = isWithinRange
     ? 'Within discovery range. Slide up for details.'
     : 'Slide up to view guidance and cache actions.';
+  const expandedContentProps = {
+    selectedCache,
+    distanceToCache,
+    direction: {
+      hasDirection,
+      turnDelta,
+      directionStatusText,
+      calibrationHelpText,
+      heading,
+      targetBearing,
+    },
+    motion: {
+      motionStatusText,
+      motionMagnitudeText,
+      stepCounterStatusText,
+      motionAdvisoryText,
+    },
+    proof: {
+      capturedImage,
+      captureError,
+      isCapturing,
+      isLogging,
+      onCaptureProof,
+      onClearProof,
+    },
+    action: {
+      isWithinRange,
+      isPanelBusy,
+      isLogging,
+      isCapturing,
+      onLogDiscovery,
+    },
+  };
 
   return (
     <Animated.View
@@ -211,29 +244,7 @@ export const TargetPanel = ({
           collapsedStatusText={collapsedStatusText}
         />
       ) : (
-        <ExpandedPanelContent
-          selectedCache={selectedCache}
-          distanceToCache={distanceToCache}
-          hasDirection={hasDirection}
-          turnDelta={turnDelta}
-          directionStatusText={directionStatusText}
-          calibrationHelpText={calibrationHelpText}
-          heading={heading}
-          targetBearing={targetBearing}
-          motionStatusText={motionStatusText}
-          motionMagnitudeText={motionMagnitudeText}
-          stepCounterStatusText={stepCounterStatusText}
-          motionAdvisoryText={motionAdvisoryText}
-          capturedImage={capturedImage}
-          captureError={captureError}
-          isCapturing={isCapturing}
-          isLogging={isLogging}
-          onCaptureProof={onCaptureProof}
-          onClearProof={onClearProof}
-          isWithinRange={isWithinRange}
-          isPanelBusy={isPanelBusy}
-          onLogDiscovery={onLogDiscovery}
-        />
+        <ExpandedPanelContent content={expandedContentProps} />
       )}
     </Animated.View>
   );

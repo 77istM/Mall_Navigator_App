@@ -6,29 +6,16 @@ import MotionSection from './MotionSection';
 import ProofSection from './ProofSection';
 import LogActionSection from './LogActionSection';
 
-const ExpandedPanelContent = ({
-  selectedCache,
-  distanceToCache,
-  hasDirection,
-  turnDelta,
-  directionStatusText,
-  calibrationHelpText,
-  heading,
-  targetBearing,
-  motionStatusText,
-  motionMagnitudeText,
-  stepCounterStatusText,
-  motionAdvisoryText,
-  capturedImage,
-  captureError,
-  isCapturing,
-  isLogging,
-  onCaptureProof,
-  onClearProof,
-  isWithinRange,
-  isPanelBusy,
-  onLogDiscovery,
-}) => {
+const ExpandedPanelContent = ({ content }) => {
+  const {
+    selectedCache,
+    distanceToCache,
+    direction,
+    motion,
+    proof,
+    action,
+  } = content;
+
   return (
     <>
       <Text style={styles.panelTitle}>Target: {selectedCache.CacheName}</Text>
@@ -37,36 +24,36 @@ const ExpandedPanelContent = ({
       </Text>
 
       <DirectionSection
-        hasDirection={hasDirection}
-        turnDelta={turnDelta}
-        directionStatusText={directionStatusText}
-        calibrationHelpText={calibrationHelpText}
-        heading={heading}
-        targetBearing={targetBearing}
+        hasDirection={direction.hasDirection}
+        turnDelta={direction.turnDelta}
+        directionStatusText={direction.directionStatusText}
+        calibrationHelpText={direction.calibrationHelpText}
+        heading={direction.heading}
+        targetBearing={direction.targetBearing}
       />
 
       <MotionSection
-        motionStatusText={motionStatusText}
-        motionMagnitudeText={motionMagnitudeText}
-        stepCounterStatusText={stepCounterStatusText}
-        motionAdvisoryText={motionAdvisoryText}
+        motionStatusText={motion.motionStatusText}
+        motionMagnitudeText={motion.motionMagnitudeText}
+        stepCounterStatusText={motion.stepCounterStatusText}
+        motionAdvisoryText={motion.motionAdvisoryText}
       />
 
       <ProofSection
-        capturedImage={capturedImage}
-        captureError={captureError}
-        isCapturing={isCapturing}
-        isLogging={isLogging}
-        onCaptureProof={onCaptureProof}
-        onClearProof={onClearProof}
+        capturedImage={proof.capturedImage}
+        captureError={proof.captureError}
+        isCapturing={proof.isCapturing}
+        isLogging={proof.isLogging}
+        onCaptureProof={proof.onCaptureProof}
+        onClearProof={proof.onClearProof}
       />
 
       <LogActionSection
-        isWithinRange={isWithinRange}
-        isPanelBusy={isPanelBusy}
-        isLogging={isLogging}
-        isCapturing={isCapturing}
-        onLogDiscovery={onLogDiscovery}
+        isWithinRange={action.isWithinRange}
+        isPanelBusy={action.isPanelBusy}
+        isLogging={action.isLogging}
+        isCapturing={action.isCapturing}
+        onLogDiscovery={action.onLogDiscovery}
       />
     </>
   );
