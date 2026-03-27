@@ -14,6 +14,9 @@ export const TargetPanel = ({
   sensorError,
   motionState,
   motionMagnitude,
+  sessionSteps,
+  isStepCounterAvailable,
+  stepError,
   targetBearing,
   turnDelta,
   directionHint,
@@ -68,6 +71,12 @@ export const TargetPanel = ({
   const motionMagnitudeText = Number.isFinite(motionMagnitude)
     ? `Intensity: ${motionMagnitude.toFixed(3)}`
     : 'Intensity: -';
+  const hasSessionSteps = Number.isFinite(sessionSteps);
+  const stepCounterStatusText = stepError
+    ? stepError
+    : isStepCounterAvailable
+      ? `Session steps: ${hasSessionSteps ? sessionSteps : 0}`
+      : 'Step counter unavailable.';
   const calibrationHelpText =
     !hasDirection && !sensorError
       ? 'Move your phone in a figure-8 motion to calibrate compass.'
@@ -107,6 +116,7 @@ export const TargetPanel = ({
         <Text style={styles.motionTitle}>Motion Sensor</Text>
         <Text style={styles.motionStatus}>{motionStatusText}</Text>
         <Text style={styles.motionMeta}>{motionMagnitudeText}</Text>
+        <Text style={styles.motionMeta}>{stepCounterStatusText}</Text>
         {motionAdvisoryText ? <Text style={styles.motionAdvisory}>{motionAdvisoryText}</Text> : null}
       </View>
 
