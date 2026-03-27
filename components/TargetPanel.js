@@ -47,6 +47,7 @@ export const TargetPanel = ({
   const [panelHeight, setPanelHeight] = useState(0);
   const panelTranslateY = useRef(new Animated.Value(0)).current;
   const dragStartOffsetRef = useRef(0);
+  const activeAnimationRef = useRef(null);
 
   useEffect(() => {
     if (!motionState) {
@@ -64,12 +65,23 @@ export const TargetPanel = ({
   const isPanelCollapsed = !!isCollapsed;
 
   const animatePanelTo = (toValue) => {
-    Animated.timing(panelTranslateY, {
+    if (activeAnimationRef.current) {
+      activeAnimationRef.current.stop();
+    }
+
+    const nextAnimation = Animated.timing(panelTranslateY, {
       toValue,
       duration: 220,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
-    }).start();
+    });
+
+    activeAnimationRef.current = nextAnimation;
+    nextAnimation.start(({ finished }) => {
+      if (finished) {
+        activeAnimationRef.current = null;
+      }
+    });
   };
 
   useEffect(() => {
@@ -79,7 +91,13 @@ export const TargetPanel = ({
   const panelPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_event, gestureState) => Math.abs(gestureState.dy) > 6,
+      onMoveShouldSetPanResponder: (_event, gestureState) => {
+        if (collapsedOffset <= 0) {
+          return false;
+        }
+
+        return Math.abs(gestureState.dy) > 6;
+      },
       onPanResponderGrant: () => {
         panelTranslateY.stopAnimation((currentValue) => {
           dragStartOffsetRef.current = currentValue;
@@ -94,10 +112,15 @@ export const TargetPanel = ({
         panelTranslateY.setValue(nextOffset);
       },
       onPanResponderRelease: (_event, gestureState) => {
+        if (collapsedOffset <= 0) {
+          return;
+        }
+
         const releaseOffset = Math.min(
           Math.max(dragStartOffsetRef.current + gestureState.dy, 0),
           collapsedOffset,
         );
+        // Favor intentional flings before distance thresholds when deciding snap direction.
         const velocityThreshold = 0.45;
         const shouldCollapse = gestureState.vy > velocityThreshold
           ? true
@@ -108,22 +131,22 @@ export const TargetPanel = ({
 
         animatePanelTo(targetOffset);
 
-        if (shouldCollapse !== isPanelCollapsed) {
-          onToggleCollapse?.();
-        }
+        onToggleCollapse?.(shouldCollapse);
       },
       onPanResponderTerminate: (_event, gestureState) => {
+        if (collapsedOffset <= 0) {
+          return;
+        }
+
         const terminateOffset = Math.min(
           Math.max(dragStartOffsetRef.current + gestureState.dy, 0),
           collapsedOffset,
         );
+        // If gesture is interrupted, snap to the nearest state using midpoint distance.
         const shouldCollapse = terminateOffset > collapsedOffset * 0.5;
 
         animatePanelTo(shouldCollapse ? collapsedOffset : 0);
-
-        if (shouldCollapse !== isPanelCollapsed) {
-          onToggleCollapse?.();
-        }
+        onToggleCollapse?.(shouldCollapse);
       },
     }),
   ).current;
@@ -188,7 +211,7 @@ export const TargetPanel = ({
           accessibilityRole="button"
           accessibilityLabel={isPanelCollapsed ? 'Expand cache details' : 'Collapse cache details'}
           style={styles.panelToggleButton}
-          onPress={() => onToggleCollapse?.()}
+          onPress={() => onToggleCollapse?.(!isPanelCollapsed)}
         >
           <Text style={styles.panelToggleText}>{isPanelCollapsed ? 'Expand' : 'Collapse'}</Text>
         </TouchableOpacity>

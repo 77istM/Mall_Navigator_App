@@ -46,6 +46,15 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
   } = useCameraProofCapture();
   const lastSelectedCacheIdRef = useRef(null);
   const [isTargetPanelCollapsed, setIsTargetPanelCollapsed] = useState(false);
+  const handleSetTargetPanelCollapsed = (nextCollapsed) => {
+    setIsTargetPanelCollapsed((previous) => {
+      if (typeof nextCollapsed === 'boolean') {
+        return nextCollapsed;
+      }
+
+      return !previous;
+    });
+  };
 
   useEffect(() => {
     const currentCacheId = selectedCache?.CacheID ?? null;
@@ -137,7 +146,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           isCapturing={isCapturing}
           captureError={captureError}
           isCollapsed={isTargetPanelCollapsed}
-          onToggleCollapse={() => setIsTargetPanelCollapsed((previous) => !previous)}
+          onToggleCollapse={handleSetTargetPanelCollapsed}
           onCaptureProof={capturePhotoProof}
           onClearProof={clearCapturedPhotoProof}
           onLogDiscovery={() => handleLogDiscovery(capturedImage?.uri || null)}
