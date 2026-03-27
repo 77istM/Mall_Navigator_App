@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { MOTION_GUIDANCE_SETTINGS } from '../constants/appConstants';
 
-const COLLAPSED_PANEL_VISIBLE_HEIGHT = 88;
+const COLLAPSED_PANEL_VISIBLE_HEIGHT = 132;
 
 /**
  * TargetPanel Component
@@ -166,6 +166,9 @@ export const TargetPanel = ({
     !hasDirection && !sensorError
       ? 'Move your phone in a figure-8 motion to calibrate compass.'
       : null;
+  const collapsedStatusText = isWithinRange
+    ? 'Within discovery range. Slide up for details.'
+    : 'Slide up to view guidance and cache actions.';
 
   return (
     <Animated.View
@@ -191,98 +194,110 @@ export const TargetPanel = ({
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.panelTitle}>Target: {selectedCache.CacheName}</Text>
-      <Text style={styles.panelDistance}>
-        Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
-      </Text>
-
-      <View style={styles.directionContainer}>
-        <View
-          style={[
-            styles.arrowContainer,
-            hasDirection ? { transform: [{ rotate: `${turnDelta}deg` }] } : null,
-          ]}
-        >
-          <Text style={styles.arrowText}>^</Text>
+      {isPanelCollapsed ? (
+        <View style={styles.collapsedSummaryContainer}>
+          <Text style={styles.panelTitle} numberOfLines={1}>Target: {selectedCache.CacheName}</Text>
+          <Text style={styles.collapsedDistanceText} numberOfLines={1}>
+            Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
+          </Text>
+          <Text style={styles.collapsedHintText} numberOfLines={1}>{collapsedStatusText}</Text>
         </View>
-        <View style={styles.directionTextContainer}>
-          <Text style={styles.directionTitle}>Compass Guidance</Text>
-          <Text style={styles.directionHint}>{directionStatusText}</Text>
-          {calibrationHelpText ? (
-            <Text style={styles.directionMeta}>{calibrationHelpText}</Text>
-          ) : null}
-          {hasDirection ? (
-            <Text style={styles.directionMeta}>
-              Heading: {heading}° | Target: {targetBearing}°
+      ) : (
+        <>
+          <Text style={styles.panelTitle}>Target: {selectedCache.CacheName}</Text>
+          <Text style={styles.panelDistance}>
+            Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
+          </Text>
+
+          <View style={styles.directionContainer}>
+            <View
+              style={[
+                styles.arrowContainer,
+                hasDirection ? { transform: [{ rotate: `${turnDelta}deg` }] } : null,
+              ]}
+            >
+              <Text style={styles.arrowText}>^</Text>
+            </View>
+            <View style={styles.directionTextContainer}>
+              <Text style={styles.directionTitle}>Compass Guidance</Text>
+              <Text style={styles.directionHint}>{directionStatusText}</Text>
+              {calibrationHelpText ? (
+                <Text style={styles.directionMeta}>{calibrationHelpText}</Text>
+              ) : null}
+              {hasDirection ? (
+                <Text style={styles.directionMeta}>
+                  Heading: {heading}° | Target: {targetBearing}°
+                </Text>
+              ) : null}
+            </View>
+          </View>
+
+          <View style={styles.motionContainer}>
+            <Text style={styles.motionTitle}>Motion Sensor</Text>
+            <Text style={styles.motionStatus}>{motionStatusText}</Text>
+            <Text style={styles.motionMeta}>{motionMagnitudeText}</Text>
+            <Text style={styles.motionMeta}>{stepCounterStatusText}</Text>
+            {motionAdvisoryText ? <Text style={styles.motionAdvisory}>{motionAdvisoryText}</Text> : null}
+          </View>
+
+          <View style={styles.proofContainer}>
+            <Text style={styles.proofTitle}>Camera Proof (Optional)</Text>
+            <Text style={styles.proofSubtitle}>
+              Capture a photo as extra evidence before logging your discovery.
             </Text>
-          ) : null}
-        </View>
-      </View>
 
-      <View style={styles.motionContainer}>
-        <Text style={styles.motionTitle}>Motion Sensor</Text>
-        <Text style={styles.motionStatus}>{motionStatusText}</Text>
-        <Text style={styles.motionMeta}>{motionMagnitudeText}</Text>
-        <Text style={styles.motionMeta}>{stepCounterStatusText}</Text>
-        {motionAdvisoryText ? <Text style={styles.motionAdvisory}>{motionAdvisoryText}</Text> : null}
-      </View>
+            {capturedImage?.uri ? (
+              <Image source={{ uri: capturedImage.uri }} style={styles.proofPreview} resizeMode="cover" />
+            ) : null}
 
-      <View style={styles.proofContainer}>
-        <Text style={styles.proofTitle}>Camera Proof (Optional)</Text>
-        <Text style={styles.proofSubtitle}>
-          Capture a photo as extra evidence before logging your discovery.
-        </Text>
+            {captureError ? <Text style={styles.proofErrorText}>{captureError}</Text> : null}
 
-        {capturedImage?.uri ? (
-          <Image source={{ uri: capturedImage.uri }} style={styles.proofPreview} resizeMode="cover" />
-        ) : null}
+            <View style={styles.proofButtonRow}>
+              <TouchableOpacity
+                style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
+                disabled={isCapturing || isLogging}
+                onPress={() => onCaptureProof?.()}
+              >
+                {isCapturing ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.captureButtonText}>
+                    {capturedImage?.uri ? 'Retake Proof Photo' : 'Capture Proof Photo'}
+                  </Text>
+                )}
+              </TouchableOpacity>
 
-        {captureError ? <Text style={styles.proofErrorText}>{captureError}</Text> : null}
+              {capturedImage?.uri ? (
+                <TouchableOpacity
+                  style={styles.clearProofButton}
+                  disabled={isCapturing || isLogging}
+                  onPress={() => onClearProof?.()}
+                >
+                  <Text style={styles.clearProofButtonText}>Remove</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          </View>
 
-        <View style={styles.proofButtonRow}>
           <TouchableOpacity
-            style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
-            disabled={isCapturing || isLogging}
-            onPress={() => onCaptureProof?.()}
+            style={[styles.logButton, !isWithinRange && styles.logButtonDisabled]}
+            disabled={!isWithinRange || isPanelBusy}
+            onPress={() => onLogDiscovery?.()}
           >
-            {isCapturing ? (
+            {isLogging ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.captureButtonText}>
-                {capturedImage?.uri ? 'Retake Proof Photo' : 'Capture Proof Photo'}
+              <Text style={styles.logButtonText}>
+                {isCapturing
+                  ? 'Capturing Photo...'
+                  : isWithinRange
+                    ? 'Log Discovery!'
+                    : 'Get Closer to Log'}
               </Text>
             )}
           </TouchableOpacity>
-
-          {capturedImage?.uri ? (
-            <TouchableOpacity
-              style={styles.clearProofButton}
-              disabled={isCapturing || isLogging}
-              onPress={() => onClearProof?.()}
-            >
-              <Text style={styles.clearProofButtonText}>Remove</Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      </View>
-      
-      <TouchableOpacity 
-        style={[styles.logButton, !isWithinRange && styles.logButtonDisabled]}
-        disabled={!isWithinRange || isPanelBusy}
-        onPress={() => onLogDiscovery?.()}
-      >
-        {isLogging ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.logButtonText}>
-            {isCapturing
-              ? 'Capturing Photo...'
-              : isWithinRange
-                ? 'Log Discovery!'
-                : 'Get Closer to Log'}
-          </Text>
-        )}
-      </TouchableOpacity>
+        </>
+      )}
     </Animated.View>
   );
 };
@@ -304,6 +319,9 @@ const styles = StyleSheet.create({
   },
   panelHandleRow: {
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 52,
+    paddingVertical: 6,
     marginBottom: 8,
   },
   panelHandle: {
@@ -325,6 +343,20 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
   panelTitle: { fontSize: 18, fontWeight: 'bold' },
+  collapsedSummaryContainer: {
+    paddingBottom: 4,
+  },
+  collapsedDistanceText: {
+    fontSize: 15,
+    color: '#4b5563',
+    marginTop: 4,
+  },
+  collapsedHintText: {
+    fontSize: 12,
+    color: '#2563eb',
+    marginTop: 4,
+    fontWeight: '600',
+  },
   panelDistance: { fontSize: 16, marginVertical: 10, color: '#555' },
   directionContainer: {
     flexDirection: 'row',
