@@ -12,9 +12,15 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMotionUsageDescription": "Allow GeoQuest to access motion activity to track optional step counter progress during events."
+      }
     },
     "android": {
+      "permissions": [
+        "ACTIVITY_RECOGNITION"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
