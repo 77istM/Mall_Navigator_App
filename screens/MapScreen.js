@@ -1,5 +1,5 @@
 // screens/MapScreen.js
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
@@ -45,6 +45,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     clearCapturedPhotoProof,
   } = useCameraProofCapture();
   const lastSelectedCacheIdRef = useRef(null);
+  const [isTargetPanelCollapsed, setIsTargetPanelCollapsed] = useState(false);
 
   useEffect(() => {
     const currentCacheId = selectedCache?.CacheID ?? null;
@@ -52,12 +53,14 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     if (lastSelectedCacheIdRef.current !== currentCacheId) {
       clearCapturedPhotoProof();
       lastSelectedCacheIdRef.current = currentCacheId;
+      setIsTargetPanelCollapsed(false);
     }
   }, [selectedCache, clearCapturedPhotoProof]);
 
   useEffect(() => {
     clearCapturedPhotoProof();
     lastSelectedCacheIdRef.current = null;
+    setIsTargetPanelCollapsed(false);
   }, [activeEventId, clearCapturedPhotoProof]);
 
   if (loading || !location) {
@@ -133,6 +136,8 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           capturedImage={capturedImage}
           isCapturing={isCapturing}
           captureError={captureError}
+          isCollapsed={isTargetPanelCollapsed}
+          onToggleCollapse={() => setIsTargetPanelCollapsed((previous) => !previous)}
           onCaptureProof={capturePhotoProof}
           onClearProof={clearCapturedPhotoProof}
           onLogDiscovery={() => handleLogDiscovery(capturedImage?.uri || null)}

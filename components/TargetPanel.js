@@ -25,6 +25,8 @@ export const TargetPanel = ({
   capturedImage,
   isCapturing,
   captureError,
+  isCollapsed,
+  onToggleCollapse,
   onCaptureProof,
   onClearProof,
   onLogDiscovery,
