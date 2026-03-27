@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Image } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Image, Animated, Easing } from 'react-native';
 import { MOTION_GUIDANCE_SETTINGS } from '../constants/appConstants';
+
+const COLLAPSED_PANEL_VISIBLE_HEIGHT = 88;
 
 /**
  * TargetPanel Component
@@ -32,6 +34,8 @@ export const TargetPanel = ({
   onLogDiscovery,
 }) => {
   const [stableMotionState, setStableMotionState] = useState(motionState || 'unknown');
+  const [panelHeight, setPanelHeight] = useState(0);
+  const panelTranslateY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!motionState) {
@@ -44,6 +48,17 @@ export const TargetPanel = ({
 
     return () => clearTimeout(timer);
   }, [motionState]);
+
+  const collapsedOffset = Math.max(panelHeight - COLLAPSED_PANEL_VISIBLE_HEIGHT, 0);
+
+  useEffect(() => {
+    Animated.timing(panelTranslateY, {
+      toValue: isCollapsed ? collapsedOffset : 0,
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [collapsedOffset, isCollapsed, panelTranslateY]);
 
   if (!selectedCache) {
     return null;
@@ -85,7 +100,16 @@ export const TargetPanel = ({
       : null;
 
   return (
-    <View style={styles.targetPanel}>
+    <Animated.View
+      style={[styles.targetPanel, { transform: [{ translateY: panelTranslateY }] }]}
+      onLayout={(event) => {
+        const measuredHeight = event.nativeEvent.layout.height;
+
+        if (measuredHeight && measuredHeight !== panelHeight) {
+          setPanelHeight(measuredHeight);
+        }
+      }}
+    >
       <Text style={styles.panelTitle}>Target: {selectedCache.CacheName}</Text>
       <Text style={styles.panelDistance}>
         Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
@@ -178,7 +202,7 @@ export const TargetPanel = ({
           </Text>
         )}
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 };
 
