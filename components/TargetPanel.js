@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,226 @@ import {
 import { MOTION_GUIDANCE_SETTINGS } from '../constants/appConstants';
 
 const COLLAPSED_PANEL_VISIBLE_HEIGHT = 132;
+const PANEL_DRAG_START_THRESHOLD = 6;
+const PANEL_SNAP_VELOCITY_THRESHOLD = 0.45;
+
+const clampPanelOffset = (value, collapsedOffset) => {
+  return Math.min(Math.max(value, 0), collapsedOffset);
+};
+
+const shouldCollapseFromRelease = (releaseOffset, velocityY, collapsedOffset) => {
+  if (velocityY > PANEL_SNAP_VELOCITY_THRESHOLD) {
+    return true;
+  }
+
+  if (velocityY < -PANEL_SNAP_VELOCITY_THRESHOLD) {
+    return false;
+  }
+
+  return releaseOffset > collapsedOffset * 0.5;
+};
+
+const shouldCollapseFromOffset = (offset, collapsedOffset) => {
+  return offset > collapsedOffset * 0.5;
+};
+
+const PanelHandleSection = ({ isPanelCollapsed, onToggleCollapse }) => {
+  return (
+    <View style={styles.panelHandleRow}>
+      <View style={styles.panelHandle} />
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={isPanelCollapsed ? 'Expand cache details' : 'Collapse cache details'}
+        style={styles.panelToggleButton}
+        onPress={() => onToggleCollapse?.(!isPanelCollapsed)}
+      >
+        <Text style={styles.panelToggleText}>{isPanelCollapsed ? 'Expand' : 'Collapse'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const CollapsedSummarySection = ({ selectedCache, distanceToCache, collapsedStatusText }) => {
+  return (
+    <View style={styles.collapsedSummaryContainer}>
+      <Text style={styles.panelTitle} numberOfLines={1}>Target: {selectedCache.CacheName}</Text>
+      <Text style={styles.collapsedDistanceText} numberOfLines={1}>
+        Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
+      </Text>
+      <Text style={styles.collapsedHintText} numberOfLines={1}>{collapsedStatusText}</Text>
+    </View>
+  );
+};
+
+const DirectionSection = ({ hasDirection, turnDelta, directionStatusText, calibrationHelpText, heading, targetBearing }) => {
+  return (
+    <View style={styles.directionContainer}>
+      <View
+        style={[
+          styles.arrowContainer,
+          hasDirection ? { transform: [{ rotate: `${turnDelta}deg` }] } : null,
+        ]}
+      >
+        <Text style={styles.arrowText}>^</Text>
+      </View>
+      <View style={styles.directionTextContainer}>
+        <Text style={styles.directionTitle}>Compass Guidance</Text>
+        <Text style={styles.directionHint}>{directionStatusText}</Text>
+        {calibrationHelpText ? (
+          <Text style={styles.directionMeta}>{calibrationHelpText}</Text>
+        ) : null}
+        {hasDirection ? (
+          <Text style={styles.directionMeta}>
+            Heading: {heading}° | Target: {targetBearing}°
+          </Text>
+        ) : null}
+      </View>
+    </View>
+  );
+};
+
+const MotionSection = ({ motionStatusText, motionMagnitudeText, stepCounterStatusText, motionAdvisoryText }) => {
+  return (
+    <View style={styles.motionContainer}>
+      <Text style={styles.motionTitle}>Motion Sensor</Text>
+      <Text style={styles.motionStatus}>{motionStatusText}</Text>
+      <Text style={styles.motionMeta}>{motionMagnitudeText}</Text>
+      <Text style={styles.motionMeta}>{stepCounterStatusText}</Text>
+      {motionAdvisoryText ? <Text style={styles.motionAdvisory}>{motionAdvisoryText}</Text> : null}
+    </View>
+  );
+};
+
+const ProofSection = ({ capturedImage, captureError, isCapturing, isLogging, onCaptureProof, onClearProof }) => {
+  return (
+    <View style={styles.proofContainer}>
+      <Text style={styles.proofTitle}>Camera Proof (Optional)</Text>
+      <Text style={styles.proofSubtitle}>
+        Capture a photo as extra evidence before logging your discovery.
+      </Text>
+
+      {capturedImage?.uri ? (
+        <Image source={{ uri: capturedImage.uri }} style={styles.proofPreview} resizeMode="cover" />
+      ) : null}
+
+      {captureError ? <Text style={styles.proofErrorText}>{captureError}</Text> : null}
+
+      <View style={styles.proofButtonRow}>
+        <TouchableOpacity
+          style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
+          disabled={isCapturing || isLogging}
+          onPress={() => onCaptureProof?.()}
+        >
+          {isCapturing ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.captureButtonText}>
+              {capturedImage?.uri ? 'Retake Proof Photo' : 'Capture Proof Photo'}
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {capturedImage?.uri ? (
+          <TouchableOpacity
+            style={styles.clearProofButton}
+            disabled={isCapturing || isLogging}
+            onPress={() => onClearProof?.()}
+          >
+            <Text style={styles.clearProofButtonText}>Remove</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+    </View>
+  );
+};
+
+const LogActionSection = ({ isWithinRange, isPanelBusy, isLogging, isCapturing, onLogDiscovery }) => {
+  return (
+    <TouchableOpacity
+      style={[styles.logButton, !isWithinRange && styles.logButtonDisabled]}
+      disabled={!isWithinRange || isPanelBusy}
+      onPress={() => onLogDiscovery?.()}
+    >
+      {isLogging ? (
+        <ActivityIndicator color="#fff" />
+      ) : (
+        <Text style={styles.logButtonText}>
+          {isCapturing
+            ? 'Capturing Photo...'
+            : isWithinRange
+              ? 'Log Discovery!'
+              : 'Get Closer to Log'}
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
+};
+
+const ExpandedPanelContent = ({
+  selectedCache,
+  distanceToCache,
+  hasDirection,
+  turnDelta,
+  directionStatusText,
+  calibrationHelpText,
+  heading,
+  targetBearing,
+  motionStatusText,
+  motionMagnitudeText,
+  stepCounterStatusText,
+  motionAdvisoryText,
+  capturedImage,
+  captureError,
+  isCapturing,
+  isLogging,
+  onCaptureProof,
+  onClearProof,
+  isWithinRange,
+  isPanelBusy,
+  onLogDiscovery,
+}) => {
+  return (
+    <>
+      <Text style={styles.panelTitle}>Target: {selectedCache.CacheName}</Text>
+      <Text style={styles.panelDistance}>
+        Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
+      </Text>
+
+      <DirectionSection
+        hasDirection={hasDirection}
+        turnDelta={turnDelta}
+        directionStatusText={directionStatusText}
+        calibrationHelpText={calibrationHelpText}
+        heading={heading}
+        targetBearing={targetBearing}
+      />
+
+      <MotionSection
+        motionStatusText={motionStatusText}
+        motionMagnitudeText={motionMagnitudeText}
+        stepCounterStatusText={stepCounterStatusText}
+        motionAdvisoryText={motionAdvisoryText}
+      />
+
+      <ProofSection
+        capturedImage={capturedImage}
+        captureError={captureError}
+        isCapturing={isCapturing}
+        isLogging={isLogging}
+        onCaptureProof={onCaptureProof}
+        onClearProof={onClearProof}
+      />
+
+      <LogActionSection
+        isWithinRange={isWithinRange}
+        isPanelBusy={isPanelBusy}
+        isLogging={isLogging}
+        isCapturing={isCapturing}
+        onLogDiscovery={onLogDiscovery}
+      />
+    </>
+  );
+};
 
 /**
  * TargetPanel Component
@@ -88,15 +308,15 @@ export const TargetPanel = ({
     animatePanelTo(isPanelCollapsed ? collapsedOffset : 0);
   }, [collapsedOffset, isPanelCollapsed, panelTranslateY]);
 
-  const panelPanResponder = useRef(
-    PanResponder.create({
+  const panelPanResponder = useMemo(() => {
+    return PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_event, gestureState) => {
         if (collapsedOffset <= 0) {
           return false;
         }
 
-        return Math.abs(gestureState.dy) > 6;
+        return Math.abs(gestureState.dy) > PANEL_DRAG_START_THRESHOLD;
       },
       onPanResponderGrant: () => {
         panelTranslateY.stopAnimation((currentValue) => {
@@ -104,8 +324,8 @@ export const TargetPanel = ({
         });
       },
       onPanResponderMove: (_event, gestureState) => {
-        const nextOffset = Math.min(
-          Math.max(dragStartOffsetRef.current + gestureState.dy, 0),
+        const nextOffset = clampPanelOffset(
+          dragStartOffsetRef.current + gestureState.dy,
           collapsedOffset,
         );
 
@@ -116,21 +336,18 @@ export const TargetPanel = ({
           return;
         }
 
-        const releaseOffset = Math.min(
-          Math.max(dragStartOffsetRef.current + gestureState.dy, 0),
+        const releaseOffset = clampPanelOffset(
+          dragStartOffsetRef.current + gestureState.dy,
           collapsedOffset,
         );
-        // Favor intentional flings before distance thresholds when deciding snap direction.
-        const velocityThreshold = 0.45;
-        const shouldCollapse = gestureState.vy > velocityThreshold
-          ? true
-          : gestureState.vy < -velocityThreshold
-            ? false
-            : releaseOffset > collapsedOffset * 0.5;
+        const shouldCollapse = shouldCollapseFromRelease(
+          releaseOffset,
+          gestureState.vy,
+          collapsedOffset,
+        );
         const targetOffset = shouldCollapse ? collapsedOffset : 0;
 
         animatePanelTo(targetOffset);
-
         onToggleCollapse?.(shouldCollapse);
       },
       onPanResponderTerminate: (_event, gestureState) => {
@@ -138,18 +355,17 @@ export const TargetPanel = ({
           return;
         }
 
-        const terminateOffset = Math.min(
-          Math.max(dragStartOffsetRef.current + gestureState.dy, 0),
+        const terminateOffset = clampPanelOffset(
+          dragStartOffsetRef.current + gestureState.dy,
           collapsedOffset,
         );
-        // If gesture is interrupted, snap to the nearest state using midpoint distance.
-        const shouldCollapse = terminateOffset > collapsedOffset * 0.5;
+        const shouldCollapse = shouldCollapseFromOffset(terminateOffset, collapsedOffset);
 
         animatePanelTo(shouldCollapse ? collapsedOffset : 0);
         onToggleCollapse?.(shouldCollapse);
       },
-    }),
-  ).current;
+    });
+  }, [collapsedOffset, onToggleCollapse, panelTranslateY]);
 
   if (!selectedCache) {
     return null;
@@ -205,121 +421,38 @@ export const TargetPanel = ({
         }
       }}
     >
-      <View style={styles.panelHandleRow}>
-        <View style={styles.panelHandle} />
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel={isPanelCollapsed ? 'Expand cache details' : 'Collapse cache details'}
-          style={styles.panelToggleButton}
-          onPress={() => onToggleCollapse?.(!isPanelCollapsed)}
-        >
-          <Text style={styles.panelToggleText}>{isPanelCollapsed ? 'Expand' : 'Collapse'}</Text>
-        </TouchableOpacity>
-      </View>
+      <PanelHandleSection isPanelCollapsed={isPanelCollapsed} onToggleCollapse={onToggleCollapse} />
 
       {isPanelCollapsed ? (
-        <View style={styles.collapsedSummaryContainer}>
-          <Text style={styles.panelTitle} numberOfLines={1}>Target: {selectedCache.CacheName}</Text>
-          <Text style={styles.collapsedDistanceText} numberOfLines={1}>
-            Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
-          </Text>
-          <Text style={styles.collapsedHintText} numberOfLines={1}>{collapsedStatusText}</Text>
-        </View>
+        <CollapsedSummarySection
+          selectedCache={selectedCache}
+          distanceToCache={distanceToCache}
+          collapsedStatusText={collapsedStatusText}
+        />
       ) : (
-        <>
-          <Text style={styles.panelTitle}>Target: {selectedCache.CacheName}</Text>
-          <Text style={styles.panelDistance}>
-            Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
-          </Text>
-
-          <View style={styles.directionContainer}>
-            <View
-              style={[
-                styles.arrowContainer,
-                hasDirection ? { transform: [{ rotate: `${turnDelta}deg` }] } : null,
-              ]}
-            >
-              <Text style={styles.arrowText}>^</Text>
-            </View>
-            <View style={styles.directionTextContainer}>
-              <Text style={styles.directionTitle}>Compass Guidance</Text>
-              <Text style={styles.directionHint}>{directionStatusText}</Text>
-              {calibrationHelpText ? (
-                <Text style={styles.directionMeta}>{calibrationHelpText}</Text>
-              ) : null}
-              {hasDirection ? (
-                <Text style={styles.directionMeta}>
-                  Heading: {heading}° | Target: {targetBearing}°
-                </Text>
-              ) : null}
-            </View>
-          </View>
-
-          <View style={styles.motionContainer}>
-            <Text style={styles.motionTitle}>Motion Sensor</Text>
-            <Text style={styles.motionStatus}>{motionStatusText}</Text>
-            <Text style={styles.motionMeta}>{motionMagnitudeText}</Text>
-            <Text style={styles.motionMeta}>{stepCounterStatusText}</Text>
-            {motionAdvisoryText ? <Text style={styles.motionAdvisory}>{motionAdvisoryText}</Text> : null}
-          </View>
-
-          <View style={styles.proofContainer}>
-            <Text style={styles.proofTitle}>Camera Proof (Optional)</Text>
-            <Text style={styles.proofSubtitle}>
-              Capture a photo as extra evidence before logging your discovery.
-            </Text>
-
-            {capturedImage?.uri ? (
-              <Image source={{ uri: capturedImage.uri }} style={styles.proofPreview} resizeMode="cover" />
-            ) : null}
-
-            {captureError ? <Text style={styles.proofErrorText}>{captureError}</Text> : null}
-
-            <View style={styles.proofButtonRow}>
-              <TouchableOpacity
-                style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
-                disabled={isCapturing || isLogging}
-                onPress={() => onCaptureProof?.()}
-              >
-                {isCapturing ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.captureButtonText}>
-                    {capturedImage?.uri ? 'Retake Proof Photo' : 'Capture Proof Photo'}
-                  </Text>
-                )}
-              </TouchableOpacity>
-
-              {capturedImage?.uri ? (
-                <TouchableOpacity
-                  style={styles.clearProofButton}
-                  disabled={isCapturing || isLogging}
-                  onPress={() => onClearProof?.()}
-                >
-                  <Text style={styles.clearProofButtonText}>Remove</Text>
-                </TouchableOpacity>
-              ) : null}
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.logButton, !isWithinRange && styles.logButtonDisabled]}
-            disabled={!isWithinRange || isPanelBusy}
-            onPress={() => onLogDiscovery?.()}
-          >
-            {isLogging ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.logButtonText}>
-                {isCapturing
-                  ? 'Capturing Photo...'
-                  : isWithinRange
-                    ? 'Log Discovery!'
-                    : 'Get Closer to Log'}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </>
+        <ExpandedPanelContent
+          selectedCache={selectedCache}
+          distanceToCache={distanceToCache}
+          hasDirection={hasDirection}
+          turnDelta={turnDelta}
+          directionStatusText={directionStatusText}
+          calibrationHelpText={calibrationHelpText}
+          heading={heading}
+          targetBearing={targetBearing}
+          motionStatusText={motionStatusText}
+          motionMagnitudeText={motionMagnitudeText}
+          stepCounterStatusText={stepCounterStatusText}
+          motionAdvisoryText={motionAdvisoryText}
+          capturedImage={capturedImage}
+          captureError={captureError}
+          isCapturing={isCapturing}
+          isLogging={isLogging}
+          onCaptureProof={onCaptureProof}
+          onClearProof={onClearProof}
+          isWithinRange={isWithinRange}
+          isPanelBusy={isPanelBusy}
+          onLogDiscovery={onLogDiscovery}
+        />
       )}
     </Animated.View>
   );
