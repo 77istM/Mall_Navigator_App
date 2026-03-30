@@ -35,7 +35,7 @@ export default function PrivateDashboardScreen({ navigation }) {
     if (eventMgmt.ownedEventId) {
       progressMgmt.loadProgress(eventMgmt.ownedEventId);
     }
-  }, [eventMgmt.ownedEventId, progressMgmt]);
+  }, [eventMgmt.ownedEventId, progressMgmt.loadProgress]);
 
   // Handle navigation to map
   const handleOpenEventMap = useCallback(() => {
