@@ -9,22 +9,28 @@ import {
 import { useEventManagement } from '../hooks/useEventManagement';
 import { useCacheCreation } from '../hooks/useCacheCreation';
 import { useProgressTracking } from '../hooks/useProgressTracking';
+import { useToast } from '../hooks/useToast';
 import { EVENT_TYPES } from '../PrivateMode/constants/PrivateModeConstants';
 import JoinEventCard from '../PrivateMode/components/JoinEventCard';
 import CreateEventCard from '../PrivateMode/components/CreateEventCard';
 import CreateCacheCard from '../PrivateMode/components/CreateCacheCard';
 import ParticipantProgressCard from '../PrivateMode/components/ParticipantProgressCard';
+import Toast from '../components/Toast';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function PrivateDashboardScreen({ navigation }) {
   // Hardcoded for demonstration; replace with auth user ID from state.
   const currentUserId = '1';
 
   // Custom hooks for better state management
+  const { toast, showToast, hideToast } = useToast();
+
   const eventMgmt = useEventManagement(
     currentUserId,
     useCallback((eventId, name) => {
       navigation.navigate('GlobalTabs', { eventId, eventName: name?.trim() || undefined });
-    }, [navigation])
+    }, [navigation]),
+    showToast
   );
 
   const cacheMgmt = useCacheCreation();
@@ -51,6 +57,14 @@ export default function PrivateDashboardScreen({ navigation }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={hideToast}
+      />
+      <LoadingSpinner visible={eventMgmt.isLoading} message="Processing..." />
+
       <Text style={styles.pageTitle}>Private Event Mode</Text>
       <Text style={styles.subtitle}>Families, Schools, Companies, University Activities</Text>
 
@@ -76,6 +90,7 @@ export default function PrivateDashboardScreen({ navigation }) {
         onDurationHoursChange={eventMgmt.setDurationHours}
         onCreateEvent={() => eventMgmt.handleCreateEvent(progressMgmt.loadProgress)}
         ownedEventId={eventMgmt.ownedEventId}
+        onToast={showToast}
       />
 
       <CreateCacheCard

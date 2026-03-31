@@ -11,7 +11,7 @@ import {
 } from '../PrivateMode/validation/PrivateModeValidation';
 import { EVENT_TYPES, DEFAULT_START_IN_HOURS, DEFAULT_DURATION_HOURS } from '../PrivateMode/constants/PrivateModeConstants';
 
-export const useEventManagement = (currentUserId, onNavigateToMap) => {
+export const useEventManagement = (currentUserId, onNavigateToMap, showToast) => {
   const [inviteCode, setInviteCode] = useState('');
   const [eventName, setEventName] = useState('');
   const [eventDescription, setEventDescription] = useState('');
@@ -19,6 +19,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
   const [startInHours, setStartInHours] = useState(DEFAULT_START_IN_HOURS);
   const [durationHours, setDurationHours] = useState(DEFAULT_DURATION_HOURS);
   const [ownedEventId, setOwnedEventId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const activeEventId = useMemo(() => {
     const trimmedInvite = inviteCode.trim();
@@ -33,24 +34,32 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     const inviteCodeError = validateInviteCode(inviteCode);
 
     if (inviteCodeError) {
+      if (showToast) showToast(inviteCodeError, 'error');
       return Alert.alert('Error', inviteCodeError);
     }
 
     const numericEventId = Number(inviteCode.trim());
 
+    setIsLoading(true);
     try {
       await joinPrivateEvent(currentUserId, numericEventId);
+      if (showToast) showToast('Joined event successfully!', 'success');
       Alert.alert('Success', 'Joined event successfully.');
       onNavigateToMap(numericEventId, eventName);
     } catch (error) {
-      Alert.alert('Error', error?.message || 'Failed to join event. Check the code and try again.');
+      const errorMsg = error?.message || 'Failed to join event. Check the code and try again.';
+      if (showToast) showToast(errorMsg, 'error');
+      Alert.alert('Error', errorMsg);
+    } finally {
+      setIsLoading(false);
     }
-  }, [inviteCode, currentUserId, eventName, onNavigateToMap]);
+  }, [inviteCode, currentUserId, eventName, onNavigateToMap, showToast]);
 
   const handleCreateEvent = useCallback(async (onProgressLoaded) => {
     const eventFormError = validateEventForm({ eventName, startInHours, durationHours });
 
     if (eventFormError) {
+      if (showToast) showToast(eventFormError, 'error');
       return Alert.alert('Error', eventFormError);
     }
 
@@ -59,6 +68,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     const eventStart = new Date(Date.now() + startOffset * 60 * 60 * 1000);
     const eventFinish = new Date(eventStart.getTime() + duration * 60 * 60 * 1000);
 
+    setIsLoading(true);
     try {
       const trimmedName = eventName.trim();
       const trimmedDescription = eventDescription.trim();
@@ -81,6 +91,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
         setOwnedEventId(normalizedEventId);
         setInviteCode(String(normalizedEventId));
         await onProgressLoaded(normalizedEventId);
+        if (showToast) showToast('Event created successfully!', 'success');
       }
 
       Alert.alert(
@@ -90,9 +101,13 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
           : 'Event created successfully, but no Event ID was returned by the API.'
       );
     } catch (error) {
-      Alert.alert('Error', error?.message || 'Failed to create event.');
+      const errorMsg = error?.message || 'Failed to create event.';
+      if (showToast) showToast(errorMsg, 'error');
+      Alert.alert('Error', errorMsg);
+    } finally {
+      setIsLoading(false);
     }
-  }, [eventName, eventDescription, eventType, startInHours, durationHours, currentUserId]);
+  }, [eventName, eventDescription, eventType, startInHours, durationHours, currentUserId, showToast]);
 
   return {
     // State
@@ -104,6 +119,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     durationHours,
     ownedEventId,
     activeEventId,
+    isLoading,
     // Setters
     setInviteCode,
     setEventName,

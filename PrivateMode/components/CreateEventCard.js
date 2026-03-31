@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import ShareInviteCode from '../../components/ShareInviteCode';
 
 export default function CreateEventCard({
   styles,
@@ -16,6 +17,7 @@ export default function CreateEventCard({
   onDurationHoursChange,
   onCreateEvent,
   ownedEventId,
+  onToast,
 }) {
   return (
     <View style={styles.card}>
@@ -71,7 +73,11 @@ export default function CreateEventCard({
         <Text style={styles.buttonText}>Create Private Event</Text>
       </TouchableOpacity>
 
-      {ownedEventId ? <Text style={styles.infoText}>Owner Invite Code: {ownedEventId}</Text> : null}
+      <ShareInviteCode
+        inviteCode={ownedEventId}
+        eventName={eventName}
+        onToast={onToast}
+      />
     </View>
   );
 }
