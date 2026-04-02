@@ -5,6 +5,8 @@ export const useProgressTracking = () => {
   const [progress, setProgress] = useState([]);
   const [progressLoading, setProgressLoading] = useState(false);
   const [stepMetadataByPlayerId, setStepMetadataByPlayerId] = useState({});
+  const [progressError, setProgressError] = useState(null);
+  const [lastProgressUpdatedAt, setLastProgressUpdatedAt] = useState(null);
 
   const mergeStepMetadata = useCallback((ranking, metadataMap) => {
     if (!Array.isArray(ranking) || ranking.length === 0) {
@@ -33,12 +35,15 @@ export const useProgressTracking = () => {
     }
 
     setProgressLoading(true);
+    setProgressError(null);
     try {
       const ranking = await fetchEventProgress(eventId);
       setProgress(mergeStepMetadata(ranking, stepMetadataByPlayerId));
+      setLastProgressUpdatedAt(new Date().toISOString());
     } catch (error) {
       console.warn('Failed to fetch event progress:', error?.message || error);
       setProgress([]);
+      setProgressError(error?.message || 'Unable to load participant progress right now.');
     } finally {
       setProgressLoading(false);
     }
@@ -69,6 +74,8 @@ export const useProgressTracking = () => {
     // State
     progress,
     progressLoading,
+    progressError,
+    lastProgressUpdatedAt,
     stepMetadataByPlayerId,
     // Handlers
     loadProgress,

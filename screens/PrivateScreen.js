@@ -112,6 +112,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         activeEventId={eventMgmt.activeEventId}
         progressLoading={progressMgmt.progressLoading}
         progress={progressMgmt.progress}
+        progressError={progressMgmt.progressError}
+        lastProgressUpdatedAt={progressMgmt.lastProgressUpdatedAt}
         onRefreshProgress={() => progressMgmt.refreshProgress(eventMgmt.activeEventId)}
       />
 
@@ -267,6 +269,26 @@ const styles = StyleSheet.create({
   mutedText: {
     color: '#6c757d',
   },
+  emptyStateTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#495057',
+    marginBottom: 4,
+  },
+  progressEmptyState: {
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    marginBottom: 10,
+  },
+  progressLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: 8,
+    marginBottom: 10,
+  },
   progressRow: {
     paddingVertical: 8,
     borderBottomWidth: 1,
@@ -279,5 +301,11 @@ const styles = StyleSheet.create({
   progressStats: {
     marginTop: 2,
     color: '#495057',
+  },
+  progressUpdatedAt: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#6c757d',
+    fontWeight: '600',
   },
 });
