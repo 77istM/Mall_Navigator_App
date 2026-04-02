@@ -193,14 +193,17 @@ export const TargetPanel = ({
       hasDirection,
       turnDelta,
       directionStatusText: directionStatus.text,
+      directionStatusTone: directionStatus.tone,
       calibrationHelpText,
       heading,
       targetBearing,
     },
     motion: {
       motionStatusText: motionStatus.text,
+      motionStatusTone: motionStatus.tone,
       motionMagnitudeText,
       stepCounterStatusText: stepCounterStatus.text,
+      stepCounterStatusTone: stepCounterStatus.tone,
       motionAdvisoryText,
     },
     proof: {
@@ -239,6 +242,7 @@ export const TargetPanel = ({
           selectedCache={selectedCache}
           distanceToCache={distanceToCache}
           collapsedStatusText={collapsedStatus.text}
+          collapsedStatusTone={collapsedStatus.tone}
         />
       ) : (
         <ExpandedPanelContent content={expandedContentProps} />

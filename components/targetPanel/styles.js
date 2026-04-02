@@ -44,6 +44,18 @@ const styles = StyleSheet.create({
   collapsedSummaryContainer: {
     paddingBottom: 4,
   },
+  collapsedSummaryContainer_info: {
+    backgroundColor: '#f5f8ff',
+  },
+  collapsedSummaryContainer_warning: {
+    backgroundColor: '#fffbeb',
+  },
+  collapsedSummaryContainer_success: {
+    backgroundColor: '#ecfdf5',
+  },
+  collapsedSummaryContainer_error: {
+    backgroundColor: '#fef2f2',
+  },
   collapsedDistanceText: {
     fontSize: 15,
     color: '#4b5563',
@@ -55,30 +67,68 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: '600',
   },
+  collapsedHintText_info: {
+    color: '#2563eb',
+  },
+  collapsedHintText_warning: {
+    color: '#b45309',
+  },
+  collapsedHintText_success: {
+    color: '#166534',
+  },
+  collapsedHintText_error: {
+    color: '#b91c1c',
+  },
   panelDistance: { fontSize: 16, marginVertical: 10, color: '#555' },
   directionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f8ff',
     borderRadius: 10,
     padding: 10,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#dbeafe',
+    backgroundColor: '#f5f8ff',
+  },
+  directionContainer_info: {
+    backgroundColor: '#f5f8ff',
+    borderColor: '#dbeafe',
+  },
+  directionContainer_warning: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+  },
+  directionContainer_success: {
+    backgroundColor: '#ecfdf5',
+    borderColor: '#bbf7d0',
+  },
+  directionContainer_error: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
   },
   arrowContainer: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#e6eeff',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
+    backgroundColor: '#e6eeff',
   },
+  arrowContainer_info: { backgroundColor: '#e6eeff' },
+  arrowContainer_warning: { backgroundColor: '#fef3c7' },
+  arrowContainer_success: { backgroundColor: '#dcfce7' },
+  arrowContainer_error: { backgroundColor: '#fee2e2' },
   arrowText: {
     fontSize: 26,
     color: '#1e5aa8',
     fontWeight: 'bold',
     lineHeight: 28,
   },
+  arrowText_info: { color: '#1e5aa8' },
+  arrowText_warning: { color: '#b45309' },
+  arrowText_success: { color: '#166534' },
+  arrowText_error: { color: '#b91c1c' },
   directionTextContainer: {
     flex: 1,
   },
@@ -99,10 +149,28 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   motionContainer: {
-    backgroundColor: '#f6f7f9',
     borderRadius: 10,
     padding: 10,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    backgroundColor: '#f6f7f9',
+  },
+  motionContainer_info: {
+    backgroundColor: '#f6f7f9',
+    borderColor: '#e5e7eb',
+  },
+  motionContainer_warning: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+  },
+  motionContainer_success: {
+    backgroundColor: '#ecfdf5',
+    borderColor: '#bbf7d0',
+  },
+  motionContainer_error: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
   },
   motionTitle: {
     fontSize: 13,
@@ -110,6 +178,27 @@ const styles = StyleSheet.create({
     color: '#334155',
     marginBottom: 2,
   },
+  statusPill: {
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 999,
+    marginTop: 6,
+    marginBottom: 6,
+  },
+  statusPill_info: { backgroundColor: '#dbeafe' },
+  statusPill_warning: { backgroundColor: '#fde68a' },
+  statusPill_success: { backgroundColor: '#bbf7d0' },
+  statusPill_error: { backgroundColor: '#fecaca' },
+  statusPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  statusPillText_info: { color: '#1d4ed8' },
+  statusPillText_warning: { color: '#92400e' },
+  statusPillText_success: { color: '#166534' },
+  statusPillText_error: { color: '#991b1b' },
   motionStatus: {
     fontSize: 14,
     color: '#111827',
@@ -128,16 +217,39 @@ const styles = StyleSheet.create({
   },
   proofContainer: {
     marginBottom: 12,
-    backgroundColor: '#f9fafb',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     padding: 10,
+    backgroundColor: '#f9fafb',
+    borderColor: '#e5e7eb',
+  },
+  proofContainer_info: {
+    backgroundColor: '#f9fafb',
+    borderColor: '#e5e7eb',
+  },
+  proofContainer_warning: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+  },
+  proofContainer_success: {
+    backgroundColor: '#ecfdf5',
+    borderColor: '#bbf7d0',
+  },
+  proofContainer_error: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
   },
   proofTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
+  },
+  proofBusyText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1d4ed8',
+    marginTop: 6,
+    marginBottom: 8,
   },
   proofSubtitle: {
     fontSize: 12,
@@ -195,9 +307,26 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#28a745',
   },
-  logButtonDisabled: { backgroundColor: '#cccccc' },
+  logButton_info: { backgroundColor: '#28a745', borderColor: '#28a745' },
+  logButton_warning: { backgroundColor: '#d97706', borderColor: '#d97706' },
+  logButton_success: { backgroundColor: '#059669', borderColor: '#059669' },
+  logButton_error: { backgroundColor: '#dc2626', borderColor: '#dc2626' },
+  logButtonDisabled: { backgroundColor: '#cccccc', borderColor: '#cccccc' },
   logButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  logButtonMeta: {
+    marginBottom: 8,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  logButtonMeta_warning: { color: '#b45309' },
+  logButtonMeta_success: { color: '#166534' },
+  logButtonMeta_error: { color: '#b91c1c' },
+  logButtonMeta_info: { color: '#6b7280' },
 });
 
 export default styles;
