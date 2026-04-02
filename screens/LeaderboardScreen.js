@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { getAllFinds, getEventLeaderboard } from '../api';
+import StatusBanner from '../components/StatusBanner';
 
 export default function LeaderboardScreen({ route, eventId: eventIdProp }) {
   const activeEventId = eventIdProp ?? route?.params?.eventId ?? null;
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
 
   // Fetch data when the screen mounts
   useEffect(() => {
@@ -15,9 +18,11 @@ export default function LeaderboardScreen({ route, eventId: eventIdProp }) {
 
   const fetchLeaderboardData = async () => {
     try {
+      setErrorMessage(null);
       if (activeEventId) {
         const eventLeaderboard = await getEventLeaderboard(activeEventId);
         setLeaderboard(eventLeaderboard);
+        setLastUpdatedAt(new Date().toISOString());
         return;
       }
 
@@ -49,8 +54,10 @@ export default function LeaderboardScreen({ route, eventId: eventIdProp }) {
       );
 
       setLeaderboard(sortedLeaderboard);
+      setLastUpdatedAt(new Date().toISOString());
     } catch (error) {
       console.error("Failed to load leaderboard:", error);
+      setErrorMessage(error?.message || 'Unable to load leaderboard right now. Pull down to retry.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -63,11 +70,27 @@ export default function LeaderboardScreen({ route, eventId: eventIdProp }) {
     fetchLeaderboardData();
   };
 
+  const formatUpdatedAt = (isoValue) => {
+    if (!isoValue) {
+      return null;
+    }
+
+    const parsed = new Date(isoValue);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+
+    return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const updatedAtLabel = formatUpdatedAt(lastUpdatedAt);
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#28a745" />
-        <Text style={styles.loadingText}>Calculating Scores...</Text>
+        <Text style={styles.loadingText}>Calculating scores...</Text>
+        <Text style={styles.loadingSubtext}>Preparing rankings and point totals.</Text>
       </View>
     );
   }
@@ -95,7 +118,20 @@ export default function LeaderboardScreen({ route, eventId: eventIdProp }) {
         <Text style={styles.title}>
           {activeEventId ? `Event Leaderboard #${activeEventId}` : 'Global Leaderboard'}
         </Text>
+        {updatedAtLabel ? <Text style={styles.updatedAt}>Last updated at {updatedAtLabel}</Text> : null}
       </View>
+
+      {refreshing ? (
+        <View style={styles.refreshBannerWrap}>
+          <StatusBanner compact variant="info" message="Refreshing leaderboard..." />
+        </View>
+      ) : null}
+
+      {errorMessage ? (
+        <View style={styles.refreshBannerWrap}>
+          <StatusBanner compact variant="error" message={errorMessage} />
+        </View>
+      ) : null}
 
       <FlatList
         data={leaderboard}
@@ -107,7 +143,15 @@ export default function LeaderboardScreen({ route, eventId: eventIdProp }) {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#28a745']} />
         }
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No caches found yet. Be the first!</Text>
+          <View style={styles.emptyStateCard}>
+            <Text style={styles.emptyTitle}>No leaderboard entries yet</Text>
+            <Text style={styles.emptyText}>
+              {activeEventId
+                ? 'No participants have logged finds for this event yet.'
+                : 'No global finds have been logged yet.'}
+            </Text>
+            <Text style={styles.emptyHint}>Pull down to refresh after new activity.</Text>
+          </View>
         }
       />
     </View>
@@ -129,6 +173,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#6c757d',
+    fontWeight: '700',
+  },
+  loadingSubtext: {
+    marginTop: 6,
+    fontSize: 13,
+    color: '#6c757d',
   },
   header: {
     paddingTop: 60, // Safe area padding
@@ -148,8 +198,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#343a40',
   },
+  updatedAt: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#6c757d',
+    fontWeight: '600',
+  },
+  refreshBannerWrap: {
+    paddingHorizontal: 15,
+    paddingTop: 10,
+  },
   listContainer: {
     padding: 15,
+    flexGrow: 1,
   },
   row: {
     flexDirection: 'row',
@@ -194,10 +255,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#28a745',
   },
+  emptyStateCard: {
+    marginTop: 28,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    padding: 14,
+  },
+  emptyTitle: {
+    textAlign: 'center',
+    color: '#495057',
+    marginBottom: 6,
+    fontSize: 16,
+    fontWeight: '700',
+  },
   emptyText: {
     textAlign: 'center',
     color: '#6c757d',
-    marginTop: 30,
-    fontSize: 16,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  emptyHint: {
+    textAlign: 'center',
+    color: '#495057',
+    marginTop: 8,
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

@@ -13,6 +13,8 @@ export const useCacheCreation = () => {
   const [cacheLongitude, setCacheLongitude] = useState('');
   const [cachePoints, setCachePoints] = useState(DEFAULT_CACHE_POINTS);
   const [isMapPickerVisible, setIsMapPickerVisible] = useState(false);
+  const [isCreatingCache, setIsCreatingCache] = useState(false);
+  const [cacheStatus, setCacheStatus] = useState(null);
 
   const handleCreateCache = useCallback(async (ownedEventId) => {
     if (!ownedEventId) {
@@ -29,12 +31,15 @@ export const useCacheCreation = () => {
     });
 
     if (cacheFormError) {
-      return Alert.alert('Error', cacheFormError);
+      setCacheStatus({ tone: 'error', message: cacheFormError });
+      return;
     }
 
     const latitude = Number(cacheLatitude);
     const longitude = Number(cacheLongitude);
     const points = parsePositiveNumber(cachePoints);
+    setIsCreatingCache(true);
+    setCacheStatus({ tone: 'info', message: 'Creating cache...' });
 
     try {
       const trimmedCacheName = cacheName.trim();
@@ -52,10 +57,12 @@ export const useCacheCreation = () => {
         CachePoints: points,
       });
 
-      Alert.alert('Success', 'Cache created for this private event.');
+      setCacheStatus({ tone: 'success', message: 'Cache created for this private event.' });
       resetCacheForm();
     } catch (error) {
-      Alert.alert('Error', error?.message || 'Failed to create cache.');
+      setCacheStatus({ tone: 'error', message: error?.message || 'Failed to create cache.' });
+    } finally {
+      setIsCreatingCache(false);
     }
   }, [cacheName, cacheClue, cacheDescription, cacheImageURL, cacheLatitude, cacheLongitude, cachePoints]);
 
@@ -73,7 +80,56 @@ export const useCacheCreation = () => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setCacheLatitude(latitude.toFixed(6));
     setCacheLongitude(longitude.toFixed(6));
+    if (cacheStatus?.tone === 'error') {
+      setCacheStatus(null);
+    }
+  }, [cacheStatus]);
+
+  const handleCacheNameChange = useCallback((value) => {
+    setCacheName(value);
+    if (cacheStatus?.tone === 'error') {
+      setCacheStatus(null);
+    }
+  }, [cacheStatus]);
+
+  const handleCacheClueChange = useCallback((value) => {
+    setCacheClue(value);
+    if (cacheStatus?.tone === 'error') {
+      setCacheStatus(null);
+    }
+  }, [cacheStatus]);
+
+  const handleCacheDescriptionChange = useCallback((value) => {
+    setCacheDescription(value);
+    if (cacheStatus?.tone === 'error') {
+      setCacheStatus(null);
+    }
+  }, [cacheStatus]);
+
+  const handleCacheImageUrlChange = useCallback((value) => {
+    setCacheImageURL(value);
   }, []);
+
+  const handleCacheLatitudeChange = useCallback((value) => {
+    setCacheLatitude(value);
+    if (cacheStatus?.tone === 'error') {
+      setCacheStatus(null);
+    }
+  }, [cacheStatus]);
+
+  const handleCacheLongitudeChange = useCallback((value) => {
+    setCacheLongitude(value);
+    if (cacheStatus?.tone === 'error') {
+      setCacheStatus(null);
+    }
+  }, [cacheStatus]);
+
+  const handleCachePointsChange = useCallback((value) => {
+    setCachePoints(value);
+    if (cacheStatus?.tone === 'error') {
+      setCacheStatus(null);
+    }
+  }, [cacheStatus]);
 
   const getPickerRegion = useCallback(() => {
     const latitude = Number(cacheLatitude);
@@ -105,14 +161,16 @@ export const useCacheCreation = () => {
     cacheLongitude,
     cachePoints,
     isMapPickerVisible,
+    isCreatingCache,
+    cacheStatus,
     // Setters
-    setCacheName,
-    setCacheClue,
-    setCacheDescription,
-    setCacheImageURL,
-    setCacheLatitude,
-    setCacheLongitude,
-    setCachePoints,
+    setCacheName: handleCacheNameChange,
+    setCacheClue: handleCacheClueChange,
+    setCacheDescription: handleCacheDescriptionChange,
+    setCacheImageURL: handleCacheImageUrlChange,
+    setCacheLatitude: handleCacheLatitudeChange,
+    setCacheLongitude: handleCacheLongitudeChange,
+    setCachePoints: handleCachePointsChange,
     // Handlers
     handleCreateCache,
     handleMapPress,

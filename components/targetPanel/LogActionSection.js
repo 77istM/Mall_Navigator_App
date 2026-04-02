@@ -3,24 +3,40 @@ import { TouchableOpacity, ActivityIndicator, Text } from 'react-native';
 import styles from './styles';
 
 const LogActionSection = ({ isWithinRange, isPanelBusy, isLogging, isCapturing, onLogDiscovery }) => {
+  const buttonTone = isLogging ? 'success' : isCapturing ? 'warning' : isWithinRange ? 'info' : 'warning';
+  const actionMessage = isLogging
+    ? 'Logging discovery...'
+    : isCapturing
+      ? 'Waiting for photo proof...'
+      : isWithinRange
+        ? 'Ready to log'
+        : 'Move closer to activate logging';
+
   return (
-    <TouchableOpacity
-      style={[styles.logButton, !isWithinRange && styles.logButtonDisabled]}
-      disabled={!isWithinRange || isPanelBusy}
-      onPress={() => onLogDiscovery?.()}
-    >
-      {isLogging ? (
-        <ActivityIndicator color="#fff" />
-      ) : (
-        <Text style={styles.logButtonText}>
-          {isCapturing
-            ? 'Capturing Photo...'
-            : isWithinRange
-              ? 'Log Discovery!'
-              : 'Get Closer to Log'}
-        </Text>
-      )}
-    </TouchableOpacity>
+    <>
+      <Text style={[styles.logButtonMeta, styles[`logButtonMeta_${buttonTone}`]]}>{actionMessage}</Text>
+      <TouchableOpacity
+        style={[
+          styles.logButton,
+          styles[`logButton_${buttonTone}`],
+          !isWithinRange || isPanelBusy ? styles.logButtonDisabled : null,
+        ]}
+        disabled={!isWithinRange || isPanelBusy}
+        onPress={() => onLogDiscovery?.()}
+      >
+        {isLogging ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.logButtonText}>
+            {isCapturing
+              ? 'Capturing Photo...'
+              : isWithinRange
+                ? 'Log Discovery!'
+                : 'Get Closer to Log'}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </>
   );
 };
 

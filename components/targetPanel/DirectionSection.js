@@ -1,27 +1,31 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import styles from './styles';
+import StatusPill from './StatusPill';
 
 const DirectionSection = ({
   hasDirection,
   turnDelta,
   directionStatusText,
+  directionStatusTone,
   calibrationHelpText,
   heading,
   targetBearing,
 }) => {
   return (
-    <View style={styles.directionContainer}>
+    <View style={[styles.directionContainer, styles[`directionContainer_${directionStatusTone}`]]}>
       <View
         style={[
           styles.arrowContainer,
+          styles[`arrowContainer_${directionStatusTone}`],
           hasDirection ? { transform: [{ rotate: `${turnDelta}deg` }] } : null,
         ]}
       >
-        <Text style={styles.arrowText}>^</Text>
+        <Text style={[styles.arrowText, styles[`arrowText_${directionStatusTone}`]]}>^</Text>
       </View>
       <View style={styles.directionTextContainer}>
         <Text style={styles.directionTitle}>Compass Guidance</Text>
+        <StatusPill tone={directionStatusTone} label={hasDirection ? 'Aligned' : 'Needs attention'} />
         <Text style={styles.directionHint}>{directionStatusText}</Text>
         {calibrationHelpText ? (
           <Text style={styles.directionMeta}>{calibrationHelpText}</Text>

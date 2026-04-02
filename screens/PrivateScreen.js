@@ -59,6 +59,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         inviteCode={eventMgmt.inviteCode}
         onInviteCodeChange={eventMgmt.setInviteCode}
         onJoinEvent={eventMgmt.handleJoinEvent}
+        isJoiningEvent={eventMgmt.isJoiningEvent}
+        joinStatus={eventMgmt.joinStatus}
       />
 
       <CreateEventCard
@@ -76,6 +78,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         onDurationHoursChange={eventMgmt.setDurationHours}
         onCreateEvent={() => eventMgmt.handleCreateEvent(progressMgmt.loadProgress)}
         ownedEventId={eventMgmt.ownedEventId}
+        isCreatingEvent={eventMgmt.isCreatingEvent}
+        createEventStatus={eventMgmt.createEventStatus}
       />
 
       <CreateCacheCard
@@ -99,6 +103,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         cachePoints={cacheMgmt.cachePoints}
         onCachePointsChange={cacheMgmt.setCachePoints}
         onCreateCache={() => cacheMgmt.handleCreateCache(eventMgmt.ownedEventId)}
+        isCreatingCache={cacheMgmt.isCreatingCache}
+        cacheStatus={cacheMgmt.cacheStatus}
       />
 
       <ParticipantProgressCard
@@ -106,6 +112,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         activeEventId={eventMgmt.activeEventId}
         progressLoading={progressMgmt.progressLoading}
         progress={progressMgmt.progress}
+        progressError={progressMgmt.progressError}
+        lastProgressUpdatedAt={progressMgmt.lastProgressUpdatedAt}
         onRefreshProgress={() => progressMgmt.refreshProgress(eventMgmt.activeEventId)}
       />
 
@@ -250,6 +258,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   infoText: {
     marginTop: 10,
     color: '#0f5132',
@@ -257,6 +268,26 @@ const styles = StyleSheet.create({
   },
   mutedText: {
     color: '#6c757d',
+  },
+  emptyStateTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#495057',
+    marginBottom: 4,
+  },
+  progressEmptyState: {
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    marginBottom: 10,
+  },
+  progressLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: 8,
+    marginBottom: 10,
   },
   progressRow: {
     paddingVertical: 8,
@@ -270,5 +301,11 @@ const styles = StyleSheet.create({
   progressStats: {
     marginTop: 2,
     color: '#495057',
+  },
+  progressUpdatedAt: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#6c757d',
+    fontWeight: '600',
   },
 });

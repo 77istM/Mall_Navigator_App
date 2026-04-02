@@ -14,6 +14,12 @@ import styles from './targetPanel/styles';
 import PanelHandleSection from './targetPanel/PanelHandleSection';
 import CollapsedSummarySection from './targetPanel/CollapsedSummarySection';
 import ExpandedPanelContent from './targetPanel/ExpandedPanelContent';
+import {
+  getCollapsedStatus,
+  getDirectionStatus,
+  getMotionStatus,
+  getStepCounterStatus,
+} from './targetPanel/statusHelpers';
 
 /**
  * TargetPanel Component
@@ -154,14 +160,8 @@ export const TargetPanel = ({
 
   const hasDirection = isHeadingAvailable && turnDelta !== null && !!directionHint;
   const isPanelBusy = isLogging || isCapturing;
-  const directionStatusText = sensorError
-    ? sensorError
-    : hasDirection
-      ? directionHint
-      : 'Compass calibrating.';
-  const motionStatusText = stableMotionState
-    ? `State: ${stableMotionState}`
-    : 'Motion data unavailable.';
+  const directionStatus = getDirectionStatus({ sensorError, hasDirection, directionHint });
+  const motionStatus = getMotionStatus({ stableMotionState });
   const hasMotionMagnitude = Number.isFinite(motionMagnitude);
   const isLowMovement =
     stableMotionState === 'stationary' ||
@@ -176,34 +176,34 @@ export const TargetPanel = ({
   const motionMagnitudeText = Number.isFinite(motionMagnitude)
     ? `Intensity: ${motionMagnitude.toFixed(3)}`
     : 'Intensity: -';
-  const hasSessionSteps = Number.isFinite(sessionSteps);
-  const stepCounterStatusText = stepError
-    ? stepError
-    : isStepCounterAvailable
-      ? `Session steps: ${hasSessionSteps ? sessionSteps : 0}`
-      : 'Step counter unavailable.';
+  const stepCounterStatus = getStepCounterStatus({
+    stepError,
+    isStepCounterAvailable,
+    sessionSteps,
+  });
   const calibrationHelpText =
     !hasDirection && !sensorError
       ? 'Move your phone in a figure-8 motion to calibrate compass.'
       : null;
-  const collapsedStatusText = isWithinRange
-    ? 'Within discovery range. Slide up for details.'
-    : 'Slide up to view guidance and cache actions.';
+  const collapsedStatus = getCollapsedStatus({ isWithinRange });
   const expandedContentProps = {
     selectedCache,
     distanceToCache,
     direction: {
       hasDirection,
       turnDelta,
-      directionStatusText,
+      directionStatusText: directionStatus.text,
+      directionStatusTone: directionStatus.tone,
       calibrationHelpText,
       heading,
       targetBearing,
     },
     motion: {
-      motionStatusText,
+      motionStatusText: motionStatus.text,
+      motionStatusTone: motionStatus.tone,
       motionMagnitudeText,
-      stepCounterStatusText,
+      stepCounterStatusText: stepCounterStatus.text,
+      stepCounterStatusTone: stepCounterStatus.tone,
       motionAdvisoryText,
     },
     proof: {
@@ -241,7 +241,8 @@ export const TargetPanel = ({
         <CollapsedSummarySection
           selectedCache={selectedCache}
           distanceToCache={distanceToCache}
-          collapsedStatusText={collapsedStatusText}
+          collapsedStatusText={collapsedStatus.text}
+          collapsedStatusTone={collapsedStatus.tone}
         />
       ) : (
         <ExpandedPanelContent content={expandedContentProps} />

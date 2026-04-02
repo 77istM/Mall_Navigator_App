@@ -27,6 +27,7 @@ const ExpandedPanelContent = ({ content }) => {
         hasDirection={direction.hasDirection}
         turnDelta={direction.turnDelta}
         directionStatusText={direction.directionStatusText}
+        directionStatusTone={direction.directionStatusTone}
         calibrationHelpText={direction.calibrationHelpText}
         heading={direction.heading}
         targetBearing={direction.targetBearing}
@@ -34,8 +35,10 @@ const ExpandedPanelContent = ({ content }) => {
 
       <MotionSection
         motionStatusText={motion.motionStatusText}
+        motionStatusTone={motion.motionStatusTone}
         motionMagnitudeText={motion.motionMagnitudeText}
         stepCounterStatusText={motion.stepCounterStatusText}
+        stepCounterStatusTone={motion.stepCounterStatusTone}
         motionAdvisoryText={motion.motionAdvisoryText}
       />
 
