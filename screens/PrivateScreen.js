@@ -59,6 +59,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         inviteCode={eventMgmt.inviteCode}
         onInviteCodeChange={eventMgmt.setInviteCode}
         onJoinEvent={eventMgmt.handleJoinEvent}
+        isJoiningEvent={eventMgmt.isJoiningEvent}
+        joinStatus={eventMgmt.joinStatus}
       />
 
       <CreateEventCard
@@ -76,6 +78,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         onDurationHoursChange={eventMgmt.setDurationHours}
         onCreateEvent={() => eventMgmt.handleCreateEvent(progressMgmt.loadProgress)}
         ownedEventId={eventMgmt.ownedEventId}
+        isCreatingEvent={eventMgmt.isCreatingEvent}
+        createEventStatus={eventMgmt.createEventStatus}
       />
 
       <CreateCacheCard
@@ -99,6 +103,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         cachePoints={cacheMgmt.cachePoints}
         onCachePointsChange={cacheMgmt.setCachePoints}
         onCreateCache={() => cacheMgmt.handleCreateCache(eventMgmt.ownedEventId)}
+        isCreatingCache={cacheMgmt.isCreatingCache}
+        cacheStatus={cacheMgmt.cacheStatus}
       />
 
       <ParticipantProgressCard
@@ -249,6 +255,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '700',
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   infoText: {
     marginTop: 10,

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import StatusBanner from '../../components/StatusBanner';
 
 export default function CreateEventCard({
   styles,
@@ -16,21 +17,28 @@ export default function CreateEventCard({
   onDurationHoursChange,
   onCreateEvent,
   ownedEventId,
+  isCreatingEvent,
+  createEventStatus,
 }) {
   return (
     <View style={styles.card}>
       <Text style={styles.header}>Event Owner</Text>
+      {createEventStatus?.message ? (
+        <StatusBanner compact variant={createEventStatus.tone || 'info'} message={createEventStatus.message} />
+      ) : null}
       <TextInput
         style={styles.input}
         placeholder="Event Name"
         value={eventName}
         onChangeText={onEventNameChange}
+        editable={!isCreatingEvent}
       />
       <TextInput
         style={styles.input}
         placeholder="Description (optional)"
         value={eventDescription}
         onChangeText={onEventDescriptionChange}
+        editable={!isCreatingEvent}
       />
 
       <Text style={styles.label}>Event Type</Text>
@@ -41,6 +49,7 @@ export default function CreateEventCard({
             <TouchableOpacity
               key={type}
               style={[styles.chip, isSelected && styles.chipSelected]}
+              disabled={isCreatingEvent}
               onPress={() => onEventTypeChange(type)}
             >
               <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>{type}</Text>
@@ -57,6 +66,7 @@ export default function CreateEventCard({
           value={startInHours}
           onChangeText={onStartInHoursChange}
           keyboardType="numeric"
+          editable={!isCreatingEvent}
         />
         <TextInput
           style={[styles.input, styles.rowInput, styles.rowInputLast]}
@@ -64,11 +74,12 @@ export default function CreateEventCard({
           value={durationHours}
           onChangeText={onDurationHoursChange}
           keyboardType="numeric"
+          editable={!isCreatingEvent}
         />
       </View>
 
-      <TouchableOpacity style={styles.createButton} onPress={onCreateEvent}>
-        <Text style={styles.buttonText}>Create Private Event</Text>
+      <TouchableOpacity style={[styles.createButton, isCreatingEvent ? styles.buttonDisabled : null]} onPress={onCreateEvent} disabled={isCreatingEvent}>
+        {isCreatingEvent ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Create Private Event</Text>}
       </TouchableOpacity>
 
       {ownedEventId ? <Text style={styles.infoText}>Owner Invite Code: {ownedEventId}</Text> : null}
