@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
-import StatusBanner from '../../components/StatusBanner';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import InlineStatusMessage from '../../components/InlineStatusMessage';
+import LoadingActionButton from '../../components/LoadingActionButton';
 
 export default function CreateEventCard({
   styles,
@@ -23,9 +24,7 @@ export default function CreateEventCard({
   return (
     <View style={styles.card}>
       <Text style={styles.header}>Event Owner</Text>
-      {createEventStatus?.message ? (
-        <StatusBanner compact variant={createEventStatus.tone || 'info'} message={createEventStatus.message} />
-      ) : null}
+      <InlineStatusMessage status={createEventStatus} />
       <TextInput
         style={styles.input}
         placeholder="Event Name"
@@ -78,9 +77,14 @@ export default function CreateEventCard({
         />
       </View>
 
-      <TouchableOpacity style={[styles.createButton, isCreatingEvent ? styles.buttonDisabled : null]} onPress={onCreateEvent} disabled={isCreatingEvent}>
-        {isCreatingEvent ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Create Private Event</Text>}
-      </TouchableOpacity>
+      <LoadingActionButton
+        style={styles.createButton}
+        disabledStyle={styles.buttonDisabled}
+        textStyle={styles.buttonText}
+        loading={isCreatingEvent}
+        onPress={onCreateEvent}
+        label="Create Private Event"
+      />
 
       {ownedEventId ? <Text style={styles.infoText}>Owner Invite Code: {ownedEventId}</Text> : null}
     </View>

@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
-import StatusBanner from '../../components/StatusBanner';
+import { View, Text, TextInput } from 'react-native';
+import InlineStatusMessage from '../../components/InlineStatusMessage';
+import LoadingActionButton from '../../components/LoadingActionButton';
 
 export default function JoinEventCard({
   styles,
@@ -13,9 +14,7 @@ export default function JoinEventCard({
   return (
     <View style={styles.card}>
       <Text style={styles.header}>Participant</Text>
-      {joinStatus?.message ? (
-        <StatusBanner compact variant={joinStatus.tone || 'info'} message={joinStatus.message} />
-      ) : null}
+      <InlineStatusMessage status={joinStatus} />
       <TextInput
         style={styles.input}
         placeholder="Invite Code (Event ID)"
@@ -24,9 +23,14 @@ export default function JoinEventCard({
         keyboardType="numeric"
         editable={!isJoiningEvent}
       />
-      <TouchableOpacity style={[styles.joinButton, isJoiningEvent ? styles.buttonDisabled : null]} onPress={onJoinEvent} disabled={isJoiningEvent}>
-        {isJoiningEvent ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Join via Code</Text>}
-      </TouchableOpacity>
+      <LoadingActionButton
+        style={styles.joinButton}
+        disabledStyle={styles.buttonDisabled}
+        textStyle={styles.buttonText}
+        loading={isJoiningEvent}
+        onPress={onJoinEvent}
+        label="Join via Code"
+      />
     </View>
   );
 }

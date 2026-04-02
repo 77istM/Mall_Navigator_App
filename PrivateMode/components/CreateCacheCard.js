@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import StatusBanner from '../../components/StatusBanner';
+import InlineStatusMessage from '../../components/InlineStatusMessage';
+import LoadingActionButton from '../../components/LoadingActionButton';
 
 export default function CreateCacheCard({
   styles,
@@ -30,9 +31,7 @@ export default function CreateCacheCard({
   return (
     <View style={styles.card}>
       <Text style={styles.header}>Owner: Create Caches</Text>
-      {cacheStatus?.message ? (
-        <StatusBanner compact variant={cacheStatus.tone || 'info'} message={cacheStatus.message} />
-      ) : null}
+      <InlineStatusMessage status={cacheStatus} />
       <TextInput
         style={styles.input}
         placeholder="Cache Name"
@@ -110,9 +109,14 @@ export default function CreateCacheCard({
         keyboardType="numeric"
         editable={!isCreatingCache}
       />
-      <TouchableOpacity style={[styles.createButton, isCreatingCache ? styles.buttonDisabled : null]} onPress={onCreateCache} disabled={isCreatingCache}>
-        {isCreatingCache ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Create Cache</Text>}
-      </TouchableOpacity>
+      <LoadingActionButton
+        style={styles.createButton}
+        disabledStyle={styles.buttonDisabled}
+        textStyle={styles.buttonText}
+        loading={isCreatingCache}
+        onPress={onCreateCache}
+        label="Create Cache"
+      />
     </View>
   );
 }

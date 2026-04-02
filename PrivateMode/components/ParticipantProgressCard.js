@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import StatusBanner from '../../components/StatusBanner';
+import { View, Text, ActivityIndicator } from 'react-native';
+import InlineStatusMessage from '../../components/InlineStatusMessage';
+import LoadingActionButton from '../../components/LoadingActionButton';
 
 export default function ParticipantProgressCard({
   styles,
@@ -40,15 +41,18 @@ export default function ParticipantProgressCard({
   };
 
   const updatedAtLabel = formatUpdatedAt(lastProgressUpdatedAt);
+  const transientStatus = !activeEventId
+    ? null
+    : isRefreshingProgress
+      ? { tone: 'info', message: 'Refreshing participant progress...' }
+      : progressError
+        ? { tone: 'error', message: progressError }
+        : null;
 
   return (
     <View style={styles.card}>
       <Text style={styles.header}>Participant Progress</Text>
-      {!activeEventId ? null : isRefreshingProgress ? (
-        <StatusBanner compact variant="info" message="Refreshing participant progress..." />
-      ) : progressError ? (
-        <StatusBanner compact variant="error" message={progressError} />
-      ) : null}
+      <InlineStatusMessage status={transientStatus} />
 
       {!activeEventId ? (
         <Text style={styles.mutedText}>Create or join an event to view participant rankings.</Text>
@@ -76,17 +80,16 @@ export default function ParticipantProgressCard({
         </>
       )}
 
-      <TouchableOpacity
-        style={[styles.secondaryButton, (isRefreshingProgress || progressLoading || !activeEventId) ? styles.buttonDisabled : null]}
+      <LoadingActionButton
+        style={styles.secondaryButton}
+        disabledStyle={styles.buttonDisabled}
+        textStyle={styles.secondaryButtonText}
+        loading={isRefreshingProgress}
         onPress={handleRefresh}
-        disabled={isRefreshingProgress || progressLoading || !activeEventId}
-      >
-        {isRefreshingProgress ? (
-          <ActivityIndicator size="small" color="#495057" />
-        ) : (
-          <Text style={styles.secondaryButtonText}>Refresh Progress</Text>
-        )}
-      </TouchableOpacity>
+        label="Refresh Progress"
+        spinnerColor="#495057"
+        disabled={progressLoading || !activeEventId}
+      />
     </View>
   );
 }
