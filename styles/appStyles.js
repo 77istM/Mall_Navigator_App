@@ -4,21 +4,28 @@ export const appStyles = StyleSheet.create({
   container: { 
     flex: 1 
   },
-  PrivateModeBanner: {
+  bannerStack: {
     position: 'absolute',
     top: 18,
     left: 14,
     right: 14,
-    zIndex: 2,
-    backgroundColor: '#0f5132',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    zIndex: 3,
   },
-  PrivateModeBannerText: {
-    color: '#d1e7dd',
+  loadingText: {
+    marginTop: 14,
+    fontSize: 18,
     fontWeight: '700',
+    color: '#1f2937',
     textAlign: 'center',
+    paddingHorizontal: 24,
+  },
+  loadingSubtext: {
+    marginTop: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#6b7280',
+    textAlign: 'center',
+    paddingHorizontal: 28,
   },
   map: { 
     width: '100%', 
@@ -28,7 +35,8 @@ export const appStyles = StyleSheet.create({
     flex: 1, 
     backgroundColor: '#fff', 
     alignItems: 'center', 
-    justifyContent: 'center' 
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
   calloutView: { 
     width: 200, 

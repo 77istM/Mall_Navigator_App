@@ -12,19 +12,21 @@ import { useStepCounter } from '../hooks/useStepCounter';
 import { useCacheManagement } from '../hooks/useCacheManagement';
 import { useCameraProofCapture } from '../hooks/useCameraProofCapture';
 import TargetPanel from '../components/TargetPanel';
+import StatusBanner from '../components/StatusBanner';
 import { DISCOVERY_RADIUS } from '../constants/appConstants';
 import { appStyles as styles } from '../styles/appStyles';
 
 export default function MapScreen({ route, eventId: eventIdProp, eventName: eventNameProp }) {
   const activeEventId = eventIdProp ?? route?.params?.eventId ?? null;
   const activeEventName = eventNameProp ?? route?.params?.eventName ?? null;
-  const { location, error: locationError } = useLocationTracking();
+  const { location, loading: locationLoading, error: locationError } = useLocationTracking();
   const { heading, isHeadingAvailable, sensorError } = useCompassHeading();
   const { motionState, smoothedMagnitude } = useMotionTracking();
   const { sessionSteps, isAvailable: isStepCounterAvailable, stepError } = useStepCounter();
   const {
     caches,
-    loading,
+    loading: cacheLoading,
+    error: cacheError,
     selectedCache,
     distanceToCache,
     targetBearing,
@@ -56,6 +58,67 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     });
   };
 
+  const isLoading = locationLoading || cacheLoading || (!location && !locationError);
+  const loadingTitle = locationLoading
+    ? 'Acquiring GPS signal...'
+    : cacheLoading
+      ? 'Loading cache data...'
+      : 'Preparing the map...';
+  const loadingSubtitle = locationLoading
+    ? 'Waiting for location permission and a stable GPS fix.'
+    : cacheLoading
+      ? 'Fetching caches and gameplay state for this event.'
+      : 'The map will appear as soon as your location is ready.';
+
+  const feedbackBanners = [
+    activeEventId
+      ? {
+          key: 'event',
+          variant: 'success',
+          title: 'Private Event',
+          message: activeEventName
+            ? `${activeEventName} (#${activeEventId})`
+            : `Event #${activeEventId}`,
+        }
+      : null,
+    sensorError
+      ? {
+          key: 'sensor',
+          variant: 'warning',
+          title: 'Compass limited',
+          message: sensorError,
+        }
+      : null,
+    cacheError
+      ? {
+          key: 'cache',
+          variant: 'error',
+          title: 'Cache data unavailable',
+          message: cacheError,
+        }
+      : null,
+  ].filter(Boolean);
+
+  const renderBannerStack = (compact = false) => {
+    if (feedbackBanners.length === 0) {
+      return null;
+    }
+
+    return (
+      <View style={styles.bannerStack} pointerEvents="box-none">
+        {feedbackBanners.map((banner) => (
+          <StatusBanner
+            key={banner.key}
+            variant={banner.variant}
+            title={banner.title}
+            message={banner.message}
+            compact={compact}
+          />
+        ))}
+      </View>
+    );
+  };
+
   useEffect(() => {
     const currentCacheId = selectedCache?.CacheID ?? null;
 
@@ -72,11 +135,28 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     setIsTargetPanelCollapsed(false);
   }, [activeEventId, clearCapturedPhotoProof]);
 
-  if (loading || !location) {
+  if (locationError && !location) {
     return (
       <View style={styles.loadingContainer}>
+        {renderBannerStack()}
+        <StatusBanner
+          variant="error"
+          title="Location unavailable"
+          message={locationError}
+        />
+        <Text style={styles.loadingText}>GeoQuest needs location access to place you on the map.</Text>
+        <Text style={styles.loadingSubtext}>Grant permission in device settings, then reopen the app.</Text>
+      </View>
+    );
+  }
+
+  if (isLoading || !location) {
+    return (
+      <View style={styles.loadingContainer}>
+        {renderBannerStack()}
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text>{locationError || 'Acquiring GPS and Caches...'}</Text>
+        <Text style={styles.loadingText}>{loadingTitle}</Text>
+        <Text style={styles.loadingSubtext}>{loadingSubtitle}</Text>
       </View>
     );
   }
@@ -85,15 +165,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
 
   return (
     <View style={styles.container}>
-      {activeEventId ? (
-        <View style={styles.PrivateModeBanner}>
-          <Text style={styles.PrivateModeBannerText}>
-            {activeEventName
-              ? `Private Event: ${activeEventName} (#${activeEventId})`
-              : `Private Event #${activeEventId}`}
-          </Text>
-        </View>
-      ) : null}
+      {renderBannerStack(true)}
       <MapView
         style={styles.map}
         initialRegion={{
