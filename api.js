@@ -4,7 +4,8 @@ const BASE_URLS = [
   'https://mark0s.com/geoquest/v1/api',
   'https://www.mark0s.com/geoquest/v1/api',
 ];
-const API_KEY = '16gv8f'; // Public test key
+//const API_KEY = '16gv8f'; // Public test key
+const API_KEY = '499xwo'; //Private key
 const MAX_RETRIES_PER_HOST = 1;
 const TEST_IMAGE_URL = 'https://imgs.search.brave.com/QepbmUa7ANhll-Fjdx6_3dxZxzRVSNNg5JCt8Nbiehk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTI5/OTQ5MjY4Mi9waG90/by9jYXQtaW4teW91/ci1mYWNlLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz05WDAt/VlRQRktHakN0QzFa/Tkc4YUUxb2hoaU1z/c3V0RDgwWEtBZk9P/X3VvPQ';
 
