@@ -27,10 +27,16 @@ export default function CreateCacheCard({
   onCreateCache,
   isCreatingCache,
   cacheStatus,
+  ownedEventId,
 }) {
   return (
     <View style={styles.card}>
       <Text style={styles.header}>Owner: Create Caches</Text>
+      {!ownedEventId ? (
+        <Text style={{ color: 'red', fontSize: 12, marginTop: 4, marginBottom: 8 }}>
+          Create an event first to add caches.
+        </Text>
+      ) : null}
       <InlineStatusMessage status={cacheStatus} />
       <TextInput
         style={styles.input}

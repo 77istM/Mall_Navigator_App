@@ -105,6 +105,7 @@ export default function PrivateDashboardScreen({ navigation }) {
         onCreateCache={() => cacheMgmt.handleCreateCache(eventMgmt.ownedEventId)}
         isCreatingCache={cacheMgmt.isCreatingCache}
         cacheStatus={cacheMgmt.cacheStatus}
+        ownedEventId={eventMgmt.ownedEventId}
       />
 
       <ParticipantProgressCard
