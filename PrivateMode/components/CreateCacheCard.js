@@ -31,6 +31,9 @@ export default function CreateCacheCard({
   return (
     <View style={styles.card}>
       <Text style={styles.header}>Owner: Create Caches</Text>
+      <Text style={{ color: 'red', fontSize: 12, marginTop: 4, marginBottom: 8 }}>
+        Must create/have number of an event
+      </Text>
       <InlineStatusMessage status={cacheStatus} />
       <TextInput
         style={styles.input}
