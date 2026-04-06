@@ -244,6 +244,36 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
   },
+  proofHeaderButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  proofHeaderTextWrap: {
+    flexShrink: 1,
+    paddingRight: 10,
+  },
+  proofHeaderHint: {
+    marginTop: 2,
+    fontSize: 11,
+    color: '#6b7280',
+    fontWeight: '600',
+  },
+  proofHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  proofChevron: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#4b5563',
+    fontWeight: '700',
+    minWidth: 12,
+    textAlign: 'center',
+  },
+  proofExpandedContent: {
+    marginTop: 8,
+  },
   proofBusyText: {
     fontSize: 12,
     fontWeight: '700',
