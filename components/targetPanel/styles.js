@@ -61,6 +61,20 @@ const styles = StyleSheet.create({
     color: '#4b5563',
     marginTop: 4,
   },
+  collapsedTrendText: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  collapsedTrendText_info: {
+    color: '#2563eb',
+  },
+  collapsedTrendText_success: {
+    color: '#166534',
+  },
+  collapsedTrendText_warning: {
+    color: '#b45309',
+  },
   collapsedHintText: {
     fontSize: 12,
     color: '#2563eb',
@@ -80,6 +94,21 @@ const styles = StyleSheet.create({
     color: '#b91c1c',
   },
   panelDistance: { fontSize: 16, marginVertical: 10, color: '#555' },
+  distanceTrendText: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: -2,
+    marginBottom: 8,
+  },
+  distanceTrendText_info: {
+    color: '#2563eb',
+  },
+  distanceTrendText_success: {
+    color: '#166534',
+  },
+  distanceTrendText_warning: {
+    color: '#b45309',
+  },
   guidanceWarningText: {
     fontSize: 12,
     fontWeight: '700',

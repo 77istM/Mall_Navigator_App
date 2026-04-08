@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 import { getPublicCaches, getEventCaches, logFind } from '../api';
 import { getDistanceInMeters } from '../utils/distanceCalculator';
@@ -39,11 +39,20 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
   const [movementConfidence, setMovementConfidence] = useState(null);
   const [isAligned, setIsAligned] = useState(false);
   const [lastLogAttemptAt, setLastLogAttemptAt] = useState(null);
+  const [distanceTrendText, setDistanceTrendText] = useState(null);
+  const [distanceTrendTone, setDistanceTrendTone] = useState('info');
+  const previousDistanceRef = useRef(null);
 
   const motionState = motionContext?.motionState || null;
   const motionMagnitude = motionContext?.motionMagnitude;
   const locationTrust = motionContext?.locationTrust || null;
   const discoveryRadius = motionContext?.discoveryRadius ?? DISCOVERY_RADIUS;
+
+  useEffect(() => {
+    previousDistanceRef.current = null;
+    setDistanceTrendText(null);
+    setDistanceTrendTone('info');
+  }, [selectedCache?.CacheID]);
 
   const calculateMovementConfidence = () => {
     if (!MOTION_FEATURES.ENABLE_ACCELEROMETER || !MOTION_GAMEPLAY_SETTINGS.ENABLE_MOVEMENT_CONFIDENCE) {
@@ -92,9 +101,36 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
         selectedCache.CacheLatitude,
         selectedCache.CacheLongitude
       );
-      setDistanceToCache(Math.round(distance));
+      const roundedDistance = Math.round(distance);
+      const previousDistance = previousDistanceRef.current;
+
+      setDistanceToCache(roundedDistance);
+
+      if (Number.isFinite(previousDistance)) {
+        const delta = previousDistance - roundedDistance;
+        const deltaMagnitude = Math.abs(delta);
+
+        if (deltaMagnitude < 3) {
+          setDistanceTrendText('Distance steady');
+          setDistanceTrendTone('info');
+        } else if (delta > 0) {
+          setDistanceTrendText(`Getting closer by ${deltaMagnitude}m`);
+          setDistanceTrendTone('success');
+        } else {
+          setDistanceTrendText(`Moving away by ${deltaMagnitude}m`);
+          setDistanceTrendTone('warning');
+        }
+      } else {
+        setDistanceTrendText(null);
+        setDistanceTrendTone('info');
+      }
+
+      previousDistanceRef.current = roundedDistance;
     } else {
       setDistanceToCache(null);
+      setDistanceTrendText(null);
+      setDistanceTrendTone('info');
+      previousDistanceRef.current = null;
     }
   }, [location, selectedCache]);
 
@@ -222,6 +258,8 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     isAligned,
     canLogDiscovery,
     logAttemptReason: logAttemptState.reason,
+    distanceTrendText,
+    distanceTrendTone,
     movementConfidence,
     handleSelectCache,
     handleLogDiscovery,

@@ -40,8 +40,12 @@ export const TargetPanel = ({
   turnDelta,
   isAligned,
   directionHint,
+  headingSource,
+  calibrationHelpText,
   guidanceWarningText,
   logAttemptReason,
+  distanceTrendText,
+  distanceTrendTone,
   isWithinRange,
   isLogging,
   capturedImage,
@@ -184,14 +188,12 @@ export const TargetPanel = ({
     isStepCounterAvailable,
     sessionSteps,
   });
-  const calibrationHelpText =
-    !hasDirection && !sensorError
-      ? 'Move your phone in a figure-8 motion to calibrate compass.'
-      : null;
   const collapsedStatus = getCollapsedStatus({ isWithinRange });
   const expandedContentProps = {
     selectedCache,
     distanceToCache,
+    distanceTrendText,
+    distanceTrendTone,
     guidanceWarningText,
     direction: {
       hasDirection,
@@ -202,6 +204,7 @@ export const TargetPanel = ({
       calibrationHelpText,
       heading,
       targetBearing,
+      headingSource,
     },
     motion: {
       motionStatusText: motionStatus.text,
@@ -247,6 +250,8 @@ export const TargetPanel = ({
         <CollapsedSummarySection
           selectedCache={selectedCache}
           distanceToCache={distanceToCache}
+            distanceTrendText={distanceTrendText}
+            distanceTrendTone={distanceTrendTone}
           collapsedStatusText={collapsedStatus.text}
           collapsedStatusTone={collapsedStatus.tone}
         />

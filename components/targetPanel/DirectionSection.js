@@ -12,6 +12,7 @@ const DirectionSection = ({
   calibrationHelpText,
   heading,
   targetBearing,
+  headingSource,
 }) => {
   return (
     <View style={[styles.directionContainer, styles[`directionContainer_${directionStatusTone}`]]}>
@@ -34,6 +35,11 @@ const DirectionSection = ({
         {hasDirection ? (
           <Text style={styles.directionMeta}>
             Heading: {heading}° | Target: {targetBearing}°
+          </Text>
+        ) : null}
+        {headingSource ? (
+          <Text style={styles.directionMeta}>
+            Source: {headingSource === 'gps-course' ? 'GPS course' : 'Magnetometer'}
           </Text>
         ) : null}
       </View>

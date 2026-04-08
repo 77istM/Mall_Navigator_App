@@ -10,6 +10,8 @@ const ExpandedPanelContent = ({ content }) => {
   const {
     selectedCache,
     distanceToCache,
+    distanceTrendText,
+    distanceTrendTone,
     direction,
     motion,
     proof,
@@ -23,6 +25,11 @@ const ExpandedPanelContent = ({ content }) => {
       <Text style={styles.panelDistance}>
         Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
       </Text>
+      {distanceTrendText ? (
+        <Text style={[styles.distanceTrendText, styles[`distanceTrendText_${distanceTrendTone}`]]}>
+          {distanceTrendText}
+        </Text>
+      ) : null}
       {guidanceWarningText ? (
         <Text style={styles.guidanceWarningText}>{guidanceWarningText}</Text>
       ) : null}
@@ -36,6 +43,7 @@ const ExpandedPanelContent = ({ content }) => {
         calibrationHelpText={direction.calibrationHelpText}
         heading={direction.heading}
         targetBearing={direction.targetBearing}
+        headingSource={direction.headingSource}
       />
 
       <MotionSection

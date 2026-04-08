@@ -20,8 +20,12 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
   const activeEventName = eventNameProp ?? route?.params?.eventName ?? null;
   const activeEventDiscoveryRadius = eventDiscoveryRadiusProp ?? route?.params?.eventDiscoveryRadius ?? null;
   const { location, loading: locationLoading, error: locationError, locationTrust } = useLocationTracking();
-  const { heading, isHeadingAvailable, sensorError } = useCompassHeading();
   const { motionState, smoothedMagnitude } = useMotionTracking();
+  const { heading, headingSource, isHeadingAvailable, sensorError, calibrationHelpText } = useCompassHeading({
+    courseHeading: location?.heading,
+    courseSpeed: location?.speed,
+    motionState,
+  });
   const { sessionSteps, isAvailable: isStepCounterAvailable, stepError } = useStepCounter();
   const {
     caches,
@@ -226,8 +230,12 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           turnDelta={turnDelta}
           isAligned={isAligned}
           directionHint={directionHint}
+          headingSource={headingSource}
+          calibrationHelpText={calibrationHelpText}
           guidanceWarningText={locationTrust?.warningText || null}
           logAttemptReason={logAttemptReason}
+          distanceTrendText={distanceTrendText}
+          distanceTrendTone={distanceTrendTone}
           isWithinRange={isWithinRange}
           isLogging={isLogging}
           capturedImage={capturedImage}

@@ -1,6 +1,7 @@
 export const getDirectionStatus = ({ sensorError, hasDirection, isAligned, directionHint }) => {
   if (sensorError) {
-    return { text: sensorError, tone: 'error' };
+    const fallbackWarning = /gps course|compass limited/i.test(sensorError);
+    return { text: sensorError, tone: fallbackWarning ? 'warning' : 'error' };
   }
 
   if (isAligned) {
