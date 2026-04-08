@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 import InlineStatusMessage from '../../components/InlineStatusMessage';
 import LoadingActionButton from '../../components/LoadingActionButton';
+import { buildInviteDeepLink } from '../constants/PrivateModeConstants';
 
 export default function CreateEventCard({
   styles,
@@ -20,7 +22,13 @@ export default function CreateEventCard({
   ownedEventId,
   isCreatingEvent,
   createEventStatus,
+  onCopyInviteCode,
+  onShareInviteCode,
 }) {
+  const canUseInviteActions = Boolean(ownedEventId) && !isCreatingEvent;
+  const inviteCodeValue = String(ownedEventId || '').trim();
+  const inviteLinkValue = buildInviteDeepLink(inviteCodeValue, true);
+
   return (
     <View style={styles.card}>
       <Text style={styles.header}>Event Owner</Text>
@@ -86,7 +94,38 @@ export default function CreateEventCard({
         label="Create Private Event"
       />
 
-      {ownedEventId ? <Text style={styles.infoText}>Owner Invite Code: {ownedEventId}</Text> : null}
+      {ownedEventId ? (
+        <View style={styles.inviteCodePanel}>
+          <Text style={styles.inviteCodeLabel}>Event Invite Code:</Text>
+          <Text style={styles.inviteCodeValue}>{ownedEventId}</Text>
+          <View style={styles.qrWrapper}>
+            <QRCode
+              value={inviteLinkValue}
+              size={150}
+              color="#212529"
+              backgroundColor="#ffffff"
+            />
+          </View>
+          <Text style={styles.qrHintText}>Scan to open GeoQuest and join this event instantly.</Text>
+          <View style={styles.inviteActionsRow}>
+            <TouchableOpacity
+              style={[styles.inviteActionButton, styles.inviteCopyButton, !canUseInviteActions && styles.buttonDisabled]}
+              disabled={!canUseInviteActions || typeof onCopyInviteCode !== 'function'}
+              onPress={onCopyInviteCode}
+            >
+              <Text style={styles.buttonText}>Copy Code</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.inviteActionButton, styles.inviteShareButton, !canUseInviteActions && styles.buttonDisabled]}
+              disabled={!canUseInviteActions || typeof onShareInviteCode !== 'function'}
+              onPress={onShareInviteCode}
+            >
+              <Text style={styles.buttonText}>Share</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.mutedText}>Share this code with participants so they can join your event.</Text>
+        </View>
+      ) : null}
     </View>
   );
 }

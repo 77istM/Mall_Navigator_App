@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Text,
   StyleSheet,
@@ -15,7 +15,7 @@ import CreateEventCard from '../PrivateMode/components/CreateEventCard';
 import CreateCacheCard from '../PrivateMode/components/CreateCacheCard';
 import ParticipantProgressCard from '../PrivateMode/components/ParticipantProgressCard';
 
-export default function PrivateDashboardScreen({ navigation }) {
+export default function PrivateDashboardScreen({ navigation, route }) {
   // Hardcoded for demonstration; replace with auth user ID from state.
   const currentUserId = '1';
 
@@ -29,6 +29,17 @@ export default function PrivateDashboardScreen({ navigation }) {
 
   const cacheMgmt = useCacheCreation();
   const progressMgmt = useProgressTracking();
+  const autoJoinProcessedKeyRef = useRef(null);
+  const applyInviteCode = eventMgmt.setInviteCode;
+  const joinEventWithCode = eventMgmt.handleJoinEventWithCode;
+
+  const deepLinkInviteCode = useMemo(() => {
+    return String(route?.params?.inviteCode || '').trim();
+  }, [route?.params?.inviteCode]);
+
+  const shouldAutoJoin = useMemo(() => {
+    return Boolean(route?.params?.autoJoin);
+  }, [route?.params?.autoJoin]);
 
   // Load progress when owned event is created
   useEffect(() => {
@@ -36,6 +47,26 @@ export default function PrivateDashboardScreen({ navigation }) {
       progressMgmt.loadProgress(eventMgmt.ownedEventId);
     }
   }, [eventMgmt.ownedEventId, progressMgmt.loadProgress]);
+
+  useEffect(() => {
+    if (!deepLinkInviteCode) {
+      return;
+    }
+
+    applyInviteCode(deepLinkInviteCode);
+
+    if (!shouldAutoJoin) {
+      return;
+    }
+
+    const autoJoinKey = `${deepLinkInviteCode}-${String(shouldAutoJoin)}`;
+    if (autoJoinProcessedKeyRef.current === autoJoinKey) {
+      return;
+    }
+
+    autoJoinProcessedKeyRef.current = autoJoinKey;
+    joinEventWithCode(deepLinkInviteCode);
+  }, [deepLinkInviteCode, shouldAutoJoin, applyInviteCode, joinEventWithCode]);
 
   // Handle navigation to map
   const handleOpenEventMap = useCallback(() => {
@@ -61,6 +92,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         onJoinEvent={eventMgmt.handleJoinEvent}
         isJoiningEvent={eventMgmt.isJoiningEvent}
         joinStatus={eventMgmt.joinStatus}
+        showOwnerEventAction={eventMgmt.showOwnerEventAction}
+        onOpenOwnedEvent={eventMgmt.handleOpenOwnedEvent}
       />
 
       <CreateEventCard
@@ -80,6 +113,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         ownedEventId={eventMgmt.ownedEventId}
         isCreatingEvent={eventMgmt.isCreatingEvent}
         createEventStatus={eventMgmt.createEventStatus}
+        onCopyInviteCode={eventMgmt.handleCopyInviteCode}
+        onShareInviteCode={eventMgmt.handleShareInviteCode}
       />
 
       <CreateCacheCard
@@ -266,6 +301,61 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#0f5132',
     fontWeight: '700',
+  },
+  inviteCodePanel: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#9ec5fe',
+    borderRadius: 12,
+    backgroundColor: '#e7f1ff',
+    padding: 12,
+    alignItems: 'center',
+  },
+  inviteCodeLabel: {
+    color: '#495057',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  inviteCodeValue: {
+    marginTop: 4,
+    marginBottom: 8,
+    color: '#0d6efd',
+    fontSize: 34,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
+  qrWrapper: {
+    marginBottom: 8,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+  },
+  qrHintText: {
+    marginBottom: 10,
+    color: '#6c757d',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  inviteActionsRow: {
+    width: '100%',
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  inviteActionButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  inviteCopyButton: {
+    backgroundColor: '#0d6efd',
+    marginRight: 8,
+  },
+  inviteShareButton: {
+    backgroundColor: '#198754',
   },
   mutedText: {
     color: '#6c757d',

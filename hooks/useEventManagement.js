@@ -3,6 +3,9 @@ import {
   joinPrivateEvent,
   createPrivateModeEvent,
   extractCreatedEventId,
+  normalizeEventId,
+  copyInviteCodeToClipboard,
+  shareInviteCode,
 } from '../PrivateMode/services/PrivateModeService';
 import {
   validateInviteCode,
@@ -22,6 +25,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [joinStatus, setJoinStatus] = useState(null);
   const [createEventStatus, setCreateEventStatus] = useState(null);
+  const [showOwnerEventAction, setShowOwnerEventAction] = useState(false);
 
   const activeEventId = useMemo(() => {
     const trimmedInvite = inviteCode.trim();
@@ -32,15 +36,27 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     return Number.isNaN(numericInvite) ? ownedEventId : numericInvite;
   }, [inviteCode, ownedEventId]);
 
-  const handleJoinEvent = useCallback(async () => {
-    const inviteCodeError = validateInviteCode(inviteCode);
+  const joinWithInviteCode = useCallback(async (rawInviteCode) => {
+    const normalizedInviteCode = String(rawInviteCode || '').trim();
+    const inviteCodeError = validateInviteCode(normalizedInviteCode);
 
     if (inviteCodeError) {
       setJoinStatus({ tone: 'error', message: inviteCodeError });
       return;
     }
 
-    const numericEventId = Number(inviteCode.trim());
+    const numericEventId = Number(normalizedInviteCode);
+
+    if (ownedEventId && numericEventId === ownedEventId) {
+      setShowOwnerEventAction(true);
+      setJoinStatus({
+        tone: 'info',
+        message: 'This is your event. Use the button below to open it.',
+      });
+      return;
+    }
+
+    setShowOwnerEventAction(false);
     setIsJoiningEvent(true);
     setJoinStatus({ tone: 'info', message: 'Joining event...' });
 
@@ -56,7 +72,17 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     } finally {
       setIsJoiningEvent(false);
     }
-  }, [inviteCode, currentUserId, eventName, onNavigateToMap]);
+  }, [currentUserId, eventName, onNavigateToMap, ownedEventId]);
+
+  const handleJoinEvent = useCallback(async () => {
+    await joinWithInviteCode(inviteCode);
+  }, [inviteCode, joinWithInviteCode]);
+
+  const handleJoinEventWithCode = useCallback(async (nextInviteCode) => {
+    const normalizedInviteCode = String(nextInviteCode || '').trim();
+    setInviteCode(normalizedInviteCode);
+    await joinWithInviteCode(normalizedInviteCode);
+  }, [joinWithInviteCode]);
 
   const handleCreateEvent = useCallback(async (onProgressLoaded) => {
     const eventFormError = validateEventForm({ eventName, startInHours, durationHours });
@@ -91,7 +117,10 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
       const createdEventId = extractCreatedEventId(response);
 
       if (createdEventId) {
-        const normalizedEventId = Number(createdEventId);
+        const normalizedEventId = normalizeEventId(createdEventId);
+        if (!normalizedEventId) {
+          throw new Error('Event created, but received an invalid Event ID from the API.');
+        }
         setOwnedEventId(normalizedEventId);
         setInviteCode(String(normalizedEventId));
         await onProgressLoaded(normalizedEventId);
@@ -112,10 +141,13 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
 
   const handleInviteCodeChange = useCallback((value) => {
     setInviteCode(value);
+    if (ownedEventId && Number(value) !== ownedEventId) {
+      setShowOwnerEventAction(false);
+    }
     if (joinStatus?.tone === 'error') {
       setJoinStatus(null);
     }
-  }, [joinStatus]);
+  }, [joinStatus, ownedEventId]);
 
   const handleEventNameChange = useCallback((value) => {
     setEventName(value);
@@ -146,6 +178,26 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     }
   }, [createEventStatus]);
 
+  const handleCopyInviteCode = useCallback(async () => {
+    const normalizedCode = String(ownedEventId || '').trim();
+    const result = await copyInviteCodeToClipboard(normalizedCode);
+    setCreateEventStatus({ tone: result.tone, message: result.message });
+  }, [ownedEventId]);
+
+  const handleShareInviteCode = useCallback(async () => {
+    const normalizedCode = String(ownedEventId || '').trim();
+    const result = await shareInviteCode(normalizedCode, eventName);
+    setCreateEventStatus({ tone: result.tone, message: result.message });
+  }, [ownedEventId, eventName]);
+
+  const handleOpenOwnedEvent = useCallback(() => {
+    if (!ownedEventId) {
+      return;
+    }
+
+    onNavigateToMap(ownedEventId, eventName);
+  }, [ownedEventId, eventName, onNavigateToMap]);
+
   return {
     // State
     inviteCode,
@@ -160,6 +212,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     isCreatingEvent,
     joinStatus,
     createEventStatus,
+    showOwnerEventAction,
     // Setters
     setInviteCode: handleInviteCodeChange,
     setEventName: handleEventNameChange,
@@ -169,6 +222,10 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     setDurationHours: handleDurationHoursChange,
     // Handlers
     handleJoinEvent,
+    handleJoinEventWithCode,
     handleCreateEvent,
+    handleCopyInviteCode,
+    handleShareInviteCode,
+    handleOpenOwnedEvent,
   };
 };
