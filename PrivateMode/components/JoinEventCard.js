@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import InlineStatusMessage from '../../components/InlineStatusMessage';
 import LoadingActionButton from '../../components/LoadingActionButton';
 
@@ -10,6 +10,8 @@ export default function JoinEventCard({
   onJoinEvent,
   isJoiningEvent,
   joinStatus,
+  showOwnerEventAction,
+  onOpenOwnedEvent,
 }) {
   return (
     <View style={styles.card}>
@@ -32,6 +34,11 @@ export default function JoinEventCard({
         onPress={onJoinEvent}
         label="Join Private Event"
       />
+      {showOwnerEventAction ? (
+        <TouchableOpacity style={styles.secondaryButton} onPress={onOpenOwnedEvent}>
+          <Text style={styles.secondaryButtonText}>Open My Event</Text>
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 }

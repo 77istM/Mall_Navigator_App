@@ -92,6 +92,8 @@ export default function PrivateDashboardScreen({ navigation, route }) {
         onJoinEvent={eventMgmt.handleJoinEvent}
         isJoiningEvent={eventMgmt.isJoiningEvent}
         joinStatus={eventMgmt.joinStatus}
+        showOwnerEventAction={eventMgmt.showOwnerEventAction}
+        onOpenOwnedEvent={eventMgmt.handleOpenOwnedEvent}
       />
 
       <CreateEventCard

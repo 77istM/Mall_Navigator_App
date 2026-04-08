@@ -25,6 +25,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [joinStatus, setJoinStatus] = useState(null);
   const [createEventStatus, setCreateEventStatus] = useState(null);
+  const [showOwnerEventAction, setShowOwnerEventAction] = useState(false);
 
   const activeEventId = useMemo(() => {
     const trimmedInvite = inviteCode.trim();
@@ -45,6 +46,17 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     }
 
     const numericEventId = Number(normalizedInviteCode);
+
+    if (ownedEventId && numericEventId === ownedEventId) {
+      setShowOwnerEventAction(true);
+      setJoinStatus({
+        tone: 'info',
+        message: 'This is your event. Use the button below to open it.',
+      });
+      return;
+    }
+
+    setShowOwnerEventAction(false);
     setIsJoiningEvent(true);
     setJoinStatus({ tone: 'info', message: 'Joining event...' });
 
@@ -60,7 +72,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     } finally {
       setIsJoiningEvent(false);
     }
-  }, [currentUserId, eventName, onNavigateToMap]);
+  }, [currentUserId, eventName, onNavigateToMap, ownedEventId]);
 
   const handleJoinEvent = useCallback(async () => {
     await joinWithInviteCode(inviteCode);
@@ -129,10 +141,13 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
 
   const handleInviteCodeChange = useCallback((value) => {
     setInviteCode(value);
+    if (ownedEventId && Number(value) !== ownedEventId) {
+      setShowOwnerEventAction(false);
+    }
     if (joinStatus?.tone === 'error') {
       setJoinStatus(null);
     }
-  }, [joinStatus]);
+  }, [joinStatus, ownedEventId]);
 
   const handleEventNameChange = useCallback((value) => {
     setEventName(value);
@@ -175,6 +190,14 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     setCreateEventStatus({ tone: result.tone, message: result.message });
   }, [ownedEventId, eventName]);
 
+  const handleOpenOwnedEvent = useCallback(() => {
+    if (!ownedEventId) {
+      return;
+    }
+
+    onNavigateToMap(ownedEventId, eventName);
+  }, [ownedEventId, eventName, onNavigateToMap]);
+
   return {
     // State
     inviteCode,
@@ -189,6 +212,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     isCreatingEvent,
     joinStatus,
     createEventStatus,
+    showOwnerEventAction,
     // Setters
     setInviteCode: handleInviteCodeChange,
     setEventName: handleEventNameChange,
@@ -202,5 +226,6 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     handleCreateEvent,
     handleCopyInviteCode,
     handleShareInviteCode,
+    handleOpenOwnedEvent,
   };
 };
