@@ -97,6 +97,41 @@ export const evaluateLocationStaleness = (lastFixAt, now = Date.now()) => {
   };
 };
 
+export const evaluateDiscoveryLogAttempt = ({
+  selectedCache,
+  distanceToCache,
+  discoveryRadius,
+  locationTrust,
+  lastLogAttemptAt,
+  now = Date.now(),
+}) => {
+  if (!selectedCache) {
+    return { canLog: false, reason: 'Select a cache first.' };
+  }
+
+  if (locationTrust?.isStale) {
+    return { canLog: false, reason: locationTrust.warningText || 'Waiting for a fresh GPS fix.' };
+  }
+
+  if (locationTrust && !locationTrust.isTrusted) {
+    return { canLog: false, reason: locationTrust.warningText || 'Location signal is not trusted yet.' };
+  }
+
+  if (distanceToCache === null) {
+    return { canLog: false, reason: 'Calculating distance...' };
+  }
+
+  if (distanceToCache > discoveryRadius) {
+    return { canLog: false, reason: `Move closer to within ${discoveryRadius} meters.` };
+  }
+
+  if (lastLogAttemptAt && now - lastLogAttemptAt < NAVIGATION_TRUST.LOG_DUPLICATE_WINDOW_MS) {
+    return { canLog: false, reason: 'Please wait before trying to log again.' };
+  }
+
+  return { canLog: true, reason: null };
+};
+
 export const getGuidanceMode = ({ sensorAvailable, locationTrust }) => {
   if (!sensorAvailable) {
     return GUIDANCE_MODE.SENSOR_LIMITED;

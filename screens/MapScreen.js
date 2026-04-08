@@ -13,12 +13,12 @@ import { useCacheManagement } from '../hooks/useCacheManagement';
 import { useCameraProofCapture } from '../hooks/useCameraProofCapture';
 import TargetPanel from '../components/TargetPanel';
 import StatusBanner from '../components/StatusBanner';
-import { DISCOVERY_RADIUS } from '../constants/appConstants';
 import { appStyles as styles } from '../styles/appStyles';
 
-export default function MapScreen({ route, eventId: eventIdProp, eventName: eventNameProp }) {
+export default function MapScreen({ route, eventId: eventIdProp, eventName: eventNameProp, eventDiscoveryRadius: eventDiscoveryRadiusProp }) {
   const activeEventId = eventIdProp ?? route?.params?.eventId ?? null;
   const activeEventName = eventNameProp ?? route?.params?.eventName ?? null;
+  const activeEventDiscoveryRadius = eventDiscoveryRadiusProp ?? route?.params?.eventDiscoveryRadius ?? null;
   const { location, loading: locationLoading, error: locationError, locationTrust } = useLocationTracking();
   const { heading, isHeadingAvailable, sensorError } = useCompassHeading();
   const { motionState, smoothedMagnitude } = useMotionTracking();
@@ -41,6 +41,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     motionState,
     motionMagnitude: smoothedMagnitude,
     locationTrust,
+    discoveryRadius: Number(activeEventDiscoveryRadius) || undefined,
   });
   const {
     capturedImage,

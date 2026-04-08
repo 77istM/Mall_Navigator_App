@@ -22,8 +22,12 @@ export default function PrivateDashboardScreen({ navigation, route }) {
   // Custom hooks for better state management
   const eventMgmt = useEventManagement(
     currentUserId,
-    useCallback((eventId, name) => {
-      navigation.navigate('GlobalTabs', { eventId, eventName: name?.trim() || undefined });
+    useCallback((eventId, name, eventDiscoveryRadius) => {
+      navigation.navigate('GlobalTabs', {
+        eventId,
+        eventName: name?.trim() || undefined,
+        eventDiscoveryRadius: Number(eventDiscoveryRadius) || undefined,
+      });
     }, [navigation])
   );
 
@@ -32,6 +36,9 @@ export default function PrivateDashboardScreen({ navigation, route }) {
   const autoJoinProcessedKeyRef = useRef(null);
   const applyInviteCode = eventMgmt.setInviteCode;
   const joinEventWithCode = eventMgmt.handleJoinEventWithCode;
+  const deepLinkDiscoveryRadius = useMemo(() => {
+    return String(route?.params?.eventDiscoveryRadius || '').trim();
+  }, [route?.params?.eventDiscoveryRadius]);
 
   const deepLinkInviteCode = useMemo(() => {
     return String(route?.params?.inviteCode || '').trim();
@@ -54,6 +61,9 @@ export default function PrivateDashboardScreen({ navigation, route }) {
     }
 
     applyInviteCode(deepLinkInviteCode);
+    if (deepLinkDiscoveryRadius) {
+      eventMgmt.setDiscoveryRadiusMeters(deepLinkDiscoveryRadius);
+    }
 
     if (!shouldAutoJoin) {
       return;
@@ -65,8 +75,8 @@ export default function PrivateDashboardScreen({ navigation, route }) {
     }
 
     autoJoinProcessedKeyRef.current = autoJoinKey;
-    joinEventWithCode(deepLinkInviteCode);
-  }, [deepLinkInviteCode, shouldAutoJoin, applyInviteCode, joinEventWithCode]);
+    joinEventWithCode(deepLinkInviteCode, deepLinkDiscoveryRadius || null);
+  }, [deepLinkInviteCode, deepLinkDiscoveryRadius, shouldAutoJoin, applyInviteCode, joinEventWithCode]);
 
   // Handle navigation to map
   const handleOpenEventMap = useCallback(() => {
@@ -77,8 +87,9 @@ export default function PrivateDashboardScreen({ navigation, route }) {
     navigation.navigate('GlobalTabs', {
       eventId: eventMgmt.activeEventId,
       eventName: eventMgmt.eventName.trim() || undefined,
+      eventDiscoveryRadius: eventMgmt.activeEventDiscoveryRadius ?? undefined,
     });
-  }, [eventMgmt.activeEventId, eventMgmt.eventName, navigation]);
+  }, [eventMgmt.activeEventId, eventMgmt.activeEventDiscoveryRadius, eventMgmt.eventName, navigation]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -109,6 +120,8 @@ export default function PrivateDashboardScreen({ navigation, route }) {
         onStartInHoursChange={eventMgmt.setStartInHours}
         durationHours={eventMgmt.durationHours}
         onDurationHoursChange={eventMgmt.setDurationHours}
+        discoveryRadiusMeters={eventMgmt.discoveryRadiusMeters}
+        onDiscoveryRadiusMetersChange={eventMgmt.setDiscoveryRadiusMeters}
         onCreateEvent={() => eventMgmt.handleCreateEvent(progressMgmt.loadProgress)}
         ownedEventId={eventMgmt.ownedEventId}
         isCreatingEvent={eventMgmt.isCreatingEvent}

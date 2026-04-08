@@ -40,6 +40,20 @@ export const validateEventForm = ({ eventName, startInHours, durationHours }) =>
   return null;
 };
 
+export const validateDiscoveryRadius = (discoveryRadiusMeters) => {
+  const parsedRadius = asPositiveNumber(discoveryRadiusMeters);
+
+  if (!parsedRadius) {
+    return 'Discovery radius must be a positive number of meters.';
+  }
+
+  if (parsedRadius < 5) {
+    return 'Discovery radius is too small. Use at least 5 meters.';
+  }
+
+  return null;
+};
+
 export const validateCacheForm = ({
   cacheName,
   cacheClue,

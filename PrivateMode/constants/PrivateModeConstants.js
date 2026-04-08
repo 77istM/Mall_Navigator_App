@@ -12,21 +12,26 @@ export const WORLD_PICKER_REGION = {
 
 export const DEFAULT_START_IN_HOURS = '0';
 export const DEFAULT_DURATION_HOURS = '24';
+export const DEFAULT_DISCOVERY_RADIUS_METERS = '30';
 export const DEFAULT_CACHE_POINTS = '10';
 
 export const INVITE_SHARE_TITLE = 'GeoQuest Private Event Invite';
 
-export const buildInviteDeepLink = (inviteCode, autoJoin = true) => {
+export const buildInviteDeepLink = (inviteCode, autoJoin = true, eventDiscoveryRadius = '') => {
   const normalizedCode = String(inviteCode || '').trim();
   const autoJoinParam = autoJoin ? '1' : '0';
-  return `geoquest://join?inviteCode=${encodeURIComponent(normalizedCode)}&autoJoin=${autoJoinParam}`;
+  const normalizedRadius = String(eventDiscoveryRadius || '').trim();
+  const radiusParam = normalizedRadius ? `&eventDiscoveryRadius=${encodeURIComponent(normalizedRadius)}` : '';
+  return `geoquest://join?inviteCode=${encodeURIComponent(normalizedCode)}&autoJoin=${autoJoinParam}${radiusParam}`;
 };
 
-export const buildInviteShareMessage = (inviteCode, eventName = '') => {
+export const buildInviteShareMessage = (inviteCode, eventName = '', eventDiscoveryRadius = '') => {
   const normalizedCode = String(inviteCode || '').trim();
   const normalizedEventName = String(eventName || '').trim();
+  const normalizedRadius = String(eventDiscoveryRadius || '').trim();
   const eventLine = normalizedEventName ? `Event: ${normalizedEventName}\n` : '';
-  const inviteLink = buildInviteDeepLink(normalizedCode, true);
+  const radiusLine = normalizedRadius ? `Radius: ${normalizedRadius}m\n` : '';
+  const inviteLink = buildInviteDeepLink(normalizedCode, true, normalizedRadius);
 
-  return `${eventLine}Join my GeoQuest private event with invite code: ${normalizedCode}\n${inviteLink}`;
+  return `${eventLine}${radiusLine}Join my GeoQuest private event with invite code: ${normalizedCode}\n${inviteLink}`;
 };

@@ -9,7 +9,9 @@ import {
   COMPASS_SETTINGS,
   MOTION_FEATURES,
   MOTION_GAMEPLAY_SETTINGS,
+  NAVIGATION_TRUST,
 } from '../constants/appConstants';
+import { evaluateDiscoveryLogAttempt } from '../utils/navigationTrust';
 
 /**
  * Custom Hook: useCacheManagement
@@ -32,6 +34,7 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
   const [isLogging, setIsLogging] = useState(false);
   const [movementConfidence, setMovementConfidence] = useState(null);
   const [isAligned, setIsAligned] = useState(false);
+  const [lastLogAttemptAt, setLastLogAttemptAt] = useState(null);
 
   const motionState = motionContext?.motionState || null;
   const motionMagnitude = motionContext?.motionMagnitude;
@@ -130,19 +133,31 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     }
   }, [heading, targetBearing]);
 
-  const canLogDiscovery = Boolean(
-    selectedCache &&
-    distanceToCache !== null &&
-    distanceToCache <= discoveryRadius &&
-    (!locationTrust || locationTrust.isTrusted)
-  );
+  const logAttemptState = evaluateDiscoveryLogAttempt({
+    selectedCache,
+    distanceToCache,
+    discoveryRadius,
+    locationTrust,
+    lastLogAttemptAt,
+  });
+
+  const canLogDiscovery = logAttemptState.canLog;
 
   const handleSelectCache = (cache) => {
     setSelectedCache(cache);
   };
 
   const handleLogDiscovery = async (imageUrl = null) => {
-    if (!selectedCache || isLogging) return;
+    if (isLogging) {
+      return;
+    }
+
+    if (!logAttemptState.canLog) {
+      Alert.alert('Log blocked', logAttemptState.reason);
+      return;
+    }
+
+    setLastLogAttemptAt(Date.now());
 
     const confidenceSnapshot = calculateMovementConfidence();
     setMovementConfidence(confidenceSnapshot);
@@ -188,6 +203,7 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     directionHint,
     isAligned,
     canLogDiscovery,
+    logAttemptReason: logAttemptState.reason,
     movementConfidence,
     handleSelectCache,
     handleLogDiscovery,
