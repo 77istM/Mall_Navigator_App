@@ -267,6 +267,46 @@ const styles = StyleSheet.create({
     color: '#0f5132',
     fontWeight: '700',
   },
+  inviteCodePanel: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#9ec5fe',
+    borderRadius: 12,
+    backgroundColor: '#e7f1ff',
+    padding: 12,
+    alignItems: 'center',
+  },
+  inviteCodeLabel: {
+    color: '#495057',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  inviteCodeValue: {
+    marginTop: 4,
+    marginBottom: 10,
+    color: '#0d6efd',
+    fontSize: 34,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
+  inviteActionsRow: {
+    width: '100%',
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  inviteActionButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  inviteCopyButton: {
+    backgroundColor: '#0d6efd',
+    marginRight: 8,
+  },
+  inviteShareButton: {
+    backgroundColor: '#198754',
+  },
   mutedText: {
     color: '#6c757d',
   },

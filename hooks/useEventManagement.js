@@ -3,6 +3,7 @@ import {
   joinPrivateEvent,
   createPrivateModeEvent,
   extractCreatedEventId,
+  normalizeEventId,
 } from '../PrivateMode/services/PrivateModeService';
 import {
   validateInviteCode,
@@ -91,7 +92,10 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
       const createdEventId = extractCreatedEventId(response);
 
       if (createdEventId) {
-        const normalizedEventId = Number(createdEventId);
+        const normalizedEventId = normalizeEventId(createdEventId);
+        if (!normalizedEventId) {
+          throw new Error('Event created, but received an invalid Event ID from the API.');
+        }
         setOwnedEventId(normalizedEventId);
         setInviteCode(String(normalizedEventId));
         await onProgressLoaded(normalizedEventId);
