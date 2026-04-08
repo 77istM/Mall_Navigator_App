@@ -25,6 +25,7 @@ const linking = {
         parse: {
           inviteCode: (value) => String(value || '').trim(),
           autoJoin: (value) => value === '1' || value === 'true',
+          eventDiscoveryRadius: (value) => String(value || '').trim(),
         },
       },
     },
@@ -34,6 +35,7 @@ const linking = {
 function GlobalTabsNavigator({ route }) {
   const eventId = route?.params?.eventId ?? null;
   const eventName = route?.params?.eventName ?? null;
+  const eventDiscoveryRadius = route?.params?.eventDiscoveryRadius ?? null;
 
   return (
     <Tab.Navigator
@@ -54,7 +56,7 @@ function GlobalTabsNavigator({ route }) {
       })}
     >
       <Tab.Screen name="Map">
-        {(props) => <MapScreen {...props} eventId={eventId} eventName={eventName} />}
+        {(props) => <MapScreen {...props} eventId={eventId} eventName={eventName} eventDiscoveryRadius={eventDiscoveryRadius} />}
       </Tab.Screen>
       <Tab.Screen name="Leaderboard">
         {(props) => <LeaderboardScreen {...props} eventId={eventId} eventName={eventName} />}

@@ -1,7 +1,7 @@
 // screens/MapScreen.js
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
 
 // Adjusting imports to step out of the 'screens' folder
@@ -10,18 +10,24 @@ import { useCompassHeading } from '../hooks/useCompassHeading';
 import { useMotionTracking } from '../hooks/useMotionTracking';
 import { useStepCounter } from '../hooks/useStepCounter';
 import { useCacheManagement } from '../hooks/useCacheManagement';
+import { useRouteGuidance } from '../hooks/useRouteGuidance';
 import { useCameraProofCapture } from '../hooks/useCameraProofCapture';
 import TargetPanel from '../components/TargetPanel';
 import StatusBanner from '../components/StatusBanner';
-import { DISCOVERY_RADIUS } from '../constants/appConstants';
 import { appStyles as styles } from '../styles/appStyles';
 
-export default function MapScreen({ route, eventId: eventIdProp, eventName: eventNameProp }) {
+export default function MapScreen({ route, eventId: eventIdProp, eventName: eventNameProp, eventDiscoveryRadius: eventDiscoveryRadiusProp }) {
   const activeEventId = eventIdProp ?? route?.params?.eventId ?? null;
   const activeEventName = eventNameProp ?? route?.params?.eventName ?? null;
-  const { location, loading: locationLoading, error: locationError } = useLocationTracking();
-  const { heading, isHeadingAvailable, sensorError } = useCompassHeading();
+  const activeEventDiscoveryRadius = eventDiscoveryRadiusProp ?? route?.params?.eventDiscoveryRadius ?? null;
+  const activeDiscoveryRadiusMeters = Number(activeEventDiscoveryRadius) || undefined;
+  const { location, loading: locationLoading, error: locationError, locationTrust } = useLocationTracking();
   const { motionState, smoothedMagnitude } = useMotionTracking();
+  const { heading, headingSource, isHeadingAvailable, sensorError, calibrationHelpText } = useCompassHeading({
+    courseHeading: location?.heading,
+    courseSpeed: location?.speed,
+    motionState,
+  });
   const { sessionSteps, isAvailable: isStepCounterAvailable, stepError } = useStepCounter();
   const {
     caches,
@@ -31,14 +37,105 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     distanceToCache,
     targetBearing,
     turnDelta,
+    isAligned,
     directionHint,
+    canLogDiscovery,
+    logAttemptReason,
+    distanceTrendText,
+    distanceTrendTone,
     isLogging,
     handleSelectCache,
     handleLogDiscovery,
   } = useCacheManagement(location, activeEventId, heading, {
     motionState,
     motionMagnitude: smoothedMagnitude,
+    locationTrust,
+    discoveryRadius: activeDiscoveryRadiusMeters,
   });
+  const routeGuidance = useRouteGuidance({
+    location,
+    selectedCache,
+    enabled: Boolean(selectedCache && location),
+    profile: 'walking',
+    sensorAvailable: isHeadingAvailable && !sensorError,
+    locationTrust,
+  });
+  const guidanceMode = routeGuidance.mode;
+  const guidanceModeLabel =
+    guidanceMode === 'route'
+      ? 'Route Active'
+      : guidanceMode === 'gps-fallback'
+        ? 'GPS Fallback'
+        : guidanceMode === 'sensor-limited'
+          ? 'Sensor Limited'
+          : 'Compass Only';
+  const guidanceModeTone = guidanceMode === 'route' ? 'success' : guidanceMode === 'gps-fallback' || guidanceMode === 'sensor-limited' ? 'warning' : 'info';
+  const routeSummary = useMemo(() => {
+    if (!routeGuidance.route) {
+      return null;
+    }
+
+    return {
+      distanceMeters: routeGuidance.route.distanceMeters,
+      durationSeconds: routeGuidance.route.durationSeconds,
+      nextManeuver: routeGuidance.route.nextManeuver,
+      lastUpdatedAt: routeGuidance.lastUpdatedAt,
+    };
+  }, [routeGuidance.route, routeGuidance.lastUpdatedAt]);
+  const feedbackBanners = useMemo(() => ([
+    activeEventId
+      ? {
+          key: 'event',
+          variant: 'success',
+          title: 'Private Event',
+          message: activeEventName
+            ? `${activeEventName} (#${activeEventId})`
+            : `Event #${activeEventId}`,
+        }
+      : null,
+    sensorError
+      ? {
+          key: 'sensor',
+          variant: 'warning',
+          title: 'Compass limited',
+          message: sensorError,
+        }
+      : null,
+    cacheError
+      ? {
+          key: 'cache',
+          variant: 'error',
+          title: 'Cache data unavailable',
+          message: cacheError,
+        }
+      : null,
+    selectedCache && routeGuidance.mode === 'route' && routeGuidance.route
+      ? {
+          key: 'route-active',
+          variant: 'success',
+          title: guidanceModeLabel,
+          message: routeGuidance.route.nextManeuver
+            ? `Next: ${routeGuidance.route.nextManeuver}`
+            : 'Live route guidance is active.',
+        }
+      : null,
+    selectedCache && routeGuidance.error
+      ? {
+          key: 'route-fallback',
+          variant: 'warning',
+          title: 'Compass fallback',
+          message: routeGuidance.error,
+        }
+      : null,
+    locationTrust && !locationTrust.isTrusted
+      ? {
+          key: 'location-trust',
+          variant: 'warning',
+          title: 'Location quality limited',
+          message: locationTrust.warningText || 'Waiting for a stronger GPS fix before trusting guidance.',
+        }
+      : null,
+  ].filter(Boolean)), [activeEventId, activeEventName, cacheError, guidanceModeLabel, locationTrust, routeGuidance.error, routeGuidance.mode, routeGuidance.route, selectedCache, sensorError]);
   const {
     capturedImage,
     isCapturing,
@@ -69,35 +166,6 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     : cacheLoading
       ? 'Fetching caches and gameplay state for this event.'
       : 'The map will appear as soon as your location is ready.';
-
-  const feedbackBanners = [
-    activeEventId
-      ? {
-          key: 'event',
-          variant: 'success',
-          title: 'Private Event',
-          message: activeEventName
-            ? `${activeEventName} (#${activeEventId})`
-            : `Event #${activeEventId}`,
-        }
-      : null,
-    sensorError
-      ? {
-          key: 'sensor',
-          variant: 'warning',
-          title: 'Compass limited',
-          message: sensorError,
-        }
-      : null,
-    cacheError
-      ? {
-          key: 'cache',
-          variant: 'error',
-          title: 'Cache data unavailable',
-          message: cacheError,
-        }
-      : null,
-  ].filter(Boolean);
 
   const renderBannerStack = (compact = false) => {
     if (feedbackBanners.length === 0) {
@@ -161,7 +229,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     );
   }
 
-  const isWithinRange = distanceToCache !== null && distanceToCache <= DISCOVERY_RADIUS;
+  const isWithinRange = canLogDiscovery;
 
   return (
     <View style={styles.container}>
@@ -176,6 +244,13 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
         }}
         showsUserLocation={true}
       >
+        {routeGuidance.route?.geometry?.length > 1 ? (
+          <Polyline
+            coordinates={routeGuidance.route.geometry}
+            strokeColor={routeGuidance.mode === 'route' ? '#2563eb' : '#9ca3af'}
+            strokeWidth={4}
+          />
+        ) : null}
         {caches.map((cache) => (
           <Marker
             key={cache.CacheID}
@@ -211,8 +286,22 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           stepError={stepError}
           targetBearing={targetBearing}
           turnDelta={turnDelta}
+          isAligned={isAligned}
           directionHint={directionHint}
+          headingSource={headingSource}
+          calibrationHelpText={calibrationHelpText}
+          guidanceWarningText={locationTrust?.warningText || null}
+          logAttemptReason={logAttemptReason}
+          distanceTrendText={distanceTrendText}
+          distanceTrendTone={distanceTrendTone}
+          routeMode={guidanceMode}
+          guidanceModeLabel={guidanceModeLabel}
+          guidanceModeTone={guidanceModeTone}
+          routeSummary={routeSummary}
+          routeLoading={routeGuidance.loading}
+          routeError={routeGuidance.error}
           isWithinRange={isWithinRange}
+          discoveryRadius={activeDiscoveryRadiusMeters}
           isLogging={isLogging}
           capturedImage={capturedImage}
           isCapturing={isCapturing}

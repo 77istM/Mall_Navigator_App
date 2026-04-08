@@ -18,6 +18,8 @@ export default function CreateEventCard({
   onStartInHoursChange,
   durationHours,
   onDurationHoursChange,
+  discoveryRadiusMeters,
+  onDiscoveryRadiusMetersChange,
   onCreateEvent,
   ownedEventId,
   isCreatingEvent,
@@ -27,7 +29,7 @@ export default function CreateEventCard({
 }) {
   const canUseInviteActions = Boolean(ownedEventId) && !isCreatingEvent;
   const inviteCodeValue = String(ownedEventId || '').trim();
-  const inviteLinkValue = buildInviteDeepLink(inviteCodeValue, true);
+  const inviteLinkValue = buildInviteDeepLink(inviteCodeValue, true, discoveryRadiusMeters);
 
   return (
     <View style={styles.card}>
@@ -85,6 +87,16 @@ export default function CreateEventCard({
         />
       </View>
 
+      <Text style={styles.label}>Discovery Radius (meters)</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Discovery radius in meters"
+        value={discoveryRadiusMeters}
+        onChangeText={onDiscoveryRadiusMetersChange}
+        keyboardType="numeric"
+        editable={!isCreatingEvent}
+      />
+
       <LoadingActionButton
         style={styles.createButton}
         disabledStyle={styles.buttonDisabled}
@@ -107,6 +119,7 @@ export default function CreateEventCard({
             />
           </View>
           <Text style={styles.qrHintText}>Scan to open GeoQuest and join this event instantly.</Text>
+          <Text style={styles.qrHintText}>This invite includes the event discovery radius.</Text>
           <View style={styles.inviteActionsRow}>
             <TouchableOpacity
               style={[styles.inviteActionButton, styles.inviteCopyButton, !canUseInviteActions && styles.buttonDisabled]}
