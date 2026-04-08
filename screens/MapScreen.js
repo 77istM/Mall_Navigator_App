@@ -197,7 +197,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     if (lastSelectedCacheIdRef.current !== currentCacheId) {
       clearCapturedPhotoProof();
       lastSelectedCacheIdRef.current = currentCacheId;
-      setTargetPanelState(PANEL_STATES.FULL);
+      setTargetPanelState(PANEL_STATES.HALF);
     }
   }, [selectedCache, clearCapturedPhotoProof]);
 

@@ -25,13 +25,13 @@ const PanelHandleSection = ({ panelState = PANEL_STATES.COLLAPSED, onStateChange
   const getNextState = (currentState) => {
     switch (currentState) {
       case PANEL_STATES.COLLAPSED:
-        return PANEL_STATES.FULL;
+        return PANEL_STATES.HALF;
       case PANEL_STATES.HALF:
         return PANEL_STATES.FULL;
       case PANEL_STATES.FULL:
-        return PANEL_STATES.COLLAPSED;
+        return PANEL_STATES.HALF;
       default:
-        return PANEL_STATES.FULL;
+        return PANEL_STATES.HALF;
     }
   };
 

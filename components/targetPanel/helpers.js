@@ -1,4 +1,8 @@
-import { PANEL_SNAP_VELOCITY_THRESHOLD, PANEL_HIGH_VELOCITY_THRESHOLD, PANEL_STATES } from './constants';
+import {
+  PANEL_SNAP_VELOCITY_THRESHOLD,
+  PANEL_SWIPE_DISTANCE_THRESHOLD,
+  PANEL_STATES,
+} from './constants';
 
 /**
  * Clamps offset value between 0 and max value (supports 3 snap points)
@@ -7,32 +11,49 @@ export const clampPanelOffset = (value, maxOffset) => {
   return Math.min(Math.max(value, 0), maxOffset);
 };
 
+const getNextHigherState = (currentState) => {
+  if (currentState === PANEL_STATES.COLLAPSED) {
+    return PANEL_STATES.HALF;
+  }
+
+  return PANEL_STATES.FULL;
+};
+
+const getNextLowerState = (currentState) => {
+  if (currentState === PANEL_STATES.FULL) {
+    return PANEL_STATES.HALF;
+  }
+
+  return PANEL_STATES.COLLAPSED;
+};
+
 /**
- * Gets the next state from gesture velocity and current offset
- * Snaps to 3 states: collapsed, half, full
+ * Gets the next state from gesture direction and current state.
+ * Upward swipe: collapsed -> half -> full
+ * Downward swipe: full -> half -> collapsed
  */
-export const getNextStateFromGesture = (
+export const getNextStateFromGesture = ({
+  currentState,
   releaseOffset,
+  deltaY,
   velocityY,
   collapsedOffset,
   halfOffset,
-) => {
-  // HIGH velocity: skip states
-  if (velocityY > PANEL_HIGH_VELOCITY_THRESHOLD) {
-    // Swiping up: cycle forward (collapsed → half → full)
-    if (releaseOffset > halfOffset) return PANEL_STATES.HALF;
-    if (releaseOffset > 0) return PANEL_STATES.FULL;
-    return PANEL_STATES.FULL;
+}) => {
+  const isFastSwipe = Math.abs(velocityY) >= PANEL_SNAP_VELOCITY_THRESHOLD;
+  const isLongSwipe = Math.abs(deltaY) >= PANEL_SWIPE_DISTANCE_THRESHOLD;
+
+  if (isFastSwipe || isLongSwipe) {
+    if (deltaY < 0 || velocityY < -PANEL_SNAP_VELOCITY_THRESHOLD) {
+      return getNextHigherState(currentState);
+    }
+
+    if (deltaY > 0 || velocityY > PANEL_SNAP_VELOCITY_THRESHOLD) {
+      return getNextLowerState(currentState);
+    }
   }
 
-  if (velocityY < -PANEL_HIGH_VELOCITY_THRESHOLD) {
-    // Swiping down: cycle backward (full → half → collapsed)
-    if (releaseOffset < halfOffset * 0.5) return PANEL_STATES.COLLAPSED;
-    if (releaseOffset < halfOffset * 1.5) return PANEL_STATES.HALF;
-    return PANEL_STATES.COLLAPSED;
-  }
-
-  // LOW velocity: snap to nearest state based on position
+  // Tiny / ambiguous drags snap to nearest state.
   return getNearestSnapPointState(releaseOffset, collapsedOffset, halfOffset);
 };
 
@@ -76,24 +97,3 @@ export const getOffsetForState = (state, collapsedOffset, halfOffset) => {
   }
 };
 
-/**
- * Legacy function for backward compatibility - determines collapse state from release
- */
-export const shouldCollapseFromRelease = (releaseOffset, velocityY, collapsedOffset) => {
-  if (velocityY > PANEL_SNAP_VELOCITY_THRESHOLD) {
-    return true;
-  }
-
-  if (velocityY < -PANEL_SNAP_VELOCITY_THRESHOLD) {
-    return false;
-  }
-
-  return releaseOffset > collapsedOffset * 0.5;
-};
-
-/**
- * Legacy function for backward compatibility - determines collapse from offset
- */
-export const shouldCollapseFromOffset = (offset, collapsedOffset) => {
-  return offset > collapsedOffset * 0.5;
-};

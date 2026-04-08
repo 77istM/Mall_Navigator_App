@@ -148,12 +148,14 @@ export const TargetPanel = ({
           dragStartOffsetRef.current + gestureState.dy,
           maxOffset,
         );
-        const nextState = getNextStateFromGesture(
+        const nextState = getNextStateFromGesture({
+          currentState: panelState,
           releaseOffset,
-          gestureState.vy,
+          deltaY: gestureState.dy,
+          velocityY: gestureState.vy,
           collapsedOffset,
           halfOffset,
-        );
+        });
         const targetOffset = getOffsetForState(nextState, collapsedOffset, halfOffset);
 
         animatePanelTo(targetOffset);
@@ -169,19 +171,21 @@ export const TargetPanel = ({
           dragStartOffsetRef.current + gestureState.dy,
           maxOffset,
         );
-        const nextState = getNextStateFromGesture(
-          terminateOffset,
-          gestureState.vy,
+        const nextState = getNextStateFromGesture({
+          currentState: panelState,
+          releaseOffset: terminateOffset,
+          deltaY: gestureState.dy,
+          velocityY: gestureState.vy,
           collapsedOffset,
           halfOffset,
-        );
+        });
         const targetOffset = getOffsetForState(nextState, collapsedOffset, halfOffset);
 
         animatePanelTo(targetOffset);
         onStateChange?.(nextState);
       },
     });
-  }, [collapsedOffset, halfOffset, onStateChange, panelTranslateY]);
+  }, [collapsedOffset, halfOffset, onStateChange, panelState, panelTranslateY]);
 
   if (!selectedCache) {
     return null;
