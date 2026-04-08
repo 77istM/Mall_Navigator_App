@@ -75,7 +75,7 @@ export const evaluateLocationTrust = ({ previousFix, currentFix, now = Date.now(
 };
 
 export const evaluateLocationStaleness = (lastFixAt, now = Date.now()) => {
-  if (!lastFixAt) {
+  if (lastFixAt == null) {
     return {
       isStale: false,
       warningText: null,

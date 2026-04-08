@@ -51,7 +51,7 @@ export const useNavigationTelemetry = () => {
       }
     }
 
-    if (__DEV__) {
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
       const logger = options.level === 'warning' ? console.warn : console.info;
       logger(`[navigation] ${eventName}`, payload);
     }

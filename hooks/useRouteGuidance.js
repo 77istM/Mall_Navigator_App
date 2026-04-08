@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchRouteFromProvider, ROUTE_SERVICE_SETTINGS } from '../services/navigation/routeService';
 import { normalizeRouteResponse } from '../utils/routeNormalization';
 import { getGuidanceMode } from '../utils/navigationTrust';
+import { GEOQUEST_ROLLOUT_FLAGS } from '../constants/featureFlags';
 import { useNavigationTelemetry } from './useNavigationTelemetry';
 
 const DEFAULT_REFRESH_DISTANCE_METERS = 25;
@@ -80,6 +81,17 @@ export const useRouteGuidance = ({ location, selectedCache, enabled = true, prof
   );
 
   useEffect(() => {
+    if (!GEOQUEST_ROLLOUT_FLAGS.routeEnabled) {
+      setRouteState((previous) => ({
+        ...previous,
+        loading: false,
+        error: null,
+        route: null,
+        mode: getGuidanceMode({ sensorAvailable, locationTrust }),
+      }));
+      return undefined;
+    }
+
     if (!enabled || !origin || !destination) {
       setRouteState((previous) => ({
         ...previous,

@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { getPublicCaches, getEventCaches, logFind } from '../api';
 import { getDistanceInMeters } from '../utils/distanceCalculator';
 import { getBearingInDegrees } from '../utils/bearingCalculator';
+import { calculateShortestTurnDelta } from '../utils/navigationMath';
 import {
   DISCOVERY_RADIUS,
   PLAYER_ID,
@@ -11,6 +12,7 @@ import {
   MOTION_GAMEPLAY_SETTINGS,
   NAVIGATION_TRUST,
 } from '../constants/appConstants';
+import { GEOQUEST_ROLLOUT_FLAGS } from '../constants/featureFlags';
 import {
   buildDiscoveryIntegritySnapshot,
   evaluateDiscoveryLogAttempt,
@@ -159,8 +161,13 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
       return;
     }
 
-    // Normalize shortest turn angle to range [-180, 180)
-    const delta = ((targetBearing - heading + 540) % 360) - 180;
+    const delta = calculateShortestTurnDelta(heading, targetBearing);
+    if (!Number.isFinite(delta)) {
+      setTurnDelta(null);
+      setDirectionHint(null);
+      return;
+    }
+
     const roundedDelta = Math.round(delta);
     setTurnDelta(roundedDelta);
     const aligned = Math.abs(roundedDelta) <= COMPASS_SETTINGS.ON_TARGET_THRESHOLD_DEGREES;
@@ -175,13 +182,18 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     }
   }, [heading, targetBearing]);
 
-  const logAttemptState = evaluateDiscoveryLogAttempt({
-    selectedCache,
-    distanceToCache,
-    discoveryRadius,
-    locationTrust,
-    lastLogAttemptAt,
-  });
+  const logAttemptState = GEOQUEST_ROLLOUT_FLAGS.antiCheatEnabled
+    ? evaluateDiscoveryLogAttempt({
+        selectedCache,
+        distanceToCache,
+        discoveryRadius,
+        locationTrust,
+        lastLogAttemptAt,
+      })
+    : {
+        canLog: Boolean(selectedCache),
+        reason: null,
+      };
 
   const canLogDiscovery = logAttemptState.canLog;
 
@@ -197,7 +209,7 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     if (!logAttemptState.canLog) {
       trackNavigationTelemetry(
         'navigation.discovery_log_blocked',
-        {
+        }
           reason: logAttemptState.reason,
           selectedCacheId: selectedCache?.CacheID ?? null,
           distanceToCache,
