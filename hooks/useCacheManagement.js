@@ -209,7 +209,7 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     if (!logAttemptState.canLog) {
       trackNavigationTelemetry(
         'navigation.discovery_log_blocked',
-        }
+        {
           reason: logAttemptState.reason,
           selectedCacheId: selectedCache?.CacheID ?? null,
           distanceToCache,
