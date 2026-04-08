@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchRouteFromProvider, ROUTE_SERVICE_SETTINGS } from '../services/navigation/routeService';
 import { normalizeRouteResponse } from '../utils/routeNormalization';
+import { getGuidanceMode } from '../utils/navigationTrust';
 
 const DEFAULT_REFRESH_DISTANCE_METERS = 25;
 const DEFAULT_REFRESH_INTERVAL_MS = 60000;
@@ -18,7 +19,7 @@ const getDistanceMeters = (from, to) => {
   return 2 * earthRadius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-export const useRouteGuidance = ({ location, selectedCache, enabled = true, profile = 'walking' }) => {
+export const useRouteGuidance = ({ location, selectedCache, enabled = true, profile = 'walking', sensorAvailable = true, locationTrust = null }) => {
   const [routeState, setRouteState] = useState({
     loading: false,
     error: null,
@@ -50,7 +51,7 @@ export const useRouteGuidance = ({ location, selectedCache, enabled = true, prof
         loading: false,
         error: null,
         route: null,
-        mode: 'compass',
+        mode: getGuidanceMode({ sensorAvailable, locationTrust }),
       }));
       return undefined;
     }
@@ -125,7 +126,7 @@ export const useRouteGuidance = ({ location, selectedCache, enabled = true, prof
           loading: false,
           error: error?.message || 'Unable to load route guidance.',
           route: null,
-          mode: 'compass',
+          mode: getGuidanceMode({ sensorAvailable, locationTrust }),
         }));
       }
     })();
@@ -133,7 +134,7 @@ export const useRouteGuidance = ({ location, selectedCache, enabled = true, prof
     return () => {
       controller.abort();
     };
-  }, [enabled, location, destination, profile]);
+  }, [enabled, location, destination, profile, sensorAvailable, locationTrust]);
 
   return routeState;
 };

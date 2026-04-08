@@ -20,6 +20,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
   const activeEventId = eventIdProp ?? route?.params?.eventId ?? null;
   const activeEventName = eventNameProp ?? route?.params?.eventName ?? null;
   const activeEventDiscoveryRadius = eventDiscoveryRadiusProp ?? route?.params?.eventDiscoveryRadius ?? null;
+  const activeDiscoveryRadiusMeters = Number(activeEventDiscoveryRadius) || undefined;
   const { location, loading: locationLoading, error: locationError, locationTrust } = useLocationTracking();
   const { motionState, smoothedMagnitude } = useMotionTracking();
   const { heading, headingSource, isHeadingAvailable, sensorError, calibrationHelpText } = useCompassHeading({
@@ -49,14 +50,26 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     motionState,
     motionMagnitude: smoothedMagnitude,
     locationTrust,
-    discoveryRadius: Number(activeEventDiscoveryRadius) || undefined,
+    discoveryRadius: activeDiscoveryRadiusMeters,
   });
   const routeGuidance = useRouteGuidance({
     location,
     selectedCache,
     enabled: Boolean(selectedCache && location),
     profile: 'walking',
+    sensorAvailable: isHeadingAvailable && !sensorError,
+    locationTrust,
   });
+  const guidanceMode = routeGuidance.mode;
+  const guidanceModeLabel =
+    guidanceMode === 'route'
+      ? 'Route Active'
+      : guidanceMode === 'gps-fallback'
+        ? 'GPS Fallback'
+        : guidanceMode === 'sensor-limited'
+          ? 'Sensor Limited'
+          : 'Compass Only';
+  const guidanceModeTone = guidanceMode === 'route' ? 'success' : guidanceMode === 'gps-fallback' || guidanceMode === 'sensor-limited' ? 'warning' : 'info';
   const {
     capturedImage,
     isCapturing,
@@ -119,7 +132,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
       ? {
           key: 'route-active',
           variant: 'success',
-          title: 'Route active',
+          title: guidanceModeLabel,
           message: routeGuidance.route.nextManeuver
             ? `Next: ${routeGuidance.route.nextManeuver}`
             : 'Live route guidance is active.',
@@ -270,7 +283,9 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           logAttemptReason={logAttemptReason}
           distanceTrendText={distanceTrendText}
           distanceTrendTone={distanceTrendTone}
-          routeMode={routeGuidance.mode}
+          routeMode={guidanceMode}
+          guidanceModeLabel={guidanceModeLabel}
+          guidanceModeTone={guidanceModeTone}
           routeSummary={routeGuidance.route ? {
             distanceMeters: routeGuidance.route.distanceMeters,
             durationSeconds: routeGuidance.route.durationSeconds,
@@ -280,6 +295,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           routeLoading={routeGuidance.loading}
           routeError={routeGuidance.error}
           isWithinRange={isWithinRange}
+          discoveryRadius={activeDiscoveryRadiusMeters}
           isLogging={isLogging}
           capturedImage={capturedImage}
           isCapturing={isCapturing}

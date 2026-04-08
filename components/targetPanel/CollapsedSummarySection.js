@@ -8,14 +8,19 @@ const CollapsedSummarySection = ({
   distanceTrendText,
   distanceTrendTone,
   routeMode,
+  guidanceModeLabel,
+  guidanceModeTone,
   collapsedStatusText,
   collapsedStatusTone,
 }) => {
+  const modeLabel = guidanceModeLabel
+    || (routeMode === 'route' ? 'Route Active' : routeMode === 'gps-fallback' ? 'GPS Fallback' : routeMode === 'sensor-limited' ? 'Sensor Limited' : 'Compass Only');
+
   return (
     <View style={[styles.collapsedSummaryContainer, styles[`collapsedSummaryContainer_${collapsedStatusTone}`]]}>
       <Text style={styles.panelTitle} numberOfLines={1}>Target: {selectedCache.CacheName}</Text>
-      <Text style={styles.collapsedRouteText} numberOfLines={1}>
-        {routeMode === 'route' ? 'Route active' : routeMode === 'gps-fallback' ? 'GPS fallback' : 'Compass fallback'}
+      <Text style={[styles.collapsedRouteText, styles[`collapsedRouteText_${guidanceModeTone || 'info'}`]]} numberOfLines={1}>
+        {modeLabel}
       </Text>
       <Text style={styles.collapsedDistanceText} numberOfLines={1}>
         Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}

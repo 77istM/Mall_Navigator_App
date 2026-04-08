@@ -47,9 +47,12 @@ export const TargetPanel = ({
   distanceTrendText,
   distanceTrendTone,
   routeMode,
+  guidanceModeLabel,
+  guidanceModeTone,
   routeSummary,
   routeLoading,
   routeError,
+  discoveryRadius,
   isWithinRange,
   isLogging,
   capturedImage,
@@ -200,6 +203,8 @@ export const TargetPanel = ({
     distanceTrendTone,
     guidanceWarningText,
     routeMode,
+    guidanceModeLabel,
+    guidanceModeTone,
     routeSummary,
     routeLoading,
     routeError,
@@ -235,6 +240,7 @@ export const TargetPanel = ({
       isPanelBusy,
       isLogging,
       isCapturing,
+      discoveryRadius,
       logAttemptReason,
       onLogDiscovery,
     },
@@ -258,9 +264,11 @@ export const TargetPanel = ({
         <CollapsedSummarySection
           selectedCache={selectedCache}
           distanceToCache={distanceToCache}
-            distanceTrendText={distanceTrendText}
-            distanceTrendTone={distanceTrendTone}
-            routeMode={routeMode}
+          distanceTrendText={distanceTrendText}
+          distanceTrendTone={distanceTrendTone}
+          routeMode={routeMode}
+          guidanceModeLabel={guidanceModeLabel}
+          guidanceModeTone={guidanceModeTone}
           collapsedStatusText={collapsedStatus.text}
           collapsedStatusTone={collapsedStatus.tone}
         />

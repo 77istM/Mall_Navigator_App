@@ -14,8 +14,17 @@ const DirectionSection = ({
   targetBearing,
   headingSource,
 }) => {
+  const accessibilityLabel = hasDirection
+    ? `Compass guidance. ${directionStatusText}. Heading ${heading} degrees toward target ${targetBearing} degrees. ${headingSource === 'gps-course' ? 'GPS course source.' : 'Magnetometer source.'}`
+    : `Compass guidance. ${directionStatusText}. ${calibrationHelpText || 'Heading is not available yet.'}`;
+
   return (
-    <View style={[styles.directionContainer, styles[`directionContainer_${directionStatusTone}`]]}>
+    <View
+      style={[styles.directionContainer, styles[`directionContainer_${directionStatusTone}`]]}
+      accessible={true}
+      accessibilityRole="text"
+      accessibilityLabel={accessibilityLabel}
+    >
       <View
         style={[
           styles.arrowContainer,

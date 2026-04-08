@@ -14,6 +14,8 @@ const ExpandedPanelContent = ({ content }) => {
     distanceTrendText,
     distanceTrendTone,
     routeMode,
+    guidanceModeLabel,
+    guidanceModeTone,
     routeSummary,
     routeLoading,
     routeError,
@@ -24,14 +26,12 @@ const ExpandedPanelContent = ({ content }) => {
     guidanceWarningText,
   } = content;
 
-  const routeTone = routeError ? 'warning' : routeMode === 'route' ? 'success' : routeLoading ? 'info' : 'warning';
+  const routeTone = routeError ? 'warning' : routeMode === 'route' ? 'success' : routeLoading ? 'info' : guidanceModeTone || 'warning';
   const routeLabel = routeError
-    ? 'Compass fallback'
+    ? 'Route unavailable'
     : routeLoading
       ? 'Route loading'
-      : routeMode === 'route'
-        ? 'Route active'
-        : 'Compass fallback';
+      : guidanceModeLabel || (routeMode === 'route' ? 'Route Active' : 'Compass Only');
 
   return (
     <>
@@ -39,7 +39,7 @@ const ExpandedPanelContent = ({ content }) => {
       <Text style={styles.panelDistance}>
         Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
       </Text>
-      <StatusPill tone={routeTone} label={routeLabel} />
+      <StatusPill tone={routeTone} label={routeLabel} accessibilityLabel={`Guidance mode: ${routeLabel}`} />
       {routeSummary ? (
         <Text style={styles.routeSummaryText}>
           {routeSummary.nextManeuver ? `${routeSummary.nextManeuver} · ` : ''}
@@ -47,7 +47,7 @@ const ExpandedPanelContent = ({ content }) => {
         </Text>
       ) : null}
       {routeError ? (
-        <Text style={styles.routeErrorText}>{routeError}</Text>
+        <Text style={styles.routeErrorText}>{routeError}. Compass guidance stays available.</Text>
       ) : null}
       {distanceTrendText ? (
         <Text style={[styles.distanceTrendText, styles[`distanceTrendText_${distanceTrendTone}`]]}>
@@ -93,6 +93,8 @@ const ExpandedPanelContent = ({ content }) => {
         isPanelBusy={action.isPanelBusy}
         isLogging={action.isLogging}
         isCapturing={action.isCapturing}
+        distanceToCache={distanceToCache}
+        discoveryRadius={action.discoveryRadius}
         logAttemptReason={action.logAttemptReason}
         onLogDiscovery={action.onLogDiscovery}
       />

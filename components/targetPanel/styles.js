@@ -67,6 +67,18 @@ const styles = StyleSheet.create({
     color: '#2563eb',
     marginTop: 4,
   },
+  collapsedRouteText_info: {
+    color: '#2563eb',
+  },
+  collapsedRouteText_success: {
+    color: '#166534',
+  },
+  collapsedRouteText_warning: {
+    color: '#b45309',
+  },
+  collapsedRouteText_error: {
+    color: '#b91c1c',
+  },
   collapsedTrendText: {
     fontSize: 12,
     fontWeight: '700',
