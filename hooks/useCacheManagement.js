@@ -16,6 +16,7 @@ import {
   evaluateDiscoveryLogAttempt,
   getGuidanceMode,
 } from '../utils/navigationTrust';
+import { useNavigationTelemetry } from './useNavigationTelemetry';
 
 /**
  * Custom Hook: useCacheManagement
@@ -42,6 +43,7 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
   const [distanceTrendText, setDistanceTrendText] = useState(null);
   const [distanceTrendTone, setDistanceTrendTone] = useState('info');
   const previousDistanceRef = useRef(null);
+  const trackNavigationTelemetry = useNavigationTelemetry();
 
   const motionState = motionContext?.motionState || null;
   const motionMagnitude = motionContext?.motionMagnitude;
@@ -193,6 +195,25 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     }
 
     if (!logAttemptState.canLog) {
+      trackNavigationTelemetry(
+        'navigation.discovery_log_blocked',
+        {
+          reason: logAttemptState.reason,
+          selectedCacheId: selectedCache?.CacheID ?? null,
+          distanceToCache,
+          discoveryRadius,
+          locationTrusted: locationTrust?.isTrusted ?? null,
+          locationStale: locationTrust?.isStale ?? null,
+          guidanceMode: getGuidanceMode({
+            sensorAvailable: Number.isFinite(heading),
+            locationTrust,
+          }),
+        },
+        {
+          level: 'warning',
+          dedupeKey: `discovery_log_blocked:${selectedCache?.CacheID ?? 'none'}:${logAttemptState.reason || 'unknown'}`,
+        },
+      );
       return;
     }
 

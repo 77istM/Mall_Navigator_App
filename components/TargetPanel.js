@@ -174,29 +174,47 @@ export const TargetPanel = ({
 
   const hasDirection = isHeadingAvailable && turnDelta !== null && !!directionHint;
   const isPanelBusy = isLogging || isCapturing;
-  const directionStatus = getDirectionStatus({ sensorError, hasDirection, isAligned, directionHint });
-  const motionStatus = getMotionStatus({ stableMotionState });
-  const hasMotionMagnitude = Number.isFinite(motionMagnitude);
-  const isLowMovement =
-    stableMotionState === 'stationary' ||
-    (hasMotionMagnitude && motionMagnitude < MOTION_GUIDANCE_SETTINGS.LOW_MOVEMENT_INTENSITY_THRESHOLD);
-  const motionAdvisoryText = isLowMovement
-    ? 'Move steadily toward target for smoother guidance.'
-    : stableMotionState === 'walking'
-      ? 'Good pace. Keep moving toward the target.'
-      : stableMotionState === 'active'
-        ? 'Great momentum. Keep your compass heading aligned.'
-        : null;
-  const motionMagnitudeText = Number.isFinite(motionMagnitude)
-    ? `Intensity: ${motionMagnitude.toFixed(3)}`
-    : 'Intensity: -';
-  const stepCounterStatus = getStepCounterStatus({
-    stepError,
-    isStepCounterAvailable,
-    sessionSteps,
-  });
-  const collapsedStatus = getCollapsedStatus({ isWithinRange });
-  const expandedContentProps = {
+  const directionStatus = useMemo(
+    () => getDirectionStatus({ sensorError, hasDirection, isAligned, directionHint }),
+    [sensorError, hasDirection, isAligned, directionHint],
+  );
+  const motionStatus = useMemo(
+    () => getMotionStatus({ stableMotionState }),
+    [stableMotionState],
+  );
+  const motionMagnitudeText = useMemo(
+    () => (Number.isFinite(motionMagnitude) ? `Intensity: ${motionMagnitude.toFixed(3)}` : 'Intensity: -'),
+    [motionMagnitude],
+  );
+  const motionAdvisoryText = useMemo(() => {
+    const hasMotionMagnitude = Number.isFinite(motionMagnitude);
+    const isLowMovement =
+      stableMotionState === 'stationary' ||
+      (hasMotionMagnitude && motionMagnitude < MOTION_GUIDANCE_SETTINGS.LOW_MOVEMENT_INTENSITY_THRESHOLD);
+
+    if (isLowMovement) {
+      return 'Move steadily toward target for smoother guidance.';
+    }
+
+    if (stableMotionState === 'walking') {
+      return 'Good pace. Keep moving toward the target.';
+    }
+
+    if (stableMotionState === 'active') {
+      return 'Great momentum. Keep your compass heading aligned.';
+    }
+
+    return null;
+  }, [motionMagnitude, stableMotionState]);
+  const stepCounterStatus = useMemo(
+    () => getStepCounterStatus({ stepError, isStepCounterAvailable, sessionSteps }),
+    [stepError, isStepCounterAvailable, sessionSteps],
+  );
+  const collapsedStatus = useMemo(
+    () => getCollapsedStatus({ isWithinRange }),
+    [isWithinRange],
+  );
+  const expandedContentProps = useMemo(() => ({
     selectedCache,
     distanceToCache,
     distanceTrendText,
@@ -244,7 +262,45 @@ export const TargetPanel = ({
       logAttemptReason,
       onLogDiscovery,
     },
-  };
+  }), [
+    capturedImage,
+    captureError,
+    calibrationHelpText,
+    discoveryRadius,
+    distanceToCache,
+    distanceTrendText,
+    distanceTrendTone,
+    guidanceModeLabel,
+    guidanceModeTone,
+    guidanceWarningText,
+    hasDirection,
+    heading,
+    headingSource,
+    isAligned,
+    isCapturing,
+    isLogging,
+    isPanelBusy,
+    isWithinRange,
+    logAttemptReason,
+    motionAdvisoryText,
+    motionMagnitudeText,
+    motionStatus.tone,
+    motionStatus.text,
+    onCaptureProof,
+    onClearProof,
+    onLogDiscovery,
+    routeError,
+    routeLoading,
+    routeMode,
+    routeSummary,
+    selectedCache,
+    sensorError,
+    sessionSteps,
+    stepCounterStatus.text,
+    stepCounterStatus.tone,
+    targetBearing,
+    turnDelta,
+  ]);
 
   return (
     <Animated.View

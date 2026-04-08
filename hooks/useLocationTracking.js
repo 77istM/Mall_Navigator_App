@@ -7,6 +7,7 @@ import {
   evaluateLocationStaleness,
   evaluateLocationTrust,
 } from '../utils/navigationTrust';
+import { useNavigationTelemetry } from './useNavigationTelemetry';
 
 /**
  * Custom Hook: useLocationTracking
@@ -20,6 +21,42 @@ export const useLocationTracking = () => {
   const [locationTrust, setLocationTrust] = useState(createInitialLocationTrust());
   const lastFixRef = useRef(null);
   const staleTimerRef = useRef(null);
+  const trackNavigationTelemetry = useNavigationTelemetry();
+  const lastTrustTelemetryRef = useRef(null);
+
+  const emitTrustTelemetry = (nextTrust, reason) => {
+    if (!nextTrust) {
+      return;
+    }
+
+    if (!nextTrust.isSuspicious && !nextTrust.isStale && nextTrust.isTrusted) {
+      lastTrustTelemetryRef.current = null;
+      return;
+    }
+
+    const telemetryKey = `${reason}:${nextTrust.score}:${nextTrust.isStale}:${nextTrust.isSuspicious}:${nextTrust.warningText || ''}`;
+    if (lastTrustTelemetryRef.current === telemetryKey) {
+      return;
+    }
+
+    lastTrustTelemetryRef.current = telemetryKey;
+    trackNavigationTelemetry(
+      'navigation.location_trust_degraded',
+      {
+        reason,
+        score: nextTrust.score,
+        isStale: nextTrust.isStale,
+        isSuspicious: nextTrust.isSuspicious,
+        warningText: nextTrust.warningText,
+        speedMps: nextTrust.speedMps,
+        jumpMeters: nextTrust.jumpMeters,
+      },
+      {
+        level: 'warning',
+        dedupeKey: telemetryKey,
+      },
+    );
+  };
 
   const updateStaleTrustState = () => {
     const staleSnapshot = evaluateLocationStaleness(lastFixRef.current?.timestamp);
@@ -29,13 +66,16 @@ export const useLocationTracking = () => {
         return previousTrust;
       }
 
-      return {
+      const nextTrust = {
         ...previousTrust,
         isStale: staleSnapshot.isStale,
         isTrusted: staleSnapshot.isStale ? false : previousTrust.isTrusted,
         warningText: staleSnapshot.warningText,
         score: staleSnapshot.isStale ? Math.min(previousTrust.score, 35) : previousTrust.score,
       };
+
+      emitTrustTelemetry(nextTrust, 'stale_fix');
+      return nextTrust;
     });
   };
 
@@ -77,13 +117,14 @@ export const useLocationTracking = () => {
             };
 
             setLocation(nextCoords);
-            setLocationTrust(
-              evaluateLocationTrust({
-                previousFix: lastFixRef.current,
-                currentFix: nextFix,
-                now: timestamp,
-              })
-            );
+            const nextTrust = evaluateLocationTrust({
+              previousFix: lastFixRef.current,
+              currentFix: nextFix,
+              now: timestamp,
+            });
+
+            emitTrustTelemetry(nextTrust, 'location_update');
+            setLocationTrust(nextTrust);
             lastFixRef.current = nextFix;
             setError(null);
           }

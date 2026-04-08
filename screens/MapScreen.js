@@ -1,5 +1,5 @@
 // screens/MapScreen.js
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
@@ -70,38 +70,19 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           ? 'Sensor Limited'
           : 'Compass Only';
   const guidanceModeTone = guidanceMode === 'route' ? 'success' : guidanceMode === 'gps-fallback' || guidanceMode === 'sensor-limited' ? 'warning' : 'info';
-  const {
-    capturedImage,
-    isCapturing,
-    captureError,
-    capturePhotoProof,
-    clearCapturedPhotoProof,
-  } = useCameraProofCapture();
-  const lastSelectedCacheIdRef = useRef(null);
-  const [isTargetPanelCollapsed, setIsTargetPanelCollapsed] = useState(false);
-  const handleSetTargetPanelCollapsed = (nextCollapsed) => {
-    setIsTargetPanelCollapsed((previous) => {
-      if (typeof nextCollapsed === 'boolean') {
-        return nextCollapsed;
-      }
+  const routeSummary = useMemo(() => {
+    if (!routeGuidance.route) {
+      return null;
+    }
 
-      return !previous;
-    });
-  };
-
-  const isLoading = locationLoading || cacheLoading || (!location && !locationError);
-  const loadingTitle = locationLoading
-    ? 'Acquiring GPS signal...'
-    : cacheLoading
-      ? 'Loading cache data...'
-      : 'Preparing the map...';
-  const loadingSubtitle = locationLoading
-    ? 'Waiting for location permission and a stable GPS fix.'
-    : cacheLoading
-      ? 'Fetching caches and gameplay state for this event.'
-      : 'The map will appear as soon as your location is ready.';
-
-  const feedbackBanners = [
+    return {
+      distanceMeters: routeGuidance.route.distanceMeters,
+      durationSeconds: routeGuidance.route.durationSeconds,
+      nextManeuver: routeGuidance.route.nextManeuver,
+      lastUpdatedAt: routeGuidance.lastUpdatedAt,
+    };
+  }, [routeGuidance.route, routeGuidance.lastUpdatedAt]);
+  const feedbackBanners = useMemo(() => ([
     activeEventId
       ? {
           key: 'event',
@@ -154,7 +135,37 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           message: locationTrust.warningText || 'Waiting for a stronger GPS fix before trusting guidance.',
         }
       : null,
-  ].filter(Boolean);
+  ].filter(Boolean)), [activeEventId, activeEventName, cacheError, guidanceModeLabel, locationTrust, routeGuidance.error, routeGuidance.mode, routeGuidance.route, selectedCache, sensorError]);
+  const {
+    capturedImage,
+    isCapturing,
+    captureError,
+    capturePhotoProof,
+    clearCapturedPhotoProof,
+  } = useCameraProofCapture();
+  const lastSelectedCacheIdRef = useRef(null);
+  const [isTargetPanelCollapsed, setIsTargetPanelCollapsed] = useState(false);
+  const handleSetTargetPanelCollapsed = (nextCollapsed) => {
+    setIsTargetPanelCollapsed((previous) => {
+      if (typeof nextCollapsed === 'boolean') {
+        return nextCollapsed;
+      }
+
+      return !previous;
+    });
+  };
+
+  const isLoading = locationLoading || cacheLoading || (!location && !locationError);
+  const loadingTitle = locationLoading
+    ? 'Acquiring GPS signal...'
+    : cacheLoading
+      ? 'Loading cache data...'
+      : 'Preparing the map...';
+  const loadingSubtitle = locationLoading
+    ? 'Waiting for location permission and a stable GPS fix.'
+    : cacheLoading
+      ? 'Fetching caches and gameplay state for this event.'
+      : 'The map will appear as soon as your location is ready.';
 
   const renderBannerStack = (compact = false) => {
     if (feedbackBanners.length === 0) {
@@ -286,12 +297,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           routeMode={guidanceMode}
           guidanceModeLabel={guidanceModeLabel}
           guidanceModeTone={guidanceModeTone}
-          routeSummary={routeGuidance.route ? {
-            distanceMeters: routeGuidance.route.distanceMeters,
-            durationSeconds: routeGuidance.route.durationSeconds,
-            nextManeuver: routeGuidance.route.nextManeuver,
-            lastUpdatedAt: routeGuidance.lastUpdatedAt,
-          } : null}
+          routeSummary={routeSummary}
           routeLoading={routeGuidance.loading}
           routeError={routeGuidance.error}
           isWithinRange={isWithinRange}
