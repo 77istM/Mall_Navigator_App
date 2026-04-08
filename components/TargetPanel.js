@@ -40,6 +40,8 @@ export const TargetPanel = ({
   turnDelta,
   isAligned,
   directionHint,
+  guidanceWarningText,
+  logAttemptReason,
   isWithinRange,
   isLogging,
   capturedImage,
@@ -190,9 +192,10 @@ export const TargetPanel = ({
   const expandedContentProps = {
     selectedCache,
     distanceToCache,
+    guidanceWarningText,
     direction: {
       hasDirection,
-        isAligned,
+      isAligned,
       turnDelta,
       directionStatusText: directionStatus.text,
       directionStatusTone: directionStatus.tone,
@@ -221,6 +224,7 @@ export const TargetPanel = ({
       isPanelBusy,
       isLogging,
       isCapturing,
+      logAttemptReason,
       onLogDiscovery,
     },
   };

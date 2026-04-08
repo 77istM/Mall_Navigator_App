@@ -14,6 +14,7 @@ const ExpandedPanelContent = ({ content }) => {
     motion,
     proof,
     action,
+    guidanceWarningText,
   } = content;
 
   return (
@@ -22,6 +23,9 @@ const ExpandedPanelContent = ({ content }) => {
       <Text style={styles.panelDistance}>
         Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
       </Text>
+      {guidanceWarningText ? (
+        <Text style={styles.guidanceWarningText}>{guidanceWarningText}</Text>
+      ) : null}
 
       <DirectionSection
         hasDirection={direction.hasDirection}
@@ -57,6 +61,7 @@ const ExpandedPanelContent = ({ content }) => {
         isPanelBusy={action.isPanelBusy}
         isLogging={action.isLogging}
         isCapturing={action.isCapturing}
+        logAttemptReason={action.logAttemptReason}
         onLogDiscovery={action.onLogDiscovery}
       />
     </>

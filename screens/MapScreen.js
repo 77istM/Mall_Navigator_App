@@ -34,6 +34,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     isAligned,
     directionHint,
     canLogDiscovery,
+    logAttemptReason,
     isLogging,
     handleSelectCache,
     handleLogDiscovery,
@@ -225,6 +226,8 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           turnDelta={turnDelta}
           isAligned={isAligned}
           directionHint={directionHint}
+          guidanceWarningText={locationTrust?.warningText || null}
+          logAttemptReason={logAttemptReason}
           isWithinRange={isWithinRange}
           isLogging={isLogging}
           capturedImage={capturedImage}

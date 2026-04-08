@@ -80,6 +80,18 @@ const styles = StyleSheet.create({
     color: '#b91c1c',
   },
   panelDistance: { fontSize: 16, marginVertical: 10, color: '#555' },
+  guidanceWarningText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#b45309',
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
   directionContainer: {
     flexDirection: 'row',
     alignItems: 'center',

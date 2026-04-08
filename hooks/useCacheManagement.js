@@ -153,7 +153,6 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     }
 
     if (!logAttemptState.canLog) {
-      Alert.alert('Log blocked', logAttemptState.reason);
       return;
     }
 
