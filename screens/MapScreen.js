@@ -19,7 +19,7 @@ import { appStyles as styles } from '../styles/appStyles';
 export default function MapScreen({ route, eventId: eventIdProp, eventName: eventNameProp }) {
   const activeEventId = eventIdProp ?? route?.params?.eventId ?? null;
   const activeEventName = eventNameProp ?? route?.params?.eventName ?? null;
-  const { location, loading: locationLoading, error: locationError } = useLocationTracking();
+  const { location, loading: locationLoading, error: locationError, locationTrust } = useLocationTracking();
   const { heading, isHeadingAvailable, sensorError } = useCompassHeading();
   const { motionState, smoothedMagnitude } = useMotionTracking();
   const { sessionSteps, isAvailable: isStepCounterAvailable, stepError } = useStepCounter();
@@ -31,13 +31,16 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     distanceToCache,
     targetBearing,
     turnDelta,
+    isAligned,
     directionHint,
+    canLogDiscovery,
     isLogging,
     handleSelectCache,
     handleLogDiscovery,
   } = useCacheManagement(location, activeEventId, heading, {
     motionState,
     motionMagnitude: smoothedMagnitude,
+    locationTrust,
   });
   const {
     capturedImage,
@@ -95,6 +98,14 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           variant: 'error',
           title: 'Cache data unavailable',
           message: cacheError,
+        }
+      : null,
+    locationTrust && !locationTrust.isTrusted
+      ? {
+          key: 'location-trust',
+          variant: 'warning',
+          title: 'Location quality limited',
+          message: locationTrust.warningText || 'Waiting for a stronger GPS fix before trusting guidance.',
         }
       : null,
   ].filter(Boolean);
@@ -161,7 +172,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     );
   }
 
-  const isWithinRange = distanceToCache !== null && distanceToCache <= DISCOVERY_RADIUS;
+  const isWithinRange = canLogDiscovery;
 
   return (
     <View style={styles.container}>
@@ -211,6 +222,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           stepError={stepError}
           targetBearing={targetBearing}
           turnDelta={turnDelta}
+          isAligned={isAligned}
           directionHint={directionHint}
           isWithinRange={isWithinRange}
           isLogging={isLogging}

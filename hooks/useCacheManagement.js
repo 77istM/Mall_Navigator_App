@@ -4,6 +4,7 @@ import { getPublicCaches, getEventCaches, logFind } from '../api';
 import { getDistanceInMeters } from '../utils/distanceCalculator';
 import { getBearingInDegrees } from '../utils/bearingCalculator';
 import {
+  DISCOVERY_RADIUS,
   PLAYER_ID,
   COMPASS_SETTINGS,
   MOTION_FEATURES,
@@ -30,9 +31,12 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
   const [directionHint, setDirectionHint] = useState(null);
   const [isLogging, setIsLogging] = useState(false);
   const [movementConfidence, setMovementConfidence] = useState(null);
+  const [isAligned, setIsAligned] = useState(false);
 
   const motionState = motionContext?.motionState || null;
   const motionMagnitude = motionContext?.motionMagnitude;
+  const locationTrust = motionContext?.locationTrust || null;
+  const discoveryRadius = motionContext?.discoveryRadius ?? DISCOVERY_RADIUS;
 
   const calculateMovementConfidence = () => {
     if (!MOTION_FEATURES.ENABLE_ACCELEROMETER || !MOTION_GAMEPLAY_SETTINGS.ENABLE_MOVEMENT_CONFIDENCE) {
@@ -114,8 +118,10 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     const delta = ((targetBearing - heading + 540) % 360) - 180;
     const roundedDelta = Math.round(delta);
     setTurnDelta(roundedDelta);
+    const aligned = Math.abs(roundedDelta) <= COMPASS_SETTINGS.ON_TARGET_THRESHOLD_DEGREES;
+    setIsAligned(aligned);
 
-    if (Math.abs(roundedDelta) <= COMPASS_SETTINGS.ON_TARGET_THRESHOLD_DEGREES) {
+    if (aligned) {
       setDirectionHint('On target');
     } else if (roundedDelta > 0) {
       setDirectionHint(`Turn right ${Math.abs(roundedDelta)}°`);
@@ -123,6 +129,13 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
       setDirectionHint(`Turn left ${Math.abs(roundedDelta)}°`);
     }
   }, [heading, targetBearing]);
+
+  const canLogDiscovery = Boolean(
+    selectedCache &&
+    distanceToCache !== null &&
+    distanceToCache <= discoveryRadius &&
+    (!locationTrust || locationTrust.isTrusted)
+  );
 
   const handleSelectCache = (cache) => {
     setSelectedCache(cache);
@@ -173,6 +186,8 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     targetBearing,
     turnDelta,
     directionHint,
+    isAligned,
+    canLogDiscovery,
     movementConfidence,
     handleSelectCache,
     handleLogDiscovery,

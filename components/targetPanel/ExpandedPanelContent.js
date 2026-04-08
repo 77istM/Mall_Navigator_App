@@ -25,6 +25,7 @@ const ExpandedPanelContent = ({ content }) => {
 
       <DirectionSection
         hasDirection={direction.hasDirection}
+        isAligned={direction.isAligned}
         turnDelta={direction.turnDelta}
         directionStatusText={direction.directionStatusText}
         directionStatusTone={direction.directionStatusTone}

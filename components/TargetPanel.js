@@ -38,6 +38,7 @@ export const TargetPanel = ({
   stepError,
   targetBearing,
   turnDelta,
+  isAligned,
   directionHint,
   isWithinRange,
   isLogging,
@@ -160,7 +161,7 @@ export const TargetPanel = ({
 
   const hasDirection = isHeadingAvailable && turnDelta !== null && !!directionHint;
   const isPanelBusy = isLogging || isCapturing;
-  const directionStatus = getDirectionStatus({ sensorError, hasDirection, directionHint });
+  const directionStatus = getDirectionStatus({ sensorError, hasDirection, isAligned, directionHint });
   const motionStatus = getMotionStatus({ stableMotionState });
   const hasMotionMagnitude = Number.isFinite(motionMagnitude);
   const isLowMovement =
@@ -191,6 +192,7 @@ export const TargetPanel = ({
     distanceToCache,
     direction: {
       hasDirection,
+        isAligned,
       turnDelta,
       directionStatusText: directionStatus.text,
       directionStatusTone: directionStatus.tone,

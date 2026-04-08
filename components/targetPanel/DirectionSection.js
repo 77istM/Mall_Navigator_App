@@ -5,6 +5,7 @@ import StatusPill from './StatusPill';
 
 const DirectionSection = ({
   hasDirection,
+  isAligned,
   turnDelta,
   directionStatusText,
   directionStatusTone,
@@ -25,7 +26,7 @@ const DirectionSection = ({
       </View>
       <View style={styles.directionTextContainer}>
         <Text style={styles.directionTitle}>Compass Guidance</Text>
-        <StatusPill tone={directionStatusTone} label={hasDirection ? 'Aligned' : 'Needs attention'} />
+        <StatusPill tone={directionStatusTone} label={isAligned ? 'Aligned' : 'Needs attention'} />
         <Text style={styles.directionHint}>{directionStatusText}</Text>
         {calibrationHelpText ? (
           <Text style={styles.directionMeta}>{calibrationHelpText}</Text>

@@ -1,7 +1,26 @@
 /**
  * App-wide constants
  */
-export const DISCOVERY_RADIUS = 5000000; // User must be within 5000000 meters to log
+export const DISCOVERY_RADIUS = 30; // Default discovery radius in meters
+
+export const NAVIGATION_TRUST = {
+  MAX_LOCATION_AGE_MS: 15000,
+  MAX_LOCATION_JUMP_METERS: 100,
+  MAX_PLAUSIBLE_SPEED_MPS: 12,
+  MAX_JUMP_SPEED_MPS: 25,
+  LOW_TRUST_THRESHOLD: 40,
+};
+
+export const GUIDANCE_MODE = {
+  COMPASS: 'compass',
+  GPS_FALLBACK: 'gps-fallback',
+  ROUTE: 'route',
+  SENSOR_LIMITED: 'sensor-limited',
+};
+
+export const EVENT_SETTINGS = {
+  DEFAULT_DISCOVERY_RADIUS_METERS: DISCOVERY_RADIUS,
+};
 
 export const LOCATION_PERMISSIONS = {
   HIGH_ACCURACY: true,
@@ -17,7 +36,7 @@ export const MAP_REGION = {
 export const PLAYER_ID = 3; // Dummy player ID for testing
 
 export const COMPASS_SETTINGS = {
-  ON_TARGET_THRESHOLD_DEGREES: 10,
+  ON_TARGET_THRESHOLD_DEGREES: 5,
   UPDATE_INTERVAL_MS: 1000,
 };
 
@@ -48,6 +67,13 @@ export const STEP_COUNTER_SETTINGS = {
 export const MOTION_GUIDANCE_SETTINGS = {
   HINT_DEBOUNCE_MS: 700,
   LOW_MOVEMENT_INTENSITY_THRESHOLD: 0.1,
+};
+
+export const GUIDANCE_STATUS_TEXT = {
+  ALIGNING: 'Adjusting heading',
+  ALIGNED: 'On target',
+  CALIBRATING: 'Compass calibrating.',
+  SENSOR_LIMITED: 'Compass limited. Use GPS fallback.',
 };
 
 export const MOTION_GAMEPLAY_SETTINGS = {
