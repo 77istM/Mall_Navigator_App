@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, PanResponder } from 'react-native';
+import { Animated, Easing, PanResponder, ScrollView } from 'react-native';
 import { MOTION_GUIDANCE_SETTINGS } from '../constants/appConstants';
 import {
   COLLAPSED_PANEL_VISIBLE_HEIGHT,
@@ -344,7 +344,17 @@ export const TargetPanel = ({
           collapsedStatusTone={collapsedStatus.tone}
         />
       ) : (
-        <ExpandedPanelContent content={expandedContentProps} />
+        <ScrollView
+          style={[
+            styles.expandedContentContainer,
+            panelState === PANEL_STATES.HALF && styles.expandedContentContainer_half,
+          ]}
+          scrollEnabled={panelState === PANEL_STATES.HALF}
+          scrollEventThrottle={16}
+          contentContainerStyle={styles.expandedContentScroll}
+        >
+          <ExpandedPanelContent content={expandedContentProps} panelState={panelState} />
+        </ScrollView>
       )}
     </Animated.View>
   );

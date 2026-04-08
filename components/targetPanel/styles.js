@@ -64,6 +64,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#2563eb',
   },
   panelTitle: { fontSize: 18, fontWeight: 'bold' },
+  expandedContentContainer: {
+    maxHeight: '100%',
+  },
+  expandedContentContainer_half: {
+    maxHeight: 300,
+  },
+  expandedContentScroll: {
+    paddingBottom: 12,
+  },
   collapsedSummaryContainer: {
     paddingBottom: 4,
   },
