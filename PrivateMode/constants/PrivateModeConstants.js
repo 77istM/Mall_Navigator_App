@@ -12,7 +12,7 @@ export const WORLD_PICKER_REGION = {
 
 export const DEFAULT_START_IN_HOURS = '0';
 export const DEFAULT_DURATION_HOURS = '24';
-export const DEFAULT_DISCOVERY_RADIUS_METERS = '30';
+export const DEFAULT_DISCOVERY_RADIUS_METERS = '1000';
 export const DEFAULT_CACHE_POINTS = '10';
 
 export const INVITE_SHARE_TITLE = 'GeoQuest Private Event Invite';

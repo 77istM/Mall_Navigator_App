@@ -1,7 +1,7 @@
 /**
  * App-wide constants
  */
-export const DISCOVERY_RADIUS = 30; // Default discovery radius in meters
+export const DISCOVERY_RADIUS = 50000; // Default discovery radius in meters
 
 export const NAVIGATION_TRUST = {
   MAX_LOCATION_AGE_MS: 15000,
