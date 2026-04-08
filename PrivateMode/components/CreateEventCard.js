@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 import InlineStatusMessage from '../../components/InlineStatusMessage';
 import LoadingActionButton from '../../components/LoadingActionButton';
 
@@ -24,6 +25,7 @@ export default function CreateEventCard({
   onShareInviteCode,
 }) {
   const canUseInviteActions = Boolean(ownedEventId) && !isCreatingEvent;
+  const inviteCodeValue = String(ownedEventId || '').trim();
 
   return (
     <View style={styles.card}>
@@ -94,6 +96,15 @@ export default function CreateEventCard({
         <View style={styles.inviteCodePanel}>
           <Text style={styles.inviteCodeLabel}>Event Invite Code:</Text>
           <Text style={styles.inviteCodeValue}>{ownedEventId}</Text>
+          <View style={styles.qrWrapper}>
+            <QRCode
+              value={inviteCodeValue}
+              size={150}
+              color="#212529"
+              backgroundColor="#ffffff"
+            />
+          </View>
+          <Text style={styles.qrHintText}>Scan this QR code to quickly copy the invite code.</Text>
           <View style={styles.inviteActionsRow}>
             <TouchableOpacity
               style={[styles.inviteActionButton, styles.inviteCopyButton, !canUseInviteActions && styles.buttonDisabled]}

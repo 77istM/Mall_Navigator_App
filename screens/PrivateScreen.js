@@ -285,11 +285,26 @@ const styles = StyleSheet.create({
   },
   inviteCodeValue: {
     marginTop: 4,
-    marginBottom: 10,
+    marginBottom: 8,
     color: '#0d6efd',
     fontSize: 34,
     fontWeight: '800',
     letterSpacing: 2,
+  },
+  qrWrapper: {
+    marginBottom: 8,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+  },
+  qrHintText: {
+    marginBottom: 10,
+    color: '#6c757d',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   inviteActionsRow: {
     width: '100%',
