@@ -13,3 +13,13 @@ export const WORLD_PICKER_REGION = {
 export const DEFAULT_START_IN_HOURS = '0';
 export const DEFAULT_DURATION_HOURS = '24';
 export const DEFAULT_CACHE_POINTS = '10';
+
+export const INVITE_SHARE_TITLE = 'GeoQuest Private Event Invite';
+
+export const buildInviteShareMessage = (inviteCode, eventName = '') => {
+  const normalizedCode = String(inviteCode || '').trim();
+  const normalizedEventName = String(eventName || '').trim();
+  const eventLine = normalizedEventName ? `Event: ${normalizedEventName}\n` : '';
+
+  return `${eventLine}Join my GeoQuest private event with invite code: ${normalizedCode}`;
+};

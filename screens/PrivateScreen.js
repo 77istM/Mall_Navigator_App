@@ -80,6 +80,8 @@ export default function PrivateDashboardScreen({ navigation }) {
         ownedEventId={eventMgmt.ownedEventId}
         isCreatingEvent={eventMgmt.isCreatingEvent}
         createEventStatus={eventMgmt.createEventStatus}
+        onCopyInviteCode={eventMgmt.handleCopyInviteCode}
+        onShareInviteCode={eventMgmt.handleShareInviteCode}
       />
 
       <CreateCacheCard

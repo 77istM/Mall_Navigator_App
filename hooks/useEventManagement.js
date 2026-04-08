@@ -4,6 +4,8 @@ import {
   createPrivateModeEvent,
   extractCreatedEventId,
   normalizeEventId,
+  copyInviteCodeToClipboard,
+  shareInviteCode,
 } from '../PrivateMode/services/PrivateModeService';
 import {
   validateInviteCode,
@@ -150,6 +152,18 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     }
   }, [createEventStatus]);
 
+  const handleCopyInviteCode = useCallback(async () => {
+    const normalizedCode = String(ownedEventId || '').trim();
+    const result = await copyInviteCodeToClipboard(normalizedCode);
+    setCreateEventStatus({ tone: result.tone, message: result.message });
+  }, [ownedEventId]);
+
+  const handleShareInviteCode = useCallback(async () => {
+    const normalizedCode = String(ownedEventId || '').trim();
+    const result = await shareInviteCode(normalizedCode, eventName);
+    setCreateEventStatus({ tone: result.tone, message: result.message });
+  }, [ownedEventId, eventName]);
+
   return {
     // State
     inviteCode,
@@ -174,5 +188,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     // Handlers
     handleJoinEvent,
     handleCreateEvent,
+    handleCopyInviteCode,
+    handleShareInviteCode,
   };
 };
