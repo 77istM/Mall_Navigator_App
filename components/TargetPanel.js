@@ -86,7 +86,7 @@ export const TargetPanel = ({
   }, [motionState]);
 
   const collapsedOffset = Math.max(panelHeight - COLLAPSED_PANEL_VISIBLE_HEIGHT, 0);
-  const halfOffset = Math.max(availableScreenHeight * HALF_SCREEN_HEIGHT_RATIO, 0);
+  const halfOffset = Math.max(collapsedOffset * HALF_SCREEN_HEIGHT_RATIO, 0);
 
   const animatePanelTo = (toValue) => {
     if (activeAnimationRef.current) {

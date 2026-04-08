@@ -6,6 +6,7 @@ const styles = StyleSheet.create({
     bottom: 40,
     left: 20,
     right: 20,
+    zIndex: 12,
     maxWidth: '90%',
     alignSelf: 'center',
     backgroundColor: 'white',
@@ -15,7 +16,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5,
+    elevation: 12,
   },
   panelHandleRow: {
     alignItems: 'center',
