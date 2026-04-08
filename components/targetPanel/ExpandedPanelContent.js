@@ -5,6 +5,7 @@ import DirectionSection from './DirectionSection';
 import MotionSection from './MotionSection';
 import ProofSection from './ProofSection';
 import LogActionSection from './LogActionSection';
+import StatusPill from './StatusPill';
 
 const ExpandedPanelContent = ({ content }) => {
   const {
@@ -12,6 +13,10 @@ const ExpandedPanelContent = ({ content }) => {
     distanceToCache,
     distanceTrendText,
     distanceTrendTone,
+    routeMode,
+    routeSummary,
+    routeLoading,
+    routeError,
     direction,
     motion,
     proof,
@@ -19,12 +24,31 @@ const ExpandedPanelContent = ({ content }) => {
     guidanceWarningText,
   } = content;
 
+  const routeTone = routeError ? 'warning' : routeMode === 'route' ? 'success' : routeLoading ? 'info' : 'warning';
+  const routeLabel = routeError
+    ? 'Compass fallback'
+    : routeLoading
+      ? 'Route loading'
+      : routeMode === 'route'
+        ? 'Route active'
+        : 'Compass fallback';
+
   return (
     <>
       <Text style={styles.panelTitle}>Target: {selectedCache.CacheName}</Text>
       <Text style={styles.panelDistance}>
         Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
       </Text>
+      <StatusPill tone={routeTone} label={routeLabel} />
+      {routeSummary ? (
+        <Text style={styles.routeSummaryText}>
+          {routeSummary.nextManeuver ? `${routeSummary.nextManeuver} · ` : ''}
+          {Math.round(routeSummary.distanceMeters)}m route · {Math.max(1, Math.round(routeSummary.durationSeconds / 60))} min
+        </Text>
+      ) : null}
+      {routeError ? (
+        <Text style={styles.routeErrorText}>{routeError}</Text>
+      ) : null}
       {distanceTrendText ? (
         <Text style={[styles.distanceTrendText, styles[`distanceTrendText_${distanceTrendTone}`]]}>
           {distanceTrendText}

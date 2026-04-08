@@ -1,7 +1,7 @@
 // screens/MapScreen.js
 import React, { useEffect, useRef, useState } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
 
 // Adjusting imports to step out of the 'screens' folder
@@ -10,6 +10,7 @@ import { useCompassHeading } from '../hooks/useCompassHeading';
 import { useMotionTracking } from '../hooks/useMotionTracking';
 import { useStepCounter } from '../hooks/useStepCounter';
 import { useCacheManagement } from '../hooks/useCacheManagement';
+import { useRouteGuidance } from '../hooks/useRouteGuidance';
 import { useCameraProofCapture } from '../hooks/useCameraProofCapture';
 import TargetPanel from '../components/TargetPanel';
 import StatusBanner from '../components/StatusBanner';
@@ -39,6 +40,8 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     directionHint,
     canLogDiscovery,
     logAttemptReason,
+    distanceTrendText,
+    distanceTrendTone,
     isLogging,
     handleSelectCache,
     handleLogDiscovery,
@@ -47,6 +50,12 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     motionMagnitude: smoothedMagnitude,
     locationTrust,
     discoveryRadius: Number(activeEventDiscoveryRadius) || undefined,
+  });
+  const routeGuidance = useRouteGuidance({
+    location,
+    selectedCache,
+    enabled: Boolean(selectedCache && location),
+    profile: 'walking',
   });
   const {
     capturedImage,
@@ -104,6 +113,24 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           variant: 'error',
           title: 'Cache data unavailable',
           message: cacheError,
+        }
+      : null,
+    selectedCache && routeGuidance.mode === 'route' && routeGuidance.route
+      ? {
+          key: 'route-active',
+          variant: 'success',
+          title: 'Route active',
+          message: routeGuidance.route.nextManeuver
+            ? `Next: ${routeGuidance.route.nextManeuver}`
+            : 'Live route guidance is active.',
+        }
+      : null,
+    selectedCache && routeGuidance.error
+      ? {
+          key: 'route-fallback',
+          variant: 'warning',
+          title: 'Compass fallback',
+          message: routeGuidance.error,
         }
       : null,
     locationTrust && !locationTrust.isTrusted
@@ -193,6 +220,13 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
         }}
         showsUserLocation={true}
       >
+        {routeGuidance.route?.geometry?.length > 1 ? (
+          <Polyline
+            coordinates={routeGuidance.route.geometry}
+            strokeColor={routeGuidance.mode === 'route' ? '#2563eb' : '#9ca3af'}
+            strokeWidth={4}
+          />
+        ) : null}
         {caches.map((cache) => (
           <Marker
             key={cache.CacheID}
@@ -236,6 +270,15 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           logAttemptReason={logAttemptReason}
           distanceTrendText={distanceTrendText}
           distanceTrendTone={distanceTrendTone}
+          routeMode={routeGuidance.mode}
+          routeSummary={routeGuidance.route ? {
+            distanceMeters: routeGuidance.route.distanceMeters,
+            durationSeconds: routeGuidance.route.durationSeconds,
+            nextManeuver: routeGuidance.route.nextManeuver,
+            lastUpdatedAt: routeGuidance.lastUpdatedAt,
+          } : null}
+          routeLoading={routeGuidance.loading}
+          routeError={routeGuidance.error}
           isWithinRange={isWithinRange}
           isLogging={isLogging}
           capturedImage={capturedImage}

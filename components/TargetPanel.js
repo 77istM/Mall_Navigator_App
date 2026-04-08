@@ -46,6 +46,10 @@ export const TargetPanel = ({
   logAttemptReason,
   distanceTrendText,
   distanceTrendTone,
+  routeMode,
+  routeSummary,
+  routeLoading,
+  routeError,
   isWithinRange,
   isLogging,
   capturedImage,
@@ -195,6 +199,10 @@ export const TargetPanel = ({
     distanceTrendText,
     distanceTrendTone,
     guidanceWarningText,
+    routeMode,
+    routeSummary,
+    routeLoading,
+    routeError,
     direction: {
       hasDirection,
       isAligned,
@@ -252,6 +260,7 @@ export const TargetPanel = ({
           distanceToCache={distanceToCache}
             distanceTrendText={distanceTrendText}
             distanceTrendTone={distanceTrendTone}
+            routeMode={routeMode}
           collapsedStatusText={collapsedStatus.text}
           collapsedStatusTone={collapsedStatus.tone}
         />

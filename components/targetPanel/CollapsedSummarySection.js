@@ -7,12 +7,16 @@ const CollapsedSummarySection = ({
   distanceToCache,
   distanceTrendText,
   distanceTrendTone,
+  routeMode,
   collapsedStatusText,
   collapsedStatusTone,
 }) => {
   return (
     <View style={[styles.collapsedSummaryContainer, styles[`collapsedSummaryContainer_${collapsedStatusTone}`]]}>
       <Text style={styles.panelTitle} numberOfLines={1}>Target: {selectedCache.CacheName}</Text>
+      <Text style={styles.collapsedRouteText} numberOfLines={1}>
+        {routeMode === 'route' ? 'Route active' : routeMode === 'gps-fallback' ? 'GPS fallback' : 'Compass fallback'}
+      </Text>
       <Text style={styles.collapsedDistanceText} numberOfLines={1}>
         Distance: {distanceToCache !== null ? `${distanceToCache} meters` : 'Calculating...'}
       </Text>

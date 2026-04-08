@@ -61,6 +61,12 @@ const styles = StyleSheet.create({
     color: '#4b5563',
     marginTop: 4,
   },
+  collapsedRouteText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2563eb',
+    marginTop: 4,
+  },
   collapsedTrendText: {
     fontSize: 12,
     fontWeight: '700',
@@ -94,6 +100,18 @@ const styles = StyleSheet.create({
     color: '#b91c1c',
   },
   panelDistance: { fontSize: 16, marginVertical: 10, color: '#555' },
+  routeSummaryText: {
+    fontSize: 12,
+    color: '#334155',
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  routeErrorText: {
+    fontSize: 12,
+    color: '#b45309',
+    fontWeight: '700',
+    marginBottom: 8,
+  },
   distanceTrendText: {
     fontSize: 12,
     fontWeight: '700',
