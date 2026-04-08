@@ -13,7 +13,7 @@ export const validateInviteCode = (inviteCode) => {
   const numericEventId = Number(code);
 
   if (!code || Number.isNaN(numericEventId) || numericEventId <= 0) {
-    return 'Please enter a valid numeric invite code (Event ID).';
+    return 'Enter a valid numeric invite code shared by the event owner.';
   }
 
   return null;

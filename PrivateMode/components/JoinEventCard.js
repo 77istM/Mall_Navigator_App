@@ -13,11 +13,12 @@ export default function JoinEventCard({
 }) {
   return (
     <View style={styles.card}>
-      <Text style={styles.header}>Participant</Text>
+      <Text style={styles.header}>Participant Join</Text>
       <InlineStatusMessage status={joinStatus} />
+      <Text style={styles.mutedText}>Enter the invite code shared by the event owner.</Text>
       <TextInput
         style={styles.input}
-        placeholder="Invite Code (Event ID)"
+        placeholder="Owner-shared invite code"
         value={inviteCode}
         onChangeText={onInviteCodeChange}
         keyboardType="numeric"
@@ -29,7 +30,7 @@ export default function JoinEventCard({
         textStyle={styles.buttonText}
         loading={isJoiningEvent}
         onPress={onJoinEvent}
-        label="Join via Code"
+        label="Join Private Event"
       />
     </View>
   );
