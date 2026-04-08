@@ -4,11 +4,13 @@ import { MOTION_GUIDANCE_SETTINGS } from '../constants/appConstants';
 import {
   COLLAPSED_PANEL_VISIBLE_HEIGHT,
   PANEL_DRAG_START_THRESHOLD,
+  PANEL_STATES,
+  HALF_SCREEN_HEIGHT_RATIO,
 } from './targetPanel/constants';
 import {
   clampPanelOffset,
-  shouldCollapseFromRelease,
-  shouldCollapseFromOffset,
+  getNextStateFromGesture,
+  getOffsetForState,
 } from './targetPanel/helpers';
 import styles from './targetPanel/styles';
 import PanelHandleSection from './targetPanel/PanelHandleSection';
@@ -58,8 +60,9 @@ export const TargetPanel = ({
   capturedImage,
   isCapturing,
   captureError,
-  isCollapsed,
-  onToggleCollapse,
+  panelState = PANEL_STATES.COLLAPSED,
+  onStateChange,
+  availableScreenHeight = 0,
   onCaptureProof,
   onClearProof,
   onLogDiscovery,
@@ -83,7 +86,7 @@ export const TargetPanel = ({
   }, [motionState]);
 
   const collapsedOffset = Math.max(panelHeight - COLLAPSED_PANEL_VISIBLE_HEIGHT, 0);
-  const isPanelCollapsed = !!isCollapsed;
+  const halfOffset = Math.max(availableScreenHeight * HALF_SCREEN_HEIGHT_RATIO, 0);
 
   const animatePanelTo = (toValue) => {
     if (activeAnimationRef.current) {
@@ -105,9 +108,11 @@ export const TargetPanel = ({
     });
   };
 
+  // Animate panel to current state's offset
   useEffect(() => {
-    animatePanelTo(isPanelCollapsed ? collapsedOffset : 0);
-  }, [collapsedOffset, isPanelCollapsed, panelTranslateY]);
+    const targetOffset = getOffsetForState(panelState, collapsedOffset, halfOffset);
+    animatePanelTo(targetOffset);
+  }, [panelState, collapsedOffset, halfOffset, panelTranslateY]);
 
   const panelPanResponder = useMemo(() => {
     return PanResponder.create({
@@ -125,9 +130,10 @@ export const TargetPanel = ({
         });
       },
       onPanResponderMove: (_event, gestureState) => {
+        const maxOffset = Math.max(collapsedOffset, halfOffset);
         const nextOffset = clampPanelOffset(
           dragStartOffsetRef.current + gestureState.dy,
-          collapsedOffset,
+          maxOffset,
         );
 
         panelTranslateY.setValue(nextOffset);
@@ -137,36 +143,45 @@ export const TargetPanel = ({
           return;
         }
 
+        const maxOffset = Math.max(collapsedOffset, halfOffset);
         const releaseOffset = clampPanelOffset(
           dragStartOffsetRef.current + gestureState.dy,
-          collapsedOffset,
+          maxOffset,
         );
-        const shouldCollapse = shouldCollapseFromRelease(
+        const nextState = getNextStateFromGesture(
           releaseOffset,
           gestureState.vy,
           collapsedOffset,
+          halfOffset,
         );
-        const targetOffset = shouldCollapse ? collapsedOffset : 0;
+        const targetOffset = getOffsetForState(nextState, collapsedOffset, halfOffset);
 
         animatePanelTo(targetOffset);
-        onToggleCollapse?.(shouldCollapse);
+        onStateChange?.(nextState);
       },
       onPanResponderTerminate: (_event, gestureState) => {
         if (collapsedOffset <= 0) {
           return;
         }
 
+        const maxOffset = Math.max(collapsedOffset, halfOffset);
         const terminateOffset = clampPanelOffset(
           dragStartOffsetRef.current + gestureState.dy,
-          collapsedOffset,
+          maxOffset,
         );
-        const shouldCollapse = shouldCollapseFromOffset(terminateOffset, collapsedOffset);
+        const nextState = getNextStateFromGesture(
+          terminateOffset,
+          gestureState.vy,
+          collapsedOffset,
+          halfOffset,
+        );
+        const targetOffset = getOffsetForState(nextState, collapsedOffset, halfOffset);
 
-        animatePanelTo(shouldCollapse ? collapsedOffset : 0);
-        onToggleCollapse?.(shouldCollapse);
+        animatePanelTo(targetOffset);
+        onStateChange?.(nextState);
       },
     });
-  }, [collapsedOffset, onToggleCollapse, panelTranslateY]);
+  }, [collapsedOffset, halfOffset, onStateChange, panelTranslateY]);
 
   if (!selectedCache) {
     return null;
@@ -314,9 +329,9 @@ export const TargetPanel = ({
         }
       }}
     >
-      <PanelHandleSection isPanelCollapsed={isPanelCollapsed} onToggleCollapse={onToggleCollapse} />
+      <PanelHandleSection panelState={panelState} onStateChange={onStateChange} />
 
-      {isPanelCollapsed ? (
+      {panelState === PANEL_STATES.COLLAPSED ? (
         <CollapsedSummarySection
           selectedCache={selectedCache}
           distanceToCache={distanceToCache}

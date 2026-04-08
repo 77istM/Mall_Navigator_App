@@ -12,6 +12,7 @@ import { useStepCounter } from '../hooks/useStepCounter';
 import { useCacheManagement } from '../hooks/useCacheManagement';
 import { useRouteGuidance } from '../hooks/useRouteGuidance';
 import { useCameraProofCapture } from '../hooks/useCameraProofCapture';
+import { PANEL_STATES } from '../components/targetPanel/constants';
 import TargetPanel from '../components/TargetPanel';
 import StatusBanner from '../components/StatusBanner';
 import { appStyles as styles } from '../styles/appStyles';
@@ -144,15 +145,18 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     clearCapturedPhotoProof,
   } = useCameraProofCapture();
   const lastSelectedCacheIdRef = useRef(null);
-  const [isTargetPanelCollapsed, setIsTargetPanelCollapsed] = useState(false);
-  const handleSetTargetPanelCollapsed = (nextCollapsed) => {
-    setIsTargetPanelCollapsed((previous) => {
-      if (typeof nextCollapsed === 'boolean') {
-        return nextCollapsed;
-      }
+  const [targetPanelState, setTargetPanelState] = useState(PANEL_STATES.COLLAPSED);
+  const [availableScreenHeight, setAvailableScreenHeight] = useState(0);
 
-      return !previous;
-    });
+  const handleTargetPanelStateChange = (nextState) => {
+    setTargetPanelState(nextState);
+  };
+
+  const handleMapContainerLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    if (height && height !== availableScreenHeight) {
+      setAvailableScreenHeight(height);
+    }
   };
 
   const isLoading = locationLoading || cacheLoading || (!location && !locationError);
@@ -193,14 +197,14 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     if (lastSelectedCacheIdRef.current !== currentCacheId) {
       clearCapturedPhotoProof();
       lastSelectedCacheIdRef.current = currentCacheId;
-      setIsTargetPanelCollapsed(false);
+      setTargetPanelState(PANEL_STATES.FULL);
     }
   }, [selectedCache, clearCapturedPhotoProof]);
 
   useEffect(() => {
     clearCapturedPhotoProof();
     lastSelectedCacheIdRef.current = null;
-    setIsTargetPanelCollapsed(false);
+    setTargetPanelState(PANEL_STATES.COLLAPSED);
   }, [activeEventId, clearCapturedPhotoProof]);
 
   if (locationError && !location) {
@@ -232,7 +236,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
   const isWithinRange = canLogDiscovery;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={handleMapContainerLayout}>
       {renderBannerStack(true)}
       <MapView
         style={styles.map}
@@ -306,8 +310,9 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           capturedImage={capturedImage}
           isCapturing={isCapturing}
           captureError={captureError}
-          isCollapsed={isTargetPanelCollapsed}
-          onToggleCollapse={handleSetTargetPanelCollapsed}
+          panelState={targetPanelState}
+          onStateChange={handleTargetPanelStateChange}
+          availableScreenHeight={availableScreenHeight}
           onCaptureProof={capturePhotoProof}
           onClearProof={clearCapturedPhotoProof}
           onLogDiscovery={() => handleLogDiscovery(capturedImage?.uri || null)}
