@@ -11,7 +11,11 @@ import {
   MOTION_GAMEPLAY_SETTINGS,
   NAVIGATION_TRUST,
 } from '../constants/appConstants';
-import { evaluateDiscoveryLogAttempt } from '../utils/navigationTrust';
+import {
+  buildDiscoveryIntegritySnapshot,
+  evaluateDiscoveryLogAttempt,
+  getGuidanceMode,
+} from '../utils/navigationTrust';
 
 /**
  * Custom Hook: useCacheManagement
@@ -160,10 +164,25 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
 
     const confidenceSnapshot = calculateMovementConfidence();
     setMovementConfidence(confidenceSnapshot);
+    const guidanceMode = getGuidanceMode({
+      sensorAvailable: Number.isFinite(heading),
+      locationTrust,
+    });
+    const integrityMetadata = buildDiscoveryIntegritySnapshot({
+      location,
+      locationTrust,
+      distanceToCache,
+      discoveryRadius,
+      targetBearing,
+      turnDelta,
+      motionState,
+      motionMagnitude,
+      guidanceMode,
+    });
     
     setIsLogging(true);
     try {
-      await logFind(PLAYER_ID, selectedCache.CacheID, imageUrl);
+      await logFind(PLAYER_ID, selectedCache.CacheID, imageUrl, integrityMetadata);
 
       const confidenceMessage =
         MOTION_GAMEPLAY_SETTINGS.SHOW_CONFIDENCE_IN_SUCCESS_MESSAGE && Number.isFinite(confidenceSnapshot)

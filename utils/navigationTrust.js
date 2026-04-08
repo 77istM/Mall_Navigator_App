@@ -132,6 +132,50 @@ export const evaluateDiscoveryLogAttempt = ({
   return { canLog: true, reason: null };
 };
 
+const buildClientRequestId = (now = Date.now()) => {
+  const randomPart = Math.random().toString(36).slice(2, 10);
+  return `gq-${now}-${randomPart}`;
+};
+
+export const buildDiscoveryIntegritySnapshot = ({
+  location,
+  locationTrust,
+  distanceToCache,
+  discoveryRadius,
+  targetBearing,
+  turnDelta,
+  motionState,
+  motionMagnitude,
+  guidanceMode,
+  now = Date.now(),
+}) => {
+  const currentLocationTimestamp = Number(location?.timestamp) || now;
+  const locationAgeMs = Math.max(now - currentLocationTimestamp, 0);
+  const clientRequestId = buildClientRequestId(now);
+
+  return {
+    FindClientRequestID: clientRequestId,
+    FindIntegritySnapshotAt: new Date(now).toISOString(),
+    FindIntegrityGuidanceMode: guidanceMode,
+    FindIntegrityLocationAgeMs: locationAgeMs,
+    FindIntegrityLocationScore: locationTrust?.score ?? null,
+    FindIntegrityLocationTrusted: Boolean(locationTrust?.isTrusted),
+    FindIntegrityLocationStale: Boolean(locationTrust?.isStale),
+    FindIntegrityLocationSuspicious: Boolean(locationTrust?.isSuspicious),
+    FindIntegrityLocationSpeedMps: locationTrust?.speedMps ?? null,
+    FindIntegrityLocationJumpMeters: locationTrust?.jumpMeters ?? null,
+    FindIntegrityDistanceToCacheMeters: Number.isFinite(distanceToCache) ? Math.round(distanceToCache) : null,
+    FindIntegrityDiscoveryRadiusMeters: Number.isFinite(discoveryRadius) ? Math.round(discoveryRadius) : null,
+    FindIntegrityWithinRadius: Number.isFinite(distanceToCache) && Number.isFinite(discoveryRadius)
+      ? distanceToCache <= discoveryRadius
+      : null,
+    FindIntegrityTargetBearing: Number.isFinite(targetBearing) ? Math.round(targetBearing) : null,
+    FindIntegrityTurnDelta: Number.isFinite(turnDelta) ? Math.round(turnDelta) : null,
+    FindIntegrityMotionState: motionState || null,
+    FindIntegrityMotionMagnitude: Number.isFinite(motionMagnitude) ? Number(motionMagnitude.toFixed(3)) : null,
+  };
+};
+
 export const getGuidanceMode = ({ sensorAvailable, locationTrust }) => {
   if (!sensorAvailable) {
     return GUIDANCE_MODE.SENSOR_LIMITED;
