@@ -35,15 +35,16 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     return Number.isNaN(numericInvite) ? ownedEventId : numericInvite;
   }, [inviteCode, ownedEventId]);
 
-  const handleJoinEvent = useCallback(async () => {
-    const inviteCodeError = validateInviteCode(inviteCode);
+  const joinWithInviteCode = useCallback(async (rawInviteCode) => {
+    const normalizedInviteCode = String(rawInviteCode || '').trim();
+    const inviteCodeError = validateInviteCode(normalizedInviteCode);
 
     if (inviteCodeError) {
       setJoinStatus({ tone: 'error', message: inviteCodeError });
       return;
     }
 
-    const numericEventId = Number(inviteCode.trim());
+    const numericEventId = Number(normalizedInviteCode);
     setIsJoiningEvent(true);
     setJoinStatus({ tone: 'info', message: 'Joining event...' });
 
@@ -59,7 +60,17 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     } finally {
       setIsJoiningEvent(false);
     }
-  }, [inviteCode, currentUserId, eventName, onNavigateToMap]);
+  }, [currentUserId, eventName, onNavigateToMap]);
+
+  const handleJoinEvent = useCallback(async () => {
+    await joinWithInviteCode(inviteCode);
+  }, [inviteCode, joinWithInviteCode]);
+
+  const handleJoinEventWithCode = useCallback(async (nextInviteCode) => {
+    const normalizedInviteCode = String(nextInviteCode || '').trim();
+    setInviteCode(normalizedInviteCode);
+    await joinWithInviteCode(normalizedInviteCode);
+  }, [joinWithInviteCode]);
 
   const handleCreateEvent = useCallback(async (onProgressLoaded) => {
     const eventFormError = validateEventForm({ eventName, startInHours, durationHours });
@@ -187,6 +198,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     setDurationHours: handleDurationHoursChange,
     // Handlers
     handleJoinEvent,
+    handleJoinEventWithCode,
     handleCreateEvent,
     handleCopyInviteCode,
     handleShareInviteCode,

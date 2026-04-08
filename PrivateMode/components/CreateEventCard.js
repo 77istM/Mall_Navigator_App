@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import InlineStatusMessage from '../../components/InlineStatusMessage';
 import LoadingActionButton from '../../components/LoadingActionButton';
+import { buildInviteDeepLink } from '../constants/PrivateModeConstants';
 
 export default function CreateEventCard({
   styles,
@@ -26,6 +27,7 @@ export default function CreateEventCard({
 }) {
   const canUseInviteActions = Boolean(ownedEventId) && !isCreatingEvent;
   const inviteCodeValue = String(ownedEventId || '').trim();
+  const inviteLinkValue = buildInviteDeepLink(inviteCodeValue, true);
 
   return (
     <View style={styles.card}>
@@ -98,13 +100,13 @@ export default function CreateEventCard({
           <Text style={styles.inviteCodeValue}>{ownedEventId}</Text>
           <View style={styles.qrWrapper}>
             <QRCode
-              value={inviteCodeValue}
+              value={inviteLinkValue}
               size={150}
               color="#212529"
               backgroundColor="#ffffff"
             />
           </View>
-          <Text style={styles.qrHintText}>Scan this QR code to quickly copy the invite code.</Text>
+          <Text style={styles.qrHintText}>Scan to open GeoQuest and join this event instantly.</Text>
           <View style={styles.inviteActionsRow}>
             <TouchableOpacity
               style={[styles.inviteActionButton, styles.inviteCopyButton, !canUseInviteActions && styles.buttonDisabled]}

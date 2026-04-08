@@ -14,6 +14,23 @@ import PrivateDashboardScreen from './screens/PrivateScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+const linking = {
+  prefixes: ['geoquest://'],
+  config: {
+    screens: {
+      Home: 'home',
+      GlobalTabs: 'tabs',
+      PrivateDashboard: {
+        path: 'join',
+        parse: {
+          inviteCode: (value) => String(value || '').trim(),
+          autoJoin: (value) => value === '1' || value === 'true',
+        },
+      },
+    },
+  },
+};
+
 function GlobalTabsNavigator({ route }) {
   const eventId = route?.params?.eventId ?? null;
   const eventName = route?.params?.eventName ?? null;
@@ -48,7 +65,7 @@ function GlobalTabsNavigator({ route }) {
 
 export default function App() {
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="GlobalTabs" component={GlobalTabsNavigator} />

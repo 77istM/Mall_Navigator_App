@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Text,
   StyleSheet,
@@ -15,7 +15,7 @@ import CreateEventCard from '../PrivateMode/components/CreateEventCard';
 import CreateCacheCard from '../PrivateMode/components/CreateCacheCard';
 import ParticipantProgressCard from '../PrivateMode/components/ParticipantProgressCard';
 
-export default function PrivateDashboardScreen({ navigation }) {
+export default function PrivateDashboardScreen({ navigation, route }) {
   // Hardcoded for demonstration; replace with auth user ID from state.
   const currentUserId = '1';
 
@@ -29,6 +29,17 @@ export default function PrivateDashboardScreen({ navigation }) {
 
   const cacheMgmt = useCacheCreation();
   const progressMgmt = useProgressTracking();
+  const autoJoinProcessedKeyRef = useRef(null);
+  const applyInviteCode = eventMgmt.setInviteCode;
+  const joinEventWithCode = eventMgmt.handleJoinEventWithCode;
+
+  const deepLinkInviteCode = useMemo(() => {
+    return String(route?.params?.inviteCode || '').trim();
+  }, [route?.params?.inviteCode]);
+
+  const shouldAutoJoin = useMemo(() => {
+    return Boolean(route?.params?.autoJoin);
+  }, [route?.params?.autoJoin]);
 
   // Load progress when owned event is created
   useEffect(() => {
@@ -36,6 +47,26 @@ export default function PrivateDashboardScreen({ navigation }) {
       progressMgmt.loadProgress(eventMgmt.ownedEventId);
     }
   }, [eventMgmt.ownedEventId, progressMgmt.loadProgress]);
+
+  useEffect(() => {
+    if (!deepLinkInviteCode) {
+      return;
+    }
+
+    applyInviteCode(deepLinkInviteCode);
+
+    if (!shouldAutoJoin) {
+      return;
+    }
+
+    const autoJoinKey = `${deepLinkInviteCode}-${String(shouldAutoJoin)}`;
+    if (autoJoinProcessedKeyRef.current === autoJoinKey) {
+      return;
+    }
+
+    autoJoinProcessedKeyRef.current = autoJoinKey;
+    joinEventWithCode(deepLinkInviteCode);
+  }, [deepLinkInviteCode, shouldAutoJoin, applyInviteCode, joinEventWithCode]);
 
   // Handle navigation to map
   const handleOpenEventMap = useCallback(() => {
