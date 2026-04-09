@@ -5,10 +5,10 @@ GeoQuest is a React Native + Expo mobile app where players discover treasure cac
 
 ## Why
 This project demonstrates practical mobile development beyond basic CRUD by integrating:
-- Real sensor data into gameplay decisions.
+- Sensor data directly into gameplay decisions.
 - Proximity-based discovery validation with trust checks.
 - Interactive map navigation and route guidance.
-- A private event mode with invite flows and event-specific discovery rules.
+- A Private Mode event flow with invite-based participation and event-specific discovery rules.
 
 ## How It Works
 The app is organized into clear layers:
@@ -29,8 +29,8 @@ Core gameplay loop:
 - Compass guidance with fallback modes when sensor confidence is limited.
 - Navigation trust model for stale signals, implausible jumps, and speed spikes.
 - Discovery gating by radius, trust status, and duplicate-attempt protection.
-- Private mode event creation, invite code join, and deep-link join flow.
-- Invite sharing via clipboard/share and QR-based deep-link payloads.
+- Private Mode event creation, invite-code join, and deep-link join flow.
+- Invite sharing via clipboard/share actions and QR-based deep-link payloads.
 - Validation and user-facing status messaging across location, capture, and event actions.
 
 ## Project Structure
@@ -68,7 +68,7 @@ npm start
 npm test
 ```
 - Current baseline: 6 suites passed, 22 tests passed.
-- This repository uses feature flags and graceful fallback modes when sensors are unavailable.
+- The app uses feature flags and graceful fallback modes when sensors are unavailable.
 
 ## Supporting Docs
 - docs/ARCHITECTURE.md

@@ -1,10 +1,10 @@
 # GeoQuest Architecture
 
 ## Overview
-GeoQuest uses a feature-oriented React Native + Expo structure. Screen components orchestrate flow, hooks manage stateful behavior, and services/utilities hold reusable logic.
+GeoQuest uses a feature-oriented React Native + Expo structure. Screen components orchestrate flow, hooks manage stateful behavior, and services and utilities hold reusable logic.
 
 ## Runtime Flow
-1. App starts in `App.js` with stack + tab navigation.
+1. The app starts in App.js with stack + tab navigation.
 2. User enters either global gameplay tabs or private mode dashboard.
 3. `MapScreen` composes location, heading, motion, route, and cache hooks.
 4. `TargetPanel` presents actionable guidance and discovery controls.
@@ -28,7 +28,7 @@ GeoQuest uses a feature-oriented React Native + Expo structure. Screen component
 
 ### Services and Utilities
 - services/navigation/routeService.js: route provider integration.
-- PrivateMode/services/PrivateModeService.js: private mode API and invite sharing.
+- PrivateMode/services/PrivateModeService.js: Private Mode API and invite sharing.
 - utils/navigation/index.js: consolidated navigation math and trust exports.
 - utils/routeNormalization.js: route response normalization.
 - utils/imageCaptureValidation.js: proof-image checks.
@@ -54,4 +54,4 @@ GeoQuest uses a feature-oriented React Native + Expo structure. Screen component
 ## Deep Linking
 - Scheme: geoquest://
 - Join path: geoquest://join?inviteCode=<code>&autoJoin=1
-- App.js parses params and screens/PrivateScreen.js performs invite prefill/auto-join.
+- App.js parses parameters and screens/PrivateScreen.js performs invite prefill and auto-join.
