@@ -90,11 +90,25 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
         lastError = error;
 
         // Validation/other 4xx API errors should not be retried or duplicated across hosts.
-        if (error?.statusCode && !error?.transient) {
+        let hasStatusCode = false;
+        let isNotTransient = true;
+        if (error) {
+          if (error.statusCode) {
+            hasStatusCode = true;
+          }
+          if (error.transient) {
+            isNotTransient = false;
+          }
+        }
+        if (hasStatusCode && isNotTransient) {
           throw error;
         }
 
-        console.warn(`Fetch attempt failed for ${endpoint} (${baseUrl}):`, error?.message || error);
+        let errorMessage = error;
+        if (error && error.message) {
+          errorMessage = error.message;
+        }
+        console.warn(`Fetch attempt failed for ${endpoint} (${baseUrl}):`, errorMessage);
 
         // For network-level failures, retry then fall back to the next host.
         if (attempt < MAX_RETRIES_PER_HOST) {
@@ -113,11 +127,25 @@ const fetchListWithFallback = async (endpoint) => {
     const data = await fetchAPI(endpoint);
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    if (isNoRecordsFound(error?.statusCode, error?.errorText)) {
+    let errorStatusCode = null;
+    let errorText = null;
+    if (error) {
+      if (error.statusCode) {
+        errorStatusCode = error.statusCode;
+      }
+      if (error.errorText) {
+        errorText = error.errorText;
+      }
+    }
+    if (isNoRecordsFound(errorStatusCode, errorText)) {
       return [];
     }
     // Keep the app usable during transient upstream outages.
-    console.warn(`Using empty fallback for ${endpoint}:`, error?.message || error);
+    let errorMessage = error;
+    if (error && error.message) {
+      errorMessage = error.message;
+    }
+    console.warn(`Using empty fallback for ${endpoint}:`, errorMessage);
     return [];
   }
 
@@ -163,14 +191,34 @@ export const getAllFinds = () => fetchListWithFallback('/finds');
  * Maps to the Event entity requiring EventName, EventDescription, EventOwnerID, etc. [cite: 11, 13, 14]
  */
 export const createPrivateEvent = (eventData) => {
-  const normalizedName = (eventData?.EventName || '').trim();
+  let eventName = '';
+  let eventDescription = 'A private treasure hunt';
+  let eventOwnerId = 0;
+  let eventStatusId = 1;
+
+  if (eventData) {
+    if (eventData.EventName) {
+      eventName = eventData.EventName;
+    }
+    if (eventData.EventDescription) {
+      eventDescription = eventData.EventDescription;
+    }
+    if (eventData.EventOwnerID) {
+      eventOwnerId = eventData.EventOwnerID;
+    }
+    if (eventData.EventStatusID !== null && eventData.EventStatusID !== undefined) {
+      eventStatusId = eventData.EventStatusID;
+    }
+  }
+
+  const normalizedName = eventName.trim();
   const payload = {
     ...eventData,
     EventName: normalizedName,
-    EventDescription: eventData?.EventDescription || 'A private treasure hunt',
-    EventOwnerID: Number(eventData?.EventOwnerID),
+    EventDescription: eventDescription,
+    EventOwnerID: Number(eventOwnerId),
     EventIspublic: false,
-    EventStatusID: eventData?.EventStatusID ?? 1,
+    EventStatusID: eventStatusId,
   };
 
   return fetchAPI('/events', 'POST', payload).then((response) => {
@@ -198,17 +246,11 @@ export const joinEvent = (userId, eventId, playerName = null) => {
     PlayerEventID: normalizedEventId
   };
 
-  // Try with PlayerName first, fallback to without it if it fails
-  const playerDataWithName = playerName && String(playerName).trim()
-    ? { ...playerData, PlayerName: String(playerName).trim() }
-    : playerData;
+  if (playerName) {
+    playerData.PlayerName = playerName.trim();
+  }
 
-  return fetchAPI('/players', 'POST', playerDataWithName).catch(async (error) => {
-    if (playerDataWithName.PlayerName && error?.statusCode === 500) {
-      return fetchAPI('/players', 'POST', playerData);
-    }
-    throw error;
-  });
+  return fetchAPI('/players', 'POST', playerData);
 };
 
 /**
@@ -220,10 +262,43 @@ export const getEventCaches = (eventId) => {
 
 export const createEventCache = (eventId, cacheData) => {
   const normalizedEventId = Number(eventId);
-  const normalizedName = (cacheData?.CacheName || '').trim();
-  const normalizedClue = (cacheData?.CacheClue || '').trim();
-  const normalizedDescription = (cacheData?.CacheDescription || '').trim();
-  const normalizedImageUrl = (cacheData?.CacheImageURL || '').trim();
+
+  let cacheName = '';
+  let cacheClue = '';
+  let cacheDescription = '';
+  let cacheImageURL = '';
+  let cacheLatitude = 0;
+  let cacheLongitude = 0;
+  let cachePoints = 10;
+
+  if (cacheData) {
+    if (cacheData.CacheName) {
+      cacheName = cacheData.CacheName;
+    }
+    if (cacheData.CacheClue) {
+      cacheClue = cacheData.CacheClue;
+    }
+    if (cacheData.CacheDescription) {
+      cacheDescription = cacheData.CacheDescription;
+    }
+    if (cacheData.CacheImageURL) {
+      cacheImageURL = cacheData.CacheImageURL;
+    }
+    if (cacheData.CacheLatitude) {
+      cacheLatitude = cacheData.CacheLatitude;
+    }
+    if (cacheData.CacheLongitude) {
+      cacheLongitude = cacheData.CacheLongitude;
+    }
+    if (cacheData.CachePoints !== null && cacheData.CachePoints !== undefined) {
+      cachePoints = cacheData.CachePoints;
+    }
+  }
+
+  const normalizedName = cacheName.trim();
+  const normalizedClue = cacheClue.trim();
+  const normalizedDescription = cacheDescription.trim();
+  const normalizedImageUrl = cacheImageURL.trim();
 
   const payload = {
     ...cacheData,
@@ -232,9 +307,9 @@ export const createEventCache = (eventId, cacheData) => {
     CacheClue: normalizedClue,
     CacheDescription: normalizedDescription || `Cache for event #${normalizedEventId}`,
     CacheImageURL: normalizedImageUrl || TEST_IMAGE_URL,
-    CacheLatitude: Number(cacheData?.CacheLatitude),
-    CacheLongitude: Number(cacheData?.CacheLongitude),
-    CachePoints: Number(cacheData?.CachePoints ?? 10),
+    CacheLatitude: Number(cacheLatitude),
+    CacheLongitude: Number(cacheLongitude),
+    CachePoints: Number(cachePoints),
   };
 
   return fetchAPI('/caches', 'POST', payload).then((response) => {
@@ -251,17 +326,41 @@ export const getEventPlayers = async (eventId) => {
     const players = await fetchAPI(`/players/events/${normalizedEventId}`);
     return Array.isArray(players) ? players : [];
   } catch (error) {
-    if (isNoRecordsFound(error?.statusCode, error?.errorText)) {
+    let errorStatusCode = null;
+    let errorText = null;
+    if (error) {
+      if (error.statusCode) {
+        errorStatusCode = error.statusCode;
+      }
+      if (error.errorText) {
+        errorText = error.errorText;
+      }
+    }
+    if (isNoRecordsFound(errorStatusCode, errorText)) {
       return [];
     }
     try {
       const players = await fetchAPI(`/players?eventId=${normalizedEventId}`);
       return Array.isArray(players) ? players : [];
     } catch (fallbackError) {
-      if (isNoRecordsFound(fallbackError?.statusCode, fallbackError?.errorText)) {
+      let fallbackStatusCode = null;
+      let fallbackErrorText = null;
+      if (fallbackError) {
+        if (fallbackError.statusCode) {
+          fallbackStatusCode = fallbackError.statusCode;
+        }
+        if (fallbackError.errorText) {
+          fallbackErrorText = fallbackError.errorText;
+        }
+      }
+      if (isNoRecordsFound(fallbackStatusCode, fallbackErrorText)) {
         return [];
       }
-      console.warn(`Unable to fetch players for event ${normalizedEventId}:`, fallbackError?.message || fallbackError);
+      let fallbackMessage = fallbackError;
+      if (fallbackError && fallbackError.message) {
+        fallbackMessage = fallbackError.message;
+      }
+      console.warn(`Unable to fetch players for event ${normalizedEventId}:`, fallbackMessage);
       return [];
     }
   }
@@ -276,9 +375,15 @@ export const getEventLeaderboard = async (eventId) => {
 
   const eventPlayersById = {};
   players.forEach((player) => {
-    const playerId = Number(player?.PlayerID);
+    let playerId = NaN;
+    if (player && player.PlayerID) {
+      playerId = Number(player.PlayerID);
+    }
     if (!Number.isNaN(playerId)) {
-      const playerName = player?.PlayerName || player?.PlayerUser?.UserName || `Player #${playerId}`;
+      let playerName = `Player #${playerId}`;
+      if (player.PlayerName) {
+        playerName = player.PlayerName;
+      }
       eventPlayersById[playerId] = {
         playerId,
         playerName,
@@ -289,31 +394,46 @@ export const getEventLeaderboard = async (eventId) => {
   });
 
   finds.forEach((find) => {
-    const playerId = Number(find?.FindPlayerID);
+    let playerId = NaN;
+    if (find && find.FindPlayerID) {
+      playerId = Number(find.FindPlayerID);
+    }
     if (Number.isNaN(playerId)) {
       return;
     }
 
-    const nestedPlayer = find?.FindPlayer || find?.Player;
-    const nestedPlayerEventId = Number(
-      nestedPlayer?.PlayerEventID ??
-      find?.PlayerEventID ??
-      find?.FindPlayerEventID
-    );
+    let nestedPlayer = null;
+    if (find && find.FindPlayer) {
+      nestedPlayer = find.FindPlayer;
+    } else if (find && find.Player) {
+      nestedPlayer = find.Player;
+    }
 
-    const isEventFind = (
-      (!Number.isNaN(nestedPlayerEventId) && nestedPlayerEventId === normalizedEventId) ||
-      Boolean(eventPlayersById[playerId])
-    );
+    let nestedPlayerEventId = NaN;
+    if (nestedPlayer && nestedPlayer.PlayerEventID) {
+      nestedPlayerEventId = Number(nestedPlayer.PlayerEventID);
+    } else if (find && find.PlayerEventID) {
+      nestedPlayerEventId = Number(find.PlayerEventID);
+    } else if (find && find.FindPlayerEventID) {
+      nestedPlayerEventId = Number(find.FindPlayerEventID);
+    }
+
+    let isEventFind = false;
+    if (!Number.isNaN(nestedPlayerEventId) && nestedPlayerEventId === normalizedEventId) {
+      isEventFind = true;
+    } else if (eventPlayersById[playerId]) {
+      isEventFind = true;
+    }
 
     if (!isEventFind) {
       return;
     }
 
     if (!eventPlayersById[playerId]) {
-      const playerName = nestedPlayer?.PlayerName ||
-                        nestedPlayer?.PlayerUser?.UserName ||
-                        `Player #${playerId}`;
+      let playerName = `Player #${playerId}`;
+      if (nestedPlayer && nestedPlayer.PlayerName) {
+        playerName = nestedPlayer.PlayerName;
+      }
       eventPlayersById[playerId] = {
         playerId,
         playerName,
@@ -322,8 +442,17 @@ export const getEventLeaderboard = async (eventId) => {
       };
     }
 
-    const points = Number(find?.FindCache?.CachePoints ?? find?.Cache?.CachePoints ?? 0);
-    eventPlayersById[playerId].totalPoints += Number.isNaN(points) ? 0 : points;
+    let points = 0;
+    if (find && find.FindCache && find.FindCache.CachePoints) {
+      points = Number(find.FindCache.CachePoints);
+    } else if (find && find.Cache && find.Cache.CachePoints) {
+      points = Number(find.Cache.CachePoints);
+    }
+
+    if (Number.isNaN(points)) {
+      points = 0;
+    }
+    eventPlayersById[playerId].totalPoints += points;
     eventPlayersById[playerId].findsCount += 1;
   });
 
