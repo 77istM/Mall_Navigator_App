@@ -12,14 +12,14 @@ export default function HomeScreen({ navigation }) {
         style={styles.globalButton}
         onPress={() => navigation.navigate('GlobalTabs')}
       >
-        <Text style={styles.buttonText}>🌍 Global Mode</Text>
+        <Text style={styles.buttonText}>Global Mode</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
         style={styles.privateButton}
         onPress={() => navigation.navigate('PrivateDashboard')}
       >
-        <Text style={styles.buttonText}>🔒 Private Mode</Text>
+        <Text style={styles.buttonText}>Private Mode</Text>
       </TouchableOpacity>
     </View>
   );

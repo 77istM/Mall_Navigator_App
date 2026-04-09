@@ -160,7 +160,7 @@ export const getAllFinds = () => fetchListWithFallback('/finds');
 
 /**
  * Creates a new private event.
- * Maps to the Event entity requiring EventName, EventDescription, EventOwnerID, etc. [cite: 11, 13, 14]
+ * Maps to the Event entity requiring EventName, EventDescription, EventOwnerID, etc.
  */
 export const createPrivateEvent = (eventData) => {
   const normalizedName = (eventData?.EventName || '').trim();
@@ -183,7 +183,7 @@ export const createPrivateEvent = (eventData) => {
 
 /**
  * Joins a user to an event by creating a Player entity.
- * Associates PlayerUserID to PlayerEventID[cite: 19].
+ * Associates PlayerUserID to PlayerEventID.
  */
 export const joinEvent = (userId, eventId) => {
   const normalizedUserId = Number(userId);
