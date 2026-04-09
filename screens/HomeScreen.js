@@ -5,7 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>GeoQuest</Text>
+      <Text style={styles.title}>Geo Quest</Text>
       <Text style={styles.subtitle}>Choose your mode to begin</Text>
 
       <TouchableOpacity 
