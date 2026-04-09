@@ -60,7 +60,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
       setActiveEventDiscoveryRadius(Number(discoveryRadiusMeters));
       setJoinStatus({
         tone: 'info',
-        message: 'This is your event. Use the button below to open it.',
+        message: 'This is your event. Use the button at the bottom to open it.',
       });
       return;
     }
@@ -95,7 +95,7 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
   }, [joinWithInviteCode]);
 
   const handleCreateEvent = useCallback(async (onProgressLoaded) => {
-    const eventFormError = validateEventForm({ eventName, startInHours, durationHours });
+    const eventFormError = validateEventForm({ eventName, eventDescription, startInHours, durationHours });
     const radiusFormError = validateDiscoveryRadius(discoveryRadiusMeters);
 
     if (eventFormError || radiusFormError) {
@@ -136,6 +136,11 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
         setOwnedEventId(normalizedEventId);
         setInviteCode(String(normalizedEventId));
         setActiveEventDiscoveryRadius(Number(discoveryRadiusMeters));
+        setShowOwnerEventAction(true);
+        setJoinStatus({
+          tone: 'info',
+          message: 'You created this event. Use the button at the bottom to open it.',
+        });
         await onProgressLoaded(normalizedEventId);
       }
 
@@ -154,7 +159,19 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
 
   const handleInviteCodeChange = useCallback((value) => {
     setInviteCode(value);
-    if (ownedEventId && Number(value) !== ownedEventId) {
+    const normalizedValue = String(value || '').trim();
+    const numericInviteCode = Number(normalizedValue);
+
+    if (ownedEventId && numericInviteCode === ownedEventId) {
+      setShowOwnerEventAction(true);
+      setJoinStatus({
+        tone: 'info',
+        message: 'This is your event code. Use the button at the bottom to open your event.',
+      });
+      return;
+    }
+
+    if (ownedEventId && numericInviteCode !== ownedEventId) {
       setShowOwnerEventAction(false);
     }
     if (joinStatus?.tone === 'error') {

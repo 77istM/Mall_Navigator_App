@@ -26,10 +26,81 @@ const isNoRecordsFound = (statusCode, errorText) => {
   return statusCode === 404 && text.includes('no record(s) found');
 };
 
-const buildApiError = (statusCode, errorText, transient = false) => {
-  const error = new Error(`API Error: ${statusCode} - ${errorText}`);
+const parseApiMessageFromErrorText = (errorText) => {
+  if (typeof errorText !== 'string') {
+    return '';
+  }
+
+  const trimmed = errorText.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    const rawMessage = parsed?.message;
+
+    if (Array.isArray(rawMessage)) {
+      return rawMessage.filter(Boolean).join(' ');
+    }
+
+    if (typeof rawMessage === 'string') {
+      return rawMessage;
+    }
+  } catch (error) {
+    // Fall through and use the raw response text for non-JSON payloads.
+  }
+
+  return trimmed;
+};
+
+const sanitizeApiMessage = (message) => {
+  if (typeof message !== 'string') {
+    return '';
+  }
+
+  return message
+    .replace(/\\"/g, '"')
+    .replace(/^"|"$/g, '')
+    .trim();
+};
+
+const mapFriendlyApiErrorMessage = (endpoint, statusCode, errorText) => {
+  const parsedMessage = sanitizeApiMessage(parseApiMessageFromErrorText(errorText));
+  const normalizedMessage = parsedMessage.toLowerCase();
+
+  if (endpoint === '/players' && normalizedMessage.includes('failed to recover the inserted record')) {
+    return 'Unable to join with this code right now. If this is your own event, use the button at the bottom to open it.';
+  }
+
+  if (endpoint === '/events' && normalizedMessage.includes('eventdescription') && normalizedMessage.includes('at least 4')) {
+    return 'Event description must be at least 4 characters long.';
+  }
+
+  if (endpoint === '/caches' && normalizedMessage.includes('cachename') && normalizedMessage.includes('at least 4')) {
+    return 'Cache name must be at least 4 characters long.';
+  }
+
+  if (statusCode === 400 && parsedMessage) {
+    return parsedMessage;
+  }
+
+  if (statusCode === 404) {
+    return 'The requested record was not found. Please check your input and try again.';
+  }
+
+  if (parsedMessage) {
+    return parsedMessage;
+  }
+
+  return `Request failed with status ${statusCode}. Please try again.`;
+};
+
+const buildApiError = (endpoint, statusCode, errorText, transient = false) => {
+  const error = new Error(mapFriendlyApiErrorMessage(endpoint, statusCode, errorText));
   error.statusCode = statusCode;
   error.errorText = errorText;
+  error.endpoint = endpoint;
   error.transient = transient;
   return error;
 };
@@ -62,7 +133,7 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
           const transientError = isTransientApiFailure(response.status, errorText);
           if (transientError) {
             console.warn(`Transient API error from ${requestLabel}:`, errorText || `HTTP ${response.status}`);
-            lastError = buildApiError(response.status, errorText, true);
+            lastError = buildApiError(endpoint, response.status, errorText, true);
             if (attempt < MAX_RETRIES_PER_HOST) {
               await delay(500);
               continue;
@@ -73,11 +144,11 @@ const fetchAPI = async (endpoint, method = 'GET', body = null) => {
           // Several list endpoints return 404 for "no data" instead of an empty list.
           // Treat this as a normal API miss, not an application error log.
           if (isNoRecordsFound(response.status, errorText)) {
-            throw buildApiError(response.status, errorText, false);
+            throw buildApiError(endpoint, response.status, errorText, false);
           }
 
           console.error(`API Error Response from ${requestLabel}:`, errorText);
-          throw buildApiError(response.status, errorText, false);
+          throw buildApiError(endpoint, response.status, errorText, false);
         }
 
         const contentType = response.headers.get('content-type') || '';
