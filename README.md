@@ -1,5 +1,5 @@
 ### Status report (Always write before sign off)
-     1.Private event mode added *needs refractoring.
+     1.Private Mode added *needs refractoring.
      2. Sensor - GPS, Compass, Camera, accelerometer, step counter*needs testing added. 
      Future work on- refractoring big files into smaller chunks.
 ---
