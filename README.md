@@ -49,7 +49,7 @@ api.js- Handles api call and request
 ```
 ## To run the app 
 - Clone the repo to your device. Download Expo Go app.
-- Smartphone and the device you are running code on must be in same network. Use wife, avoid VPN.
+- Smartphone and the device you are running code on must be within same network. Use wifi, avoid VPN.
 
 1. Install dependencies.
 ```bash
