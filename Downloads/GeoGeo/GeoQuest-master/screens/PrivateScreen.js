@@ -23,9 +23,13 @@ export default function PrivateDashboardScreen({ navigation, route }) {
   const eventMgmt = useEventManagement(
     currentUserId,
     useCallback((eventId, name, eventDiscoveryRadius) => {
+      let eventName = undefined;
+      if (name && name.trim) {
+        eventName = name.trim();
+      }
       navigation.navigate('GlobalTabs', {
         eventId,
-        eventName: name?.trim() || undefined,
+        eventName: eventName || undefined,
         eventDiscoveryRadius: Number(eventDiscoveryRadius) || undefined,
       });
     }, [navigation])
@@ -37,16 +41,28 @@ export default function PrivateDashboardScreen({ navigation, route }) {
   const applyInviteCode = eventMgmt.setInviteCode;
   const joinEventWithCode = eventMgmt.handleJoinEventWithCode;
   const deepLinkDiscoveryRadius = useMemo(() => {
-    return String(route?.params?.eventDiscoveryRadius || '').trim();
-  }, [route?.params?.eventDiscoveryRadius]);
+    let radius = '';
+    if (route && route.params && route.params.eventDiscoveryRadius) {
+      radius = route.params.eventDiscoveryRadius;
+    }
+    return String(radius || '').trim();
+  }, [route]);
 
   const deepLinkInviteCode = useMemo(() => {
-    return String(route?.params?.inviteCode || '').trim();
-  }, [route?.params?.inviteCode]);
+    let code = '';
+    if (route && route.params && route.params.inviteCode) {
+      code = route.params.inviteCode;
+    }
+    return String(code || '').trim();
+  }, [route]);
 
   const shouldAutoJoin = useMemo(() => {
-    return Boolean(route?.params?.autoJoin);
-  }, [route?.params?.autoJoin]);
+    let autoJoin = false;
+    if (route && route.params && route.params.autoJoin) {
+      autoJoin = route.params.autoJoin;
+    }
+    return Boolean(autoJoin);
+  }, [route]);
 
   // Load progress when owned event is created
   useEffect(() => {
@@ -84,10 +100,14 @@ export default function PrivateDashboardScreen({ navigation, route }) {
       return Alert.alert('Error', 'Join or create an event first.');
     }
 
+    let eventDiscoveryRadius = undefined;
+    if (eventMgmt.activeEventDiscoveryRadius !== null && eventMgmt.activeEventDiscoveryRadius !== undefined) {
+      eventDiscoveryRadius = eventMgmt.activeEventDiscoveryRadius;
+    }
     navigation.navigate('GlobalTabs', {
       eventId: eventMgmt.activeEventId,
       eventName: eventMgmt.eventName.trim() || undefined,
-      eventDiscoveryRadius: eventMgmt.activeEventDiscoveryRadius ?? undefined,
+      eventDiscoveryRadius: eventDiscoveryRadius,
     });
   }, [eventMgmt.activeEventId, eventMgmt.activeEventDiscoveryRadius, eventMgmt.eventName, navigation]);
 
