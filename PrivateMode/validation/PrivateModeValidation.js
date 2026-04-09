@@ -19,8 +19,9 @@ export const validateInviteCode = (inviteCode) => {
   return null;
 };
 
-export const validateEventForm = ({ eventName, startInHours, durationHours }) => {
+export const validateEventForm = ({ eventName, eventDescription, startInHours, durationHours }) => {
   const trimmedName = eventName.trim();
+  const trimmedDescription = (eventDescription || '').trim();
   const startOffset = Number(startInHours);
   const duration = asPositiveNumber(durationHours);
 
@@ -29,6 +30,9 @@ export const validateEventForm = ({ eventName, startInHours, durationHours }) =>
   }
   if (trimmedName.length < 8) {
     return 'Event name must be at least 8 characters long.';
+  }
+  if (trimmedDescription && trimmedDescription.length < 4) {
+    return 'Event description must be at least 4 characters long.';
   }
   if (Number.isNaN(startOffset) || startOffset < 0) {
     return 'Start offset hours must be 0 or more.';
@@ -71,6 +75,9 @@ export const validateCacheForm = ({
 
   if (!trimmedCacheName || !trimmedCacheClue) {
     return 'Cache name and clue are required.';
+  }
+  if (trimmedCacheName.length < 4) {
+    return 'Cache name must be at least 4 characters long.';
   }
   if (trimmedCacheClue.length < 4) {
     return 'Cache clue must be at least 4 characters long.';
