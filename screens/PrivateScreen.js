@@ -93,7 +93,7 @@ export default function PrivateDashboardScreen({ navigation, route }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.pageTitle}>Private Event Mode</Text>
+      <Text style={styles.pageTitle}>Private Mode</Text>
       <Text style={styles.subtitle}>Families, Schools, Companies, University Activities</Text>
 
       <JoinEventCard

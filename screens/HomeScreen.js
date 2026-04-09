@@ -19,7 +19,7 @@ export default function HomeScreen({ navigation }) {
         style={styles.privateButton}
         onPress={() => navigation.navigate('PrivateDashboard')}
       >
-        <Text style={styles.buttonText}>🔒 Private Event Mode</Text>
+        <Text style={styles.buttonText}>🔒 Private Mode</Text>
       </TouchableOpacity>
     </View>
   );

@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { createPrivateModeCache } from '../PrivateMode/services/PrivateModeService';
 import { validateCacheForm, parsePositiveNumber } from '../PrivateMode/validation/PrivateModeValidation';
-import { TEST_IMAGE_URL, WORLD_PICKER_REGION, DEFAULT_CACHE_POINTS } from '../PrivateMode/constants/PrivateModeConstants';
+import { TEST_IMAGE_URL, DEFAULT_CACHE_POINTS } from '../PrivateMode/constants/PrivateModeConstants';
+import { buildPickerRegion } from '../PrivateMode/utils/pickerRegion';
 
 export const useCacheCreation = () => {
   const [cacheName, setCacheName] = useState('');
@@ -132,19 +133,7 @@ export const useCacheCreation = () => {
   }, [cacheStatus]);
 
   const getPickerRegion = useCallback(() => {
-    const latitude = Number(cacheLatitude);
-    const longitude = Number(cacheLongitude);
-
-    if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
-      return {
-        latitude,
-        longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      };
-    }
-
-    return WORLD_PICKER_REGION;
+    return buildPickerRegion(cacheLatitude, cacheLongitude);
   }, [cacheLatitude, cacheLongitude]);
 
   const toggleMapPicker = useCallback(() => {
