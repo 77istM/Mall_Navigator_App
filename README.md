@@ -1,19 +1,17 @@
 # GeoQuest: Location-Based Treasure Hunt App
 
-## What This Project Is
-GeoQuest is a React Native + Expo mobile app where players discover treasure caches by physically moving to real-world locations. The app combines location, motion, and heading signals to guide players, validate discovery attempts, and support both public and private treasure hunt experiences.
+## Overview
+GeoQuest is a React Native + Expo mobile app where players discover treasure caches by physically moving to real-world locations. The app combines GPS, motion, and heading signals to guide players and validate discovery attempts.
 
-## Why This Project Exists
+## Why
 This project demonstrates practical mobile development beyond basic CRUD by integrating:
 - Real sensor data into gameplay decisions.
 - Proximity-based discovery validation with trust checks.
 - Interactive map navigation and route guidance.
 - A private event mode with invite flows and event-specific discovery rules.
 
-The goal is to show sound architecture, platform-aware implementation, and maintainable engineering practices in an Expo app.
-
 ## How It Works
-At runtime, the app combines several layers:
+The app is organized into clear layers:
 - Screens: home flow, live map gameplay, leaderboard, private event dashboard.
 - Hooks: location tracking, compass heading, motion state, route guidance, cache and event workflows.
 - Services: private event operations and route fetching.
@@ -35,14 +33,6 @@ Core gameplay loop:
 - Invite sharing via clipboard/share and QR-based deep-link payloads.
 - Validation and user-facing status messaging across location, capture, and event actions.
 
-## Tech Stack
-- Expo SDK 54
-- React Native 0.81
-- React Navigation (stack + bottom tabs)
-- react-native-maps
-- Expo Location, Sensors, Image Picker, Clipboard
-- Jest + babel-jest
-
 ## Project Structure
 ```
 GeoQuest/
@@ -59,40 +49,27 @@ GeoQuest/
   testModules/    # Unit tests for navigation, trust, flags, helpers
 ```
 
-## Quickstart (Expo Go)
-Prerequisites:
-- Node.js 18+
-- npm
-- Expo Go installed on your phone
-
-Steps:
+## Simple Expo Go Quickstart
 1. Install dependencies.
-	```bash
-	npm install
-	```
-2. Start the Expo development server.
-	```bash
-	npm start
-	```
-3. Open Expo Go on your device.
-4. Scan the QR code shown in the terminal/browser.
-5. Grant requested permissions (location, camera, motion) when prompted.
-
-Optional platform commands:
 ```bash
-npm run android
-npm run ios
-npm run web
+npm install
 ```
+2. Start the app.
+```bash
+npm start
+```
+3. Open Expo Go on your phone.
+4. Scan the QR code from the terminal/browser.
+5. Grant location, camera, and motion permissions when prompted.
 
-## Testing
-Run unit tests with:
+## Testing and Status Notes
+- Run tests:
 ```bash
 npm test
 ```
+- Current baseline: 6 suites passed, 22 tests passed.
+- This repository uses feature flags and graceful fallback modes when sensors are unavailable.
 
-Current tests target navigation math, trust evaluation, feature flags, and cache helper behavior.
-
-## Additional Documentation
-- `docs/ARCHITECTURE.md` explains module boundaries and data flow.
-- `docs/ASSESSMENT-MAPPING.md` maps implemented features to assessment criteria.
+## Supporting Docs
+- docs/ARCHITECTURE.md
+- docs/ASSESSMENT-MAPPING.md

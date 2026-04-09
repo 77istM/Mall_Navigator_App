@@ -1,99 +1,97 @@
 # GeoQuest Assessment Mapping
 
-This document maps implemented features to the project assessment criteria.
+This document maps implemented behavior to the assessment criteria using concrete evidence files.
 
 ## Criterion 1: Depth and Sophistication of Features
 
-### Sensor Integration Into App Logic
-Evidence:
-- `hooks/useLocationTracking.js`: continuous GPS tracking + trust updates.
-- `hooks/useCompassHeading.js`: heading guidance with fallback behavior.
-- `hooks/useMotionTracking.js` and `hooks/useStepCounter.js`: motion-informed feedback.
+### Sensor-driven gameplay logic
+- hooks/useLocationTracking.js
+- hooks/useCompassHeading.js
+- hooks/useMotionTracking.js
+- hooks/useStepCounter.js
 
-Why this is strong:
-- Sensor data is not decorative. It directly changes guidance mode, trust state, and discovery actions.
+Result:
+- Sensor state directly affects guidance and discovery behavior.
 
-### Proximity-Based Unlocking and Robust Validation
-Evidence:
-- `utils/navigationTrust.js`: trust score, stale fix handling, jump/speed anomaly checks.
-- `hooks/useCacheManagement.js`: discovery gating by radius, trust, and duplicate-attempt window.
-- `constants/appConstants.js`: trust thresholds and duplicate timing config.
+### Proximity unlocking and trust validation
+- utils/navigationTrust.js
+- hooks/useCacheManagement.js
+- constants/appConstants.js
 
-Why this is strong:
-- Unlocking uses layered checks rather than simple distance-only validation.
+Result:
+- Discovery requires distance and trust checks, not distance alone.
 
-### Advanced Map Interaction
-Evidence:
-- `screens/MapScreen.js`: live user marker, cache markers, callouts, route polyline, dynamic guidance status.
-- `hooks/useRouteGuidance.js` + `services/navigation/routeService.js`: route retrieval and fallback logic.
+### Advanced map interaction
+- screens/MapScreen.js
+- hooks/useRouteGuidance.js
+- services/navigation/routeService.js
 
-Why this is strong:
-- Map behavior goes beyond static marker placement and supports active navigation decisions.
+Result:
+- Live route guidance and fallback behavior go beyond static marker placement.
 
-### Global Mode and Private Event Mode
-Evidence:
-- `App.js`: navigation split between global tabs and private dashboard.
-- `screens/PrivateScreen.js`: event create/join/manage flow.
-- `PrivateMode/services/PrivateModeService.js`: private mode operations and invite sharing.
+### Global mode and private mode support
+- App.js
+- screens/PrivateScreen.js
+- PrivateMode/services/PrivateModeService.js
 
-Why this is strong:
-- Private mode introduces distinct workflow and event-specific logic, not just UI variation.
+Result:
+- Private mode adds event ownership, joining, and invite-based flows.
 
-### Scoring, Validation, and Error Handling
-Evidence:
-- `api.js`: find logging and leaderboard retrieval logic.
-- `PrivateMode/validation/PrivateModeValidation.js`: private mode form/radius/invite checks.
-- `utils/imageCaptureValidation.js`: proof-capture validation.
-- `components/StatusBanner.js` and inline status cards/messages across screens.
+### Scoring, validation, and error handling
+- api.js
+- PrivateMode/validation/PrivateModeValidation.js
+- utils/imageCaptureValidation.js
+- components/StatusBanner.js
 
-Why this is strong:
-- Validation and error states are handled as first-class UX states.
+Result:
+- User actions are validated and surfaced with explicit feedback paths.
 
 ## Criterion 2: Platform and Framework Understanding
 
-### Appropriate Architectural Decisions
-Evidence:
-- Custom hooks for side-effect isolation and composability (`hooks/*`).
-- Service modules for domain operations (`services/navigation`, `PrivateMode/services`).
-- Utility modules for pure logic (`utils/*`) with test coverage.
+### Architecture and framework usage evidence
+- App.js
+- hooks/sensors/index.js
+- hooks/gameplay/index.js
+- services/navigation/routeService.js
+- utils/navigation/index.js
 
-### Correct Use of Platform APIs and Permissions
-Evidence:
-- Expo location/sensors/image-picker integration in dedicated hooks.
-- Permission handling pathways in location/camera-related hooks.
-- Mobile map integration with `react-native-maps`.
+Result:
+- Architecture separates orchestration, side effects, domain services, and pure utilities.
 
-### Effective State Management
-Evidence:
-- Hook-based local state with clear ownership boundaries (screen orchestrates, hooks encapsulate behavior).
-- Use of refs and memoized callbacks to control repeated side effects and auto-join behavior.
+### Platform APIs and permission handling evidence
+- hooks/useLocationTracking.js
+- hooks/useCameraProofCapture.js
+- app.json
+- screens/MapScreen.js
 
-### Platform-Conscious Design
-Evidence:
-- Touch-first map + panel interactions.
-- Deep-link join flow (`geoquest://join?...`) and invite sharing suited to mobile usage.
+Result:
+- Expo APIs and platform permissions are integrated into runtime flow, with fallback behavior.
 
 ## Criterion 3: Professional Standard and Development Practice
 
-### Readability and Maintainability
-Evidence:
-- Logical folder boundaries by concern: `screens`, `hooks`, `components`, `utils`, `PrivateMode`.
-- Consistent naming patterns for hooks, constants, and helper functions.
+### Maintainability and code organization evidence
+- screens/
+- hooks/
+- components/
+- utils/
+- PrivateMode/
 
-### Testing and Quality Practices
-Evidence:
-- Test suite in `testModules/` for navigation trust/math, feature flags, and helper behavior.
-- Jest setup in `jest.config.js` and mocked Expo virtual env support.
+Result:
+- Folder boundaries and naming remain consistent and readable.
 
-### Iterative Development and UX Attention
-Evidence:
-- Feature flags (`constants/featureFlags.js`) for controlled rollout.
-- Status messaging and degraded-mode handling when sensors/permissions are limited.
-- Validation-driven forms and explicit feedback in private event workflows.
+### Testing and quality controls evidence
+- testModules/navigationTrust.test.js
+- testModules/navigationMath.test.js
+- testModules/featureFlags.test.js
+- jest.config.js
 
-## Notes for Submission Narrative
-When presenting the project, emphasize:
-1. Sensor data feeds gameplay decisions (not just display).
-2. Discovery logging includes trust and anti-spoofing checks.
-3. Private mode is a real feature path with deep-link join and invite sharing.
-4. Architecture separates side effects, domain logic, and pure computation for maintainability.
+Result:
+- Core navigation and trust logic have automated test coverage.
+
+### Iterative development and UX resilience evidence
+- constants/featureFlags.js
+- components/StatusBanner.js
+- PrivateMode/validation/PrivateModeValidation.js
+
+Result:
+- Rollout control, status messaging, and validation are built into core user flows.
