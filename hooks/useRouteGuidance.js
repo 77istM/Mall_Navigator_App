@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchRouteFromProvider, ROUTE_SERVICE_SETTINGS } from '../services/navigation/routeService';
 import { normalizeRouteResponse } from '../utils/routeNormalization';
-import { getGuidanceMode } from '../utils/navigationTrust';
+import { getGuidanceMode } from '../utils/navigation';
 import { GEOQUEST_ROLLOUT_FLAGS } from '../constants/featureFlags';
 import { useNavigationTelemetry } from './useNavigationTelemetry';
 

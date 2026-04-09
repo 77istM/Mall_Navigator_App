@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 import { getPublicCaches, getEventCaches, logFind } from '../api';
-import { getDistanceInMeters } from '../utils/distanceCalculator';
-import { getBearingInDegrees } from '../utils/bearingCalculator';
-import { calculateShortestTurnDelta } from '../utils/navigationMath';
+import {
+  getDistanceInMeters,
+  getBearingInDegrees,
+  calculateShortestTurnDelta,
+} from '../utils/navigation';
 import {
   DISCOVERY_RADIUS,
   PLAYER_ID,
@@ -17,7 +19,7 @@ import {
   buildDiscoveryIntegritySnapshot,
   evaluateDiscoveryLogAttempt,
   getGuidanceMode,
-} from '../utils/navigationTrust';
+} from '../utils/navigation';
 import { useNavigationTelemetry } from './useNavigationTelemetry';
 
 /**

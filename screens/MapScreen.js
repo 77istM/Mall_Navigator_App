@@ -5,13 +5,17 @@ import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
 
 // Adjusting imports to step out of the 'screens' folder
-import { useLocationTracking } from '../hooks/useLocationTracking';
-import { useCompassHeading } from '../hooks/useCompassHeading';
-import { useMotionTracking } from '../hooks/useMotionTracking';
-import { useStepCounter } from '../hooks/useStepCounter';
-import { useCacheManagement } from '../hooks/useCacheManagement';
-import { useRouteGuidance } from '../hooks/useRouteGuidance';
-import { useCameraProofCapture } from '../hooks/useCameraProofCapture';
+import {
+  useLocationTracking,
+  useCompassHeading,
+  useMotionTracking,
+  useStepCounter,
+} from '../hooks/sensors';
+import {
+  useCacheManagement,
+  useRouteGuidance,
+  useCameraProofCapture,
+} from '../hooks/gameplay';
 import { PANEL_STATES } from '../components/targetPanel/constants';
 import TargetPanel from '../components/TargetPanel';
 import StatusBanner from '../components/StatusBanner';

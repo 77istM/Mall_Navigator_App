@@ -47,11 +47,14 @@ Core gameplay loop:
 ```
 GeoQuest/
   screens/        # Screen-level UI and navigation entry points
-  hooks/          # Stateful gameplay and sensor orchestration
+  hooks/          # Core hooks + domain entry points
+    sensors/      # Sensor-focused hook entry point (location, heading, motion, steps)
+    gameplay/     # Gameplay hook entry point (cache, route, proof capture)
   components/     # Reusable UI and target panel modules
   PrivateMode/    # Private-event feature area (components/services/validation)
   services/       # Route/navigation service layer
-  utils/          # Navigation math, trust, normalization, helpers
+  utils/          # Shared utilities and domain entry points
+    navigation/   # Navigation utility entry point (distance, bearing, trust, math)
   constants/      # App settings, thresholds, feature flags
   testModules/    # Unit tests for navigation, trust, flags, helpers
 ```

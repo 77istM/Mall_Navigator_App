@@ -27,6 +27,8 @@ GeoQuest uses a feature-oriented React Native + Expo structure. The app favors c
 - `hooks/useCameraProofCapture.js`: proof capture and media validation integration.
 - `hooks/useEventManagement.js`: private event creation, joining, and invite handling.
 - `hooks/useProgressTracking.js`: participant progress loading/refresh.
+- `hooks/sensors/index.js`: sensor-domain entry point for map-facing sensor hooks.
+- `hooks/gameplay/index.js`: gameplay-domain entry point for cache/route/proof hooks.
 
 ### Components
 - `components/TargetPanel.js`: compact/expanded gameplay panel.
@@ -43,6 +45,7 @@ GeoQuest uses a feature-oriented React Native + Expo structure. The app favors c
 - `utils/navigationTrust.js`: location trust scoring, staleness checks, discovery gating.
 - `utils/routeNormalization.js`: route data shaping.
 - `utils/imageCaptureValidation.js`: captured media checks.
+- `utils/navigation/index.js`: navigation-domain entry point for distance, bearing, math, and trust helpers.
 
 ### Constants and Config
 - `constants/appConstants.js`: thresholds, guidance modes, sensor timings.
