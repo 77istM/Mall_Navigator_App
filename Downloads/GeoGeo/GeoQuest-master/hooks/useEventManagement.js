@@ -76,9 +76,13 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
       setActiveEventDiscoveryRadius(Number(eventDiscoveryRadius) || null);
       onNavigateToMap(numericEventId, eventName, Number(eventDiscoveryRadius) || null);
     } catch (error) {
+      let errorMessage = 'Failed to join event. Check the code and try again.';
+      if (error && error.message) {
+        errorMessage = error.message;
+      }
       setJoinStatus({
         tone: 'error',
-        message: error?.message || 'Failed to join event. Check the code and try again.',
+        message: errorMessage,
       });
     } finally {
       setIsJoiningEvent(false);
@@ -147,7 +151,11 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
           : 'Event created successfully, but no Event ID was returned by the API.',
       });
     } catch (error) {
-      setCreateEventStatus({ tone: 'error', message: error?.message || 'Failed to create event.' });
+      let errorMessage = 'Failed to create event.';
+      if (error && error.message) {
+        errorMessage = error.message;
+      }
+      setCreateEventStatus({ tone: 'error', message: errorMessage });
     } finally {
       setIsCreatingEvent(false);
     }
@@ -158,21 +166,21 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
     if (ownedEventId && Number(value) !== ownedEventId) {
       setShowOwnerEventAction(false);
     }
-    if (joinStatus?.tone === 'error') {
+    if (joinStatus && joinStatus.tone === 'error') {
       setJoinStatus(null);
     }
   }, [joinStatus, ownedEventId]);
 
   const handleParticipantNameChange = useCallback((value) => {
     setParticipantName(value);
-    if (joinStatus?.tone === 'error') {
+    if (joinStatus && joinStatus.tone === 'error') {
       setJoinStatus(null);
     }
   }, [joinStatus]);
 
   const handleEventNameChange = useCallback((value) => {
     setEventName(value);
-    if (createEventStatus?.tone === 'error') {
+    if (createEventStatus && createEventStatus.tone === 'error') {
       setCreateEventStatus(null);
     }
   }, [createEventStatus]);
@@ -187,21 +195,21 @@ export const useEventManagement = (currentUserId, onNavigateToMap) => {
 
   const handleStartInHoursChange = useCallback((value) => {
     setStartInHours(value);
-    if (createEventStatus?.tone === 'error') {
+    if (createEventStatus && createEventStatus.tone === 'error') {
       setCreateEventStatus(null);
     }
   }, [createEventStatus]);
 
   const handleDurationHoursChange = useCallback((value) => {
     setDurationHours(value);
-    if (createEventStatus?.tone === 'error') {
+    if (createEventStatus && createEventStatus.tone === 'error') {
       setCreateEventStatus(null);
     }
   }, [createEventStatus]);
 
   const handleDiscoveryRadiusChange = useCallback((value) => {
     setDiscoveryRadiusMeters(value);
-    if (createEventStatus?.tone === 'error') {
+    if (createEventStatus && createEventStatus.tone === 'error') {
       setCreateEventStatus(null);
     }
   }, [createEventStatus]);
