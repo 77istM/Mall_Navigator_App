@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text } from 'react-native';
+import { PANEL_STATES } from './constants';
 import styles from './styles';
 import DirectionSection from './DirectionSection';
 import MotionSection from './MotionSection';
@@ -7,7 +8,7 @@ import ProofSection from './ProofSection';
 import LogActionSection from './LogActionSection';
 import StatusPill from './StatusPill';
 
-const ExpandedPanelContent = ({ content }) => {
+const ExpandedPanelContent = ({ content, panelState = PANEL_STATES.FULL }) => {
   const {
     selectedCache,
     distanceToCache,

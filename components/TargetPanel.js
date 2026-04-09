@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, PanResponder } from 'react-native';
+import { Animated, Easing, PanResponder, ScrollView } from 'react-native';
 import { MOTION_GUIDANCE_SETTINGS } from '../constants/appConstants';
 import {
   COLLAPSED_PANEL_VISIBLE_HEIGHT,
   PANEL_DRAG_START_THRESHOLD,
+  PANEL_STATES,
+  HALF_SCREEN_HEIGHT_RATIO,
 } from './targetPanel/constants';
 import {
   clampPanelOffset,
-  shouldCollapseFromRelease,
-  shouldCollapseFromOffset,
+  getNextStateFromGesture,
+  getOffsetForState,
 } from './targetPanel/helpers';
 import styles from './targetPanel/styles';
 import PanelHandleSection from './targetPanel/PanelHandleSection';
@@ -58,8 +60,9 @@ export const TargetPanel = ({
   capturedImage,
   isCapturing,
   captureError,
-  isCollapsed,
-  onToggleCollapse,
+  panelState = PANEL_STATES.COLLAPSED,
+  onStateChange,
+  availableScreenHeight = 0,
   onCaptureProof,
   onClearProof,
   onLogDiscovery,
@@ -83,7 +86,10 @@ export const TargetPanel = ({
   }, [motionState]);
 
   const collapsedOffset = Math.max(panelHeight - COLLAPSED_PANEL_VISIBLE_HEIGHT, 0);
-  const isPanelCollapsed = !!isCollapsed;
+  const halfOffset = Math.max(collapsedOffset * HALF_SCREEN_HEIGHT_RATIO, 0);
+  const fullPanelHeight = availableScreenHeight > 0
+    ? Math.round(availableScreenHeight * 0.75)
+    : undefined;
 
   const animatePanelTo = (toValue) => {
     if (activeAnimationRef.current) {
@@ -105,9 +111,11 @@ export const TargetPanel = ({
     });
   };
 
+  // Animate panel to current state's offset
   useEffect(() => {
-    animatePanelTo(isPanelCollapsed ? collapsedOffset : 0);
-  }, [collapsedOffset, isPanelCollapsed, panelTranslateY]);
+    const targetOffset = getOffsetForState(panelState, collapsedOffset, halfOffset);
+    animatePanelTo(targetOffset);
+  }, [panelState, collapsedOffset, halfOffset, panelTranslateY]);
 
   const panelPanResponder = useMemo(() => {
     return PanResponder.create({
@@ -125,9 +133,10 @@ export const TargetPanel = ({
         });
       },
       onPanResponderMove: (_event, gestureState) => {
+        const maxOffset = Math.max(collapsedOffset, halfOffset);
         const nextOffset = clampPanelOffset(
           dragStartOffsetRef.current + gestureState.dy,
-          collapsedOffset,
+          maxOffset,
         );
 
         panelTranslateY.setValue(nextOffset);
@@ -137,36 +146,49 @@ export const TargetPanel = ({
           return;
         }
 
+        const maxOffset = Math.max(collapsedOffset, halfOffset);
         const releaseOffset = clampPanelOffset(
           dragStartOffsetRef.current + gestureState.dy,
-          collapsedOffset,
+          maxOffset,
         );
-        const shouldCollapse = shouldCollapseFromRelease(
+        const nextState = getNextStateFromGesture({
+          currentState: panelState,
           releaseOffset,
-          gestureState.vy,
+          deltaY: gestureState.dy,
+          velocityY: gestureState.vy,
           collapsedOffset,
-        );
-        const targetOffset = shouldCollapse ? collapsedOffset : 0;
+          halfOffset,
+        });
+        const targetOffset = getOffsetForState(nextState, collapsedOffset, halfOffset);
 
         animatePanelTo(targetOffset);
-        onToggleCollapse?.(shouldCollapse);
+        onStateChange?.(nextState);
       },
       onPanResponderTerminate: (_event, gestureState) => {
         if (collapsedOffset <= 0) {
           return;
         }
 
+        const maxOffset = Math.max(collapsedOffset, halfOffset);
         const terminateOffset = clampPanelOffset(
           dragStartOffsetRef.current + gestureState.dy,
-          collapsedOffset,
+          maxOffset,
         );
-        const shouldCollapse = shouldCollapseFromOffset(terminateOffset, collapsedOffset);
+        const nextState = getNextStateFromGesture({
+          currentState: panelState,
+          releaseOffset: terminateOffset,
+          deltaY: gestureState.dy,
+          velocityY: gestureState.vy,
+          collapsedOffset,
+          halfOffset,
+        });
+        const targetOffset = getOffsetForState(nextState, collapsedOffset, halfOffset);
 
-        animatePanelTo(shouldCollapse ? collapsedOffset : 0);
-        onToggleCollapse?.(shouldCollapse);
+        animatePanelTo(targetOffset);
+        onStateChange?.(nextState);
       },
     });
-  }, [collapsedOffset, onToggleCollapse, panelTranslateY]);
+  }, [collapsedOffset, halfOffset, onStateChange, panelState, panelTranslateY]);
 
   if (!selectedCache) {
     return null;
@@ -304,8 +326,13 @@ export const TargetPanel = ({
 
   return (
     <Animated.View
-      style={[styles.targetPanel, { transform: [{ translateY: panelTranslateY }] }]}
-      {...panelPanResponder.panHandlers}
+      style={[
+        styles.targetPanel,
+        panelState === PANEL_STATES.FULL && fullPanelHeight
+          ? { height: fullPanelHeight }
+          : null,
+        { transform: [{ translateY: panelTranslateY }] },
+      ]}
       onLayout={(event) => {
         const measuredHeight = event.nativeEvent.layout.height;
 
@@ -314,9 +341,13 @@ export const TargetPanel = ({
         }
       }}
     >
-      <PanelHandleSection isPanelCollapsed={isPanelCollapsed} onToggleCollapse={onToggleCollapse} />
+      <PanelHandleSection
+        panelState={panelState}
+        onStateChange={onStateChange}
+        dragPanHandlers={panelPanResponder.panHandlers}
+      />
 
-      {isPanelCollapsed ? (
+      {panelState === PANEL_STATES.COLLAPSED ? (
         <CollapsedSummarySection
           selectedCache={selectedCache}
           distanceToCache={distanceToCache}
@@ -329,7 +360,17 @@ export const TargetPanel = ({
           collapsedStatusTone={collapsedStatus.tone}
         />
       ) : (
-        <ExpandedPanelContent content={expandedContentProps} />
+        <ScrollView
+          style={[
+            styles.expandedContentContainer,
+            panelState === PANEL_STATES.HALF && styles.expandedContentContainer_half,
+          ]}
+          scrollEnabled={panelState === PANEL_STATES.HALF || panelState === PANEL_STATES.FULL}
+          scrollEventThrottle={16}
+          contentContainerStyle={styles.expandedContentScroll}
+        >
+          <ExpandedPanelContent content={expandedContentProps} panelState={panelState} />
+        </ScrollView>
       )}
     </Animated.View>
   );
