@@ -25,7 +25,12 @@ export const createPrivateModeEvent = (eventPayload) => {
 };
 
 export const extractCreatedEventId = (response) => {
-  const rawEventId = response?.EventID ?? response?.[0]?.EventID ?? null;
+  let rawEventId = null;
+  if (response && response.EventID) {
+    rawEventId = response.EventID;
+  } else if (response && response[0] && response[0].EventID) {
+    rawEventId = response[0].EventID;
+  }
   return normalizeEventId(rawEventId);
 };
 
@@ -47,10 +52,14 @@ export const copyInviteCodeToClipboard = async (inviteCode) => {
     await Clipboard.setStringAsync(normalizedCode);
     return { ok: true, tone: 'success', message: 'Invite code copied to clipboard.' };
   } catch (error) {
+    let errorMessage = 'Failed to copy invite code to clipboard.';
+    if (error && error.message) {
+      errorMessage = error.message;
+    }
     return {
       ok: false,
       tone: 'error',
-      message: error?.message || 'Failed to copy invite code to clipboard.',
+      message: errorMessage,
     };
   }
 };
@@ -67,16 +76,20 @@ export const shareInviteCode = async (inviteCode, eventName = '') => {
       message: buildInviteShareMessage(normalizedCode, eventName),
     });
 
-    if (result?.action === Share.dismissedAction) {
+    if (result && result.action === Share.dismissedAction) {
       return { ok: false, tone: 'warning', message: 'Share canceled.' };
     }
 
     return { ok: true, tone: 'success', message: 'Invite shared successfully.' };
   } catch (error) {
+    let errorMessage = 'Unable to open share options right now.';
+    if (error && error.message) {
+      errorMessage = error.message;
+    }
     return {
       ok: false,
       tone: 'error',
-      message: error?.message || 'Unable to open share options right now.',
+      message: errorMessage,
     };
   }
 };
