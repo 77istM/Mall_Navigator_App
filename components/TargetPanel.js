@@ -87,6 +87,9 @@ export const TargetPanel = ({
 
   const collapsedOffset = Math.max(panelHeight - COLLAPSED_PANEL_VISIBLE_HEIGHT, 0);
   const halfOffset = Math.max(collapsedOffset * HALF_SCREEN_HEIGHT_RATIO, 0);
+  const fullPanelHeight = availableScreenHeight > 0
+    ? Math.round(availableScreenHeight * 0.75)
+    : undefined;
 
   const animatePanelTo = (toValue) => {
     if (activeAnimationRef.current) {
@@ -323,7 +326,13 @@ export const TargetPanel = ({
 
   return (
     <Animated.View
-      style={[styles.targetPanel, { transform: [{ translateY: panelTranslateY }] }]}
+      style={[
+        styles.targetPanel,
+        panelState === PANEL_STATES.FULL && fullPanelHeight
+          ? { height: fullPanelHeight }
+          : null,
+        { transform: [{ translateY: panelTranslateY }] },
+      ]}
       {...panelPanResponder.panHandlers}
       onLayout={(event) => {
         const measuredHeight = event.nativeEvent.layout.height;
@@ -353,7 +362,7 @@ export const TargetPanel = ({
             styles.expandedContentContainer,
             panelState === PANEL_STATES.HALF && styles.expandedContentContainer_half,
           ]}
-          scrollEnabled={panelState === PANEL_STATES.HALF}
+          scrollEnabled={panelState === PANEL_STATES.HALF || panelState === PANEL_STATES.FULL}
           scrollEventThrottle={16}
           contentContainerStyle={styles.expandedContentScroll}
         >

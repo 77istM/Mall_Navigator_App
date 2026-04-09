@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
   panelTitle: { fontSize: 18, fontWeight: 'bold' },
   expandedContentContainer: {
-    maxHeight: '100%',
+    flex: 1,
   },
   expandedContentContainer_half: {
     maxHeight: 300,
