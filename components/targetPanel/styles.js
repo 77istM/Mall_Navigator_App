@@ -61,6 +61,38 @@ const styles = StyleSheet.create({
     color: '#4b5563',
     marginTop: 4,
   },
+  collapsedRouteText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2563eb',
+    marginTop: 4,
+  },
+  collapsedRouteText_info: {
+    color: '#2563eb',
+  },
+  collapsedRouteText_success: {
+    color: '#166534',
+  },
+  collapsedRouteText_warning: {
+    color: '#b45309',
+  },
+  collapsedRouteText_error: {
+    color: '#b91c1c',
+  },
+  collapsedTrendText: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  collapsedTrendText_info: {
+    color: '#2563eb',
+  },
+  collapsedTrendText_success: {
+    color: '#166534',
+  },
+  collapsedTrendText_warning: {
+    color: '#b45309',
+  },
   collapsedHintText: {
     fontSize: 12,
     color: '#2563eb',
@@ -80,6 +112,45 @@ const styles = StyleSheet.create({
     color: '#b91c1c',
   },
   panelDistance: { fontSize: 16, marginVertical: 10, color: '#555' },
+  routeSummaryText: {
+    fontSize: 12,
+    color: '#334155',
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  routeErrorText: {
+    fontSize: 12,
+    color: '#b45309',
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  distanceTrendText: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: -2,
+    marginBottom: 8,
+  },
+  distanceTrendText_info: {
+    color: '#2563eb',
+  },
+  distanceTrendText_success: {
+    color: '#166534',
+  },
+  distanceTrendText_warning: {
+    color: '#b45309',
+  },
+  guidanceWarningText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#b45309',
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
   directionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -243,6 +314,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
+  },
+  proofHeaderButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  proofHeaderTextWrap: {
+    flexShrink: 1,
+    paddingRight: 10,
+  },
+  proofHeaderHint: {
+    marginTop: 2,
+    fontSize: 11,
+    color: '#6b7280',
+    fontWeight: '600',
+  },
+  proofHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  proofChevron: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#4b5563',
+    fontWeight: '700',
+    minWidth: 12,
+    textAlign: 'center',
+  },
+  proofExpandedContent: {
+    marginTop: 8,
   },
   proofBusyText: {
     fontSize: 12,

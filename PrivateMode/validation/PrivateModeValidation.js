@@ -12,8 +12,8 @@ export const validateInviteCode = (inviteCode) => {
   const code = inviteCode.trim();
   const numericEventId = Number(code);
 
-  if (!code || Number.isNaN(numericEventId)) {
-    return 'Please enter a valid numeric invite code (Event ID).';
+  if (!code || Number.isNaN(numericEventId) || numericEventId <= 0) {
+    return 'Enter a valid numeric invite code shared by the event owner.';
   }
 
   return null;
@@ -35,6 +35,20 @@ export const validateEventForm = ({ eventName, startInHours, durationHours }) =>
   }
   if (!duration) {
     return 'Duration must be a positive number of hours.';
+  }
+
+  return null;
+};
+
+export const validateDiscoveryRadius = (discoveryRadiusMeters) => {
+  const parsedRadius = asPositiveNumber(discoveryRadiusMeters);
+
+  if (!parsedRadius) {
+    return 'Discovery radius must be a positive number of meters.';
+  }
+
+  if (parsedRadius < 5) {
+    return 'Discovery radius is too small. Use at least 5 meters.';
   }
 
   return null;

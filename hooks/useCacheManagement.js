@@ -1,14 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 import { getPublicCaches, getEventCaches, logFind } from '../api';
 import { getDistanceInMeters } from '../utils/distanceCalculator';
 import { getBearingInDegrees } from '../utils/bearingCalculator';
+import { calculateShortestTurnDelta } from '../utils/navigationMath';
 import {
+  DISCOVERY_RADIUS,
   PLAYER_ID,
   COMPASS_SETTINGS,
   MOTION_FEATURES,
   MOTION_GAMEPLAY_SETTINGS,
+  NAVIGATION_TRUST,
 } from '../constants/appConstants';
+import { GEOQUEST_ROLLOUT_FLAGS } from '../constants/featureFlags';
+import {
+  buildDiscoveryIntegritySnapshot,
+  evaluateDiscoveryLogAttempt,
+  getGuidanceMode,
+} from '../utils/navigationTrust';
+import { useNavigationTelemetry } from './useNavigationTelemetry';
 
 /**
  * Custom Hook: useCacheManagement
@@ -30,9 +40,23 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
   const [directionHint, setDirectionHint] = useState(null);
   const [isLogging, setIsLogging] = useState(false);
   const [movementConfidence, setMovementConfidence] = useState(null);
+  const [isAligned, setIsAligned] = useState(false);
+  const [lastLogAttemptAt, setLastLogAttemptAt] = useState(null);
+  const [distanceTrendText, setDistanceTrendText] = useState(null);
+  const [distanceTrendTone, setDistanceTrendTone] = useState('info');
+  const previousDistanceRef = useRef(null);
+  const trackNavigationTelemetry = useNavigationTelemetry();
 
   const motionState = motionContext?.motionState || null;
   const motionMagnitude = motionContext?.motionMagnitude;
+  const locationTrust = motionContext?.locationTrust || null;
+  const discoveryRadius = motionContext?.discoveryRadius ?? DISCOVERY_RADIUS;
+
+  useEffect(() => {
+    previousDistanceRef.current = null;
+    setDistanceTrendText(null);
+    setDistanceTrendTone('info');
+  }, [selectedCache?.CacheID]);
 
   const calculateMovementConfidence = () => {
     if (!MOTION_FEATURES.ENABLE_ACCELEROMETER || !MOTION_GAMEPLAY_SETTINGS.ENABLE_MOVEMENT_CONFIDENCE) {
@@ -81,9 +105,36 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
         selectedCache.CacheLatitude,
         selectedCache.CacheLongitude
       );
-      setDistanceToCache(Math.round(distance));
+      const roundedDistance = Math.round(distance);
+      const previousDistance = previousDistanceRef.current;
+
+      setDistanceToCache(roundedDistance);
+
+      if (Number.isFinite(previousDistance)) {
+        const delta = previousDistance - roundedDistance;
+        const deltaMagnitude = Math.abs(delta);
+
+        if (deltaMagnitude < 3) {
+          setDistanceTrendText('Distance steady');
+          setDistanceTrendTone('info');
+        } else if (delta > 0) {
+          setDistanceTrendText(`Getting closer by ${deltaMagnitude}m`);
+          setDistanceTrendTone('success');
+        } else {
+          setDistanceTrendText(`Moving away by ${deltaMagnitude}m`);
+          setDistanceTrendTone('warning');
+        }
+      } else {
+        setDistanceTrendText(null);
+        setDistanceTrendTone('info');
+      }
+
+      previousDistanceRef.current = roundedDistance;
     } else {
       setDistanceToCache(null);
+      setDistanceTrendText(null);
+      setDistanceTrendTone('info');
+      previousDistanceRef.current = null;
     }
   }, [location, selectedCache]);
 
@@ -110,12 +161,19 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
       return;
     }
 
-    // Normalize shortest turn angle to range [-180, 180)
-    const delta = ((targetBearing - heading + 540) % 360) - 180;
+    const delta = calculateShortestTurnDelta(heading, targetBearing);
+    if (!Number.isFinite(delta)) {
+      setTurnDelta(null);
+      setDirectionHint(null);
+      return;
+    }
+
     const roundedDelta = Math.round(delta);
     setTurnDelta(roundedDelta);
+    const aligned = Math.abs(roundedDelta) <= COMPASS_SETTINGS.ON_TARGET_THRESHOLD_DEGREES;
+    setIsAligned(aligned);
 
-    if (Math.abs(roundedDelta) <= COMPASS_SETTINGS.ON_TARGET_THRESHOLD_DEGREES) {
+    if (aligned) {
       setDirectionHint('On target');
     } else if (roundedDelta > 0) {
       setDirectionHint(`Turn right ${Math.abs(roundedDelta)}°`);
@@ -124,19 +182,76 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     }
   }, [heading, targetBearing]);
 
+  const logAttemptState = GEOQUEST_ROLLOUT_FLAGS.antiCheatEnabled
+    ? evaluateDiscoveryLogAttempt({
+        selectedCache,
+        distanceToCache,
+        discoveryRadius,
+        locationTrust,
+        lastLogAttemptAt,
+      })
+    : {
+        canLog: Boolean(selectedCache),
+        reason: null,
+      };
+
+  const canLogDiscovery = logAttemptState.canLog;
+
   const handleSelectCache = (cache) => {
     setSelectedCache(cache);
   };
 
   const handleLogDiscovery = async (imageUrl = null) => {
-    if (!selectedCache || isLogging) return;
+    if (isLogging) {
+      return;
+    }
+
+    if (!logAttemptState.canLog) {
+      trackNavigationTelemetry(
+        'navigation.discovery_log_blocked',
+        {
+          reason: logAttemptState.reason,
+          selectedCacheId: selectedCache?.CacheID ?? null,
+          distanceToCache,
+          discoveryRadius,
+          locationTrusted: locationTrust?.isTrusted ?? null,
+          locationStale: locationTrust?.isStale ?? null,
+          guidanceMode: getGuidanceMode({
+            sensorAvailable: Number.isFinite(heading),
+            locationTrust,
+          }),
+        },
+        {
+          level: 'warning',
+          dedupeKey: `discovery_log_blocked:${selectedCache?.CacheID ?? 'none'}:${logAttemptState.reason || 'unknown'}`,
+        },
+      );
+      return;
+    }
+
+    setLastLogAttemptAt(Date.now());
 
     const confidenceSnapshot = calculateMovementConfidence();
     setMovementConfidence(confidenceSnapshot);
+    const guidanceMode = getGuidanceMode({
+      sensorAvailable: Number.isFinite(heading),
+      locationTrust,
+    });
+    const integrityMetadata = buildDiscoveryIntegritySnapshot({
+      location,
+      locationTrust,
+      distanceToCache,
+      discoveryRadius,
+      targetBearing,
+      turnDelta,
+      motionState,
+      motionMagnitude,
+      guidanceMode,
+    });
     
     setIsLogging(true);
     try {
-      await logFind(PLAYER_ID, selectedCache.CacheID, imageUrl);
+      await logFind(PLAYER_ID, selectedCache.CacheID, imageUrl, integrityMetadata);
 
       const confidenceMessage =
         MOTION_GAMEPLAY_SETTINGS.SHOW_CONFIDENCE_IN_SUCCESS_MESSAGE && Number.isFinite(confidenceSnapshot)
@@ -173,6 +288,11 @@ export const useCacheManagement = (location, eventId = null, heading = null, mot
     targetBearing,
     turnDelta,
     directionHint,
+    isAligned,
+    canLogDiscovery,
+    logAttemptReason: logAttemptState.reason,
+    distanceTrendText,
+    distanceTrendTone,
     movementConfidence,
     handleSelectCache,
     handleLogDiscovery,

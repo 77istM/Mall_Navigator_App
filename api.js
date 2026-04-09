@@ -126,15 +126,24 @@ const fetchListWithFallback = async (endpoint) => {
 
 /**
  * Logs a new discovery (Find).
+ *
+ * Backward-compatible contract:
+ * - Legacy callers may still send only FindPlayerID, FindCacheID, FindDatetime, and FindImageURL.
+ * - New integrity metadata fields are additive and optional.
+ * - Backend validation can reject only the additive fields it understands without breaking older clients.
  */
-export const logFind = (playerId, cacheId, imageUrl = null) => {
+export const logFind = (playerId, cacheId, imageUrl = null, integrityMetadata = {}) => {
   const normalizedImageUrl = typeof imageUrl === 'string' ? imageUrl.trim() : '';
+  const normalizedIntegrityMetadata = integrityMetadata && typeof integrityMetadata === 'object'
+    ? integrityMetadata
+    : {};
 
   const findData = {
     FindPlayerID: playerId,
     FindCacheID: cacheId,
     FindDatetime: new Date().toISOString(), // ISO 8601 format
-    FindImageURL: normalizedImageUrl || TEST_IMAGE_URL
+    FindImageURL: normalizedImageUrl || TEST_IMAGE_URL,
+    ...normalizedIntegrityMetadata,
   };
   return fetchAPI('/finds', 'POST', findData);
 };
