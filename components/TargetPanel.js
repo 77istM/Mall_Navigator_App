@@ -333,7 +333,6 @@ export const TargetPanel = ({
           : null,
         { transform: [{ translateY: panelTranslateY }] },
       ]}
-      {...panelPanResponder.panHandlers}
       onLayout={(event) => {
         const measuredHeight = event.nativeEvent.layout.height;
 
@@ -342,7 +341,11 @@ export const TargetPanel = ({
         }
       }}
     >
-      <PanelHandleSection panelState={panelState} onStateChange={onStateChange} />
+      <PanelHandleSection
+        panelState={panelState}
+        onStateChange={onStateChange}
+        dragPanHandlers={panelPanResponder.panHandlers}
+      />
 
       {panelState === PANEL_STATES.COLLAPSED ? (
         <CollapsedSummarySection

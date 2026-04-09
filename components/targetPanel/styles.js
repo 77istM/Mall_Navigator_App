@@ -27,6 +27,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 8,
   },
+  panelDragHandleArea: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 24,
+    marginBottom: 4,
+  },
   panelHandle: {
     width: 46,
     height: 5,

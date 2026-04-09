@@ -21,7 +21,7 @@ const StateIndicator = ({ panelState }) => {
   );
 };
 
-const PanelHandleSection = ({ panelState = PANEL_STATES.COLLAPSED, onStateChange }) => {
+const PanelHandleSection = ({ panelState = PANEL_STATES.COLLAPSED, onStateChange, dragPanHandlers }) => {
   const getNextState = (currentState) => {
     switch (currentState) {
       case PANEL_STATES.COLLAPSED:
@@ -68,7 +68,9 @@ const PanelHandleSection = ({ panelState = PANEL_STATES.COLLAPSED, onStateChange
 
   return (
     <>
-      <View style={styles.panelHandle} />
+      <View style={styles.panelDragHandleArea} {...dragPanHandlers}>
+        <View style={styles.panelHandle} />
+      </View>
       <View style={styles.panelHandleRow}>
         <TouchableOpacity
           accessibilityRole="button"
