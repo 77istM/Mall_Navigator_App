@@ -103,7 +103,7 @@ export default function CreateEventCard({
         textStyle={styles.buttonText}
         loading={isCreatingEvent}
         onPress={onCreateEvent}
-        label="Create Private Event"
+        label="Create Indoor Event"
       />
 
       {ownedEventId ? (

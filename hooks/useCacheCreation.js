@@ -61,7 +61,7 @@ export const useCacheCreation = () => {
       setCacheStatus({ tone: 'success', message: 'Cache created for this private event.' });
       resetCacheForm();
     } catch (error) {
-      setCacheStatus({ tone: 'error', message: error?.message || 'Failed to create cache.' });
+      setCacheStatus({ tone: 'error', message: error?.message || 'Failed to Create Item.' });
     } finally {
       setIsCreatingCache(false);
     }
