@@ -1,6 +1,6 @@
-# GeoQuest: Location-Based Treasure Hunt App
+Location-Based Navigator App
 
-GeoQuest is a React Native app where players discover treasure caches by physically moving to real-world locations. The app combines GPS, motion, and heading signals to guide players and validate discovery attempts.
+Is is a React Native app where players discover treasure caches by physically moving to real-world locations. The app combines GPS, motion, and heading signals to guide players and validate discovery attempts.
 
 The project uses:
 - REST API integration (KU provided) using private key (public key for backup).
