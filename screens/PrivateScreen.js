@@ -93,7 +93,7 @@ export default function PrivateDashboardScreen({ navigation, route }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.pageTitle}>Private Mode</Text>
+      <Text style={styles.pageTitle}>Indoor Mode</Text>
       <Text style={styles.subtitle}>Families, Schools, Companies, University Activities</Text>
 
       <JoinEventCard
@@ -167,7 +167,7 @@ export default function PrivateDashboardScreen({ navigation, route }) {
       />
 
       <TouchableOpacity style={styles.openMapButton} onPress={handleOpenEventMap}>
-        <Text style={styles.buttonText}>Open Event Map + Leaderboard</Text>
+        <Text style={styles.buttonText}>Open Indoor Map + Leaderboard</Text>
       </TouchableOpacity>
     </ScrollView>
   );

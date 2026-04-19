@@ -34,34 +34,34 @@ export default function CreateCacheCard({
       <Text style={styles.header}>Owner: Create Items</Text>
       {!ownedEventId ? (
         <Text style={{ color: 'red', fontSize: 12, marginTop: 4, marginBottom: 8 }}>
-          Create an event first to add caches.
+          Create an event first to add products.
         </Text>
       ) : null}
       <InlineStatusMessage status={cacheStatus} />
       <TextInput
         style={styles.input}
-        placeholder="Cache Name"
+        placeholder="Product Name"
         value={cacheName}
         onChangeText={onCacheNameChange}
         editable={!isCreatingCache}
       />
       <TextInput
         style={styles.input}
-        placeholder="Cache Clue"
+        placeholder="Product Clue"
         value={cacheClue}
         onChangeText={onCacheClueChange}
         editable={!isCreatingCache}
       />
       <TextInput
         style={styles.input}
-        placeholder="Cache Description"
+        placeholder="Product Description"
         value={cacheDescription}
         onChangeText={onCacheDescriptionChange}
         editable={!isCreatingCache}
       />
       <TextInput
         style={styles.input}
-        placeholder="Cache Image URL (optional)"
+        placeholder="Product Image URL (optional)"
         value={cacheImageURL}
         onChangeText={onCacheImageURLChange}
         autoCapitalize="none"
@@ -75,7 +75,7 @@ export default function CreateCacheCard({
 
       {isMapPickerVisible ? (
         <View style={styles.mapPickerContainer}>
-          <Text style={styles.mapPickerHint}>Tap on map to set cache coordinates</Text>
+          <Text style={styles.mapPickerHint}>Tap on map to set product coordinates</Text>
           <MapView style={styles.mapPicker} initialRegion={getPickerRegion()} onPress={isCreatingCache ? undefined : onMapPress}>
             {cacheLatitude && cacheLongitude ? (
               <Marker
