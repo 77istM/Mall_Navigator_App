@@ -15,7 +15,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const linking = {
-  prefixes: ['geoquest://'],
+  prefixes: ['mallNavigator://'],
   config: {
     screens: {
       Home: 'home',

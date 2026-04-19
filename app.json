@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "geoquest",
-    "slug": "geoquest",
-    "scheme": "geoquest",
+    "name": "mallNavigator",
+    "slug": "mallNavigator",
+    "scheme": "mallNavigator",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSMotionUsageDescription": "Allow GeoQuest to access motion activity to track optional step counter progress during events."
+        "NSMotionUsageDescription": "Allow mallNavigator to access motion activity to track optional step counter progress during events."
       }
     },
     "android": {
@@ -33,8 +33,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Allow GeoQuest to use your camera to capture optional cache proof photos.",
-          "photosPermission": "Allow GeoQuest to access your photos for optional cache proof images."
+          "cameraPermission": "Allow mallNavigator to use your camera to capture optional cache proof photos.",
+          "photosPermission": "Allow mallNavigator to access your photos for optional cache proof images."
         }
       ]
     ],

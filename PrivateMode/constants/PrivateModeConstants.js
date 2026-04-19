@@ -15,14 +15,14 @@ export const DEFAULT_DURATION_HOURS = '24';
 export const DEFAULT_DISCOVERY_RADIUS_METERS = '30'; //Default radius for private events
 export const DEFAULT_CACHE_POINTS = '10';  // Default points for caches in private events
 
-export const INVITE_SHARE_TITLE = 'GeoQuest Private Event Invite';
+export const INVITE_SHARE_TITLE = 'mallNavigator Private Event Invite';
 
 export const buildInviteDeepLink = (inviteCode, autoJoin = true, eventDiscoveryRadius = '') => {
   const normalizedCode = String(inviteCode || '').trim();
   const autoJoinParam = autoJoin ? '1' : '0';
   const normalizedRadius = String(eventDiscoveryRadius || '').trim();
   const radiusParam = normalizedRadius ? `&eventDiscoveryRadius=${encodeURIComponent(normalizedRadius)}` : '';
-  return `geoquest://join?inviteCode=${encodeURIComponent(normalizedCode)}&autoJoin=${autoJoinParam}${radiusParam}`;
+  return `mallNavigator://join?inviteCode=${encodeURIComponent(normalizedCode)}&autoJoin=${autoJoinParam}${radiusParam}`;
 };
 
 export const buildInviteShareMessage = (inviteCode, eventName = '', eventDiscoveryRadius = '') => {
@@ -33,5 +33,5 @@ export const buildInviteShareMessage = (inviteCode, eventName = '', eventDiscove
   const radiusLine = normalizedRadius ? `Radius: ${normalizedRadius}m\n` : '';
   const inviteLink = buildInviteDeepLink(normalizedCode, true, normalizedRadius);
 
-  return `${eventLine}${radiusLine}Join my GeoQuest private event with invite code: ${normalizedCode}\n${inviteLink}`;
+  return `${eventLine}${radiusLine}Join my mallNavigator private event with invite code: ${normalizedCode}\n${inviteLink}`;
 };

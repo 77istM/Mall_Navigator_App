@@ -259,7 +259,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           title="Location unavailable"
           message={locationError}
         />
-        <Text style={styles.loadingText}>GeoQuest needs location access to place you on the map.</Text>
+        <Text style={styles.loadingText}>mallNavigator needs location access to place you on the map.</Text>
         <Text style={styles.loadingSubtext}>Grant permission in device settings, then reopen the app.</Text>
       </View>
     );

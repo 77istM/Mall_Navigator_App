@@ -33,7 +33,7 @@ export default function CreateEventCard({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.header}>Lo</Text>
+      <Text style={styles.header}>Create Location</Text>
       <InlineStatusMessage status={createEventStatus} />
       <TextInput
         style={styles.input}
@@ -118,7 +118,7 @@ export default function CreateEventCard({
               backgroundColor="#ffffff"
             />
           </View>
-          <Text style={styles.qrHintText}>Scan to open GeoQuest and join this event instantly.</Text>
+          <Text style={styles.qrHintText}>Scan to open mallNavigator and join this event instantly.</Text>
           <Text style={styles.qrHintText}>This invite includes the event discovery radius.</Text>
           <View style={styles.inviteActionsRow}>
             <TouchableOpacity
