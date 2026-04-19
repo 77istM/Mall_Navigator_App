@@ -13,7 +13,7 @@ export const validateInviteCode = (inviteCode) => {
   const numericEventId = Number(code);
 
   if (!code || Number.isNaN(numericEventId) || numericEventId <= 0) {
-    return 'Enter a valid numeric invite code shared by the event owner.';
+    return 'Enter a valid numeric invite code shared by the Location.';
   }
 
   return null;
@@ -26,10 +26,10 @@ export const validateEventForm = ({ eventName, eventDescription, startInHours, d
   const duration = asPositiveNumber(durationHours);
 
   if (!trimmedName) {
-    return 'Event name is required.';
+    return 'Location Name is required.';
   }
   if (trimmedName.length < 8) {
-    return 'Event name must be at least 8 characters long.';
+    return 'Location Name must be at least 8 characters long.';
   }
   if (trimmedDescription && trimmedDescription.length < 4) {
     return 'Event description must be at least 4 characters long.';
@@ -74,16 +74,16 @@ export const validateCacheForm = ({
   const points = asPositiveNumber(cachePoints);
 
   if (!trimmedCacheName || !trimmedCacheClue) {
-    return 'Cache name and clue are required.';
+    return 'Product name and clue are required.';
   }
   if (trimmedCacheName.length < 4) {
-    return 'Cache name must be at least 4 characters long.';
+    return 'Product name must be at least 4 characters long.';
   }
   if (trimmedCacheClue.length < 4) {
-    return 'Cache clue must be at least 4 characters long.';
+    return 'Product clue must be at least 4 characters long.';
   }
   if (!trimmedCacheDescription) {
-    return 'Cache description is required.';
+    return 'Product description is required.';
   }
   if (Number.isNaN(latitude) || latitude < -90 || latitude > 90) {
     return 'Latitude must be a valid value between -90 and 90.';
@@ -92,7 +92,7 @@ export const validateCacheForm = ({
     return 'Longitude must be a valid value between -180 and 180.';
   }
   if (!points) {
-    return 'Cache points must be a positive number.';
+    return 'Product points must be a positive number.';
   }
 
   return null;

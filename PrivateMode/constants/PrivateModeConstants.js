@@ -1,4 +1,4 @@
-export const EVENT_TYPES = ['Families', 'Schools', 'Companies', 'University Activities'];
+export const EVENT_TYPES = ['Shopping', 'Dinings', 'Exploring', 'Fun'];
 
 export const TEST_IMAGE_URL = 'https://imgs.search.brave.com/QepbmUa7ANhll-Fjdx6_3dxZxzRVSNNg5JCt8Nbiehk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTI5/OTQ5MjY4Mi9waG90/by9jYXQtaW4teW91/ci1mYWNlLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz05WDAt/VlRQRktHakN0QzFa/Tkc4YUUxb2hoaU1z/c3V0RDgwWEtBZk9P/X3VvPQ';
 
@@ -15,14 +15,14 @@ export const DEFAULT_DURATION_HOURS = '24';
 export const DEFAULT_DISCOVERY_RADIUS_METERS = '30'; //Default radius for private events
 export const DEFAULT_CACHE_POINTS = '10';  // Default points for caches in private events
 
-export const INVITE_SHARE_TITLE = 'GeoQuest Private Event Invite';
+export const INVITE_SHARE_TITLE = 'mallNavigator Private Event Invite';
 
 export const buildInviteDeepLink = (inviteCode, autoJoin = true, eventDiscoveryRadius = '') => {
   const normalizedCode = String(inviteCode || '').trim();
   const autoJoinParam = autoJoin ? '1' : '0';
   const normalizedRadius = String(eventDiscoveryRadius || '').trim();
   const radiusParam = normalizedRadius ? `&eventDiscoveryRadius=${encodeURIComponent(normalizedRadius)}` : '';
-  return `geoquest://join?inviteCode=${encodeURIComponent(normalizedCode)}&autoJoin=${autoJoinParam}${radiusParam}`;
+  return `mallNavigator://join?inviteCode=${encodeURIComponent(normalizedCode)}&autoJoin=${autoJoinParam}${radiusParam}`;
 };
 
 export const buildInviteShareMessage = (inviteCode, eventName = '', eventDiscoveryRadius = '') => {
@@ -33,5 +33,5 @@ export const buildInviteShareMessage = (inviteCode, eventName = '', eventDiscove
   const radiusLine = normalizedRadius ? `Radius: ${normalizedRadius}m\n` : '';
   const inviteLink = buildInviteDeepLink(normalizedCode, true, normalizedRadius);
 
-  return `${eventLine}${radiusLine}Join my GeoQuest private event with invite code: ${normalizedCode}\n${inviteLink}`;
+  return `${eventLine}${radiusLine}Join my mallNavigator private event with invite code: ${normalizedCode}\n${inviteLink}`;
 };

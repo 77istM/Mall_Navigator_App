@@ -16,6 +16,7 @@ import {
   useRouteGuidance,
   useCameraProofCapture,
 } from '../hooks/gameplay';
+import { getDistanceInMeters } from '../utils/navigation';
 import { PANEL_STATES } from '../components/targetPanel/constants';
 import TargetPanel from '../components/TargetPanel';
 import StatusBanner from '../components/StatusBanner';
@@ -110,7 +111,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
       ? {
           key: 'cache',
           variant: 'error',
-          title: 'Cache data unavailable',
+          title: 'Product data unavailable',
           message: cacheError,
         }
       : null,
@@ -167,12 +168,12 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
   const loadingTitle = locationLoading
     ? 'Acquiring GPS signal...'
     : cacheLoading
-      ? 'Loading cache data...'
+      ? 'Loading product data...'
       : 'Preparing the map...';
   const loadingSubtitle = locationLoading
     ? 'Waiting for location permission and a stable GPS fix.'
     : cacheLoading
-      ? 'Fetching caches and gameplay state for this event.'
+      ? 'Fetching products and gameplay state for this event.'
       : 'The map will appear as soon as your location is ready.';
 
   const renderBannerStack = (compact = false) => {
@@ -211,6 +212,44 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
     setTargetPanelState(PANEL_STATES.COLLAPSED);
   }, [activeEventId, clearCapturedPhotoProof]);
 
+  useEffect(() => {
+    if (!activeEventId || selectedCache || !location || !Array.isArray(caches) || caches.length === 0) {
+      return;
+    }
+
+    const nearestCache = caches.reduce((nearest, cache) => {
+      const cacheLatitude = Number(cache?.CacheLatitude);
+      const cacheLongitude = Number(cache?.CacheLongitude);
+      if (!Number.isFinite(cacheLatitude) || !Number.isFinite(cacheLongitude)) {
+        return nearest;
+      }
+
+      const candidateDistance = getDistanceInMeters(
+        Number(location.latitude),
+        Number(location.longitude),
+        cacheLatitude,
+        cacheLongitude,
+      );
+
+      if (!Number.isFinite(candidateDistance)) {
+        return nearest;
+      }
+
+      if (!nearest || candidateDistance < nearest.distance) {
+        return {
+          cache,
+          distance: candidateDistance,
+        };
+      }
+
+      return nearest;
+    }, null);
+
+    if (nearestCache?.cache) {
+      handleSelectCache(nearestCache.cache);
+    }
+  }, [activeEventId, caches, location, selectedCache, handleSelectCache]);
+
   if (locationError && !location) {
     return (
       <View style={styles.loadingContainer}>
@@ -220,7 +259,7 @@ export default function MapScreen({ route, eventId: eventIdProp, eventName: even
           title="Location unavailable"
           message={locationError}
         />
-        <Text style={styles.loadingText}>GeoQuest needs location access to place you on the map.</Text>
+        <Text style={styles.loadingText}>mallNavigator needs location access to place you on the map.</Text>
         <Text style={styles.loadingSubtext}>Grant permission in device settings, then reopen the app.</Text>
       </View>
     );
