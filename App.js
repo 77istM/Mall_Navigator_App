@@ -10,6 +10,7 @@ import MapScreen from './screens/MapScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
 import HomeScreen from './screens/HomeScreen';
 import PrivateDashboardScreen from './screens/PrivateScreen';
+import StaticModeScreen from './screens/StaticModeScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -20,6 +21,7 @@ const linking = {
     screens: {
       Home: 'home',
       GlobalTabs: 'tabs',
+      StaticMode: 'static',
       PrivateDashboard: {
         path: 'join',
         parse: {
@@ -71,6 +73,7 @@ export default function App() {
       <Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="GlobalTabs" component={GlobalTabsNavigator} />
+        <Stack.Screen name="StaticMode" component={StaticModeScreen} />
         <Stack.Screen name="PrivateDashboard" component={PrivateDashboardScreen} />
       </Stack.Navigator>
     </NavigationContainer>
