@@ -17,7 +17,7 @@ export default function JoinEventCard({
     <View style={styles.card}>
       <Text style={styles.header}>Participant Join</Text>
       <InlineStatusMessage status={joinStatus} />
-      <Text style={styles.mutedText}>Enter the invite code shared by the event owner.</Text>
+      <Text style={styles.mutedText}>Enter the invite code shared by the Location.</Text>
       <TextInput
         style={styles.input}
         placeholder="Owner-shared invite code"

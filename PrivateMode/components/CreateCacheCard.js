@@ -31,10 +31,10 @@ export default function CreateCacheCard({
 }) {
   return (
     <View style={styles.card}>
-      <Text style={styles.header}>Owner: Create Items</Text>
+      <Text style={styles.header}>Owner: Create Item</Text>
       {!ownedEventId ? (
         <Text style={{ color: 'red', fontSize: 12, marginTop: 4, marginBottom: 8 }}>
-          Create an event first to add products.
+          Create a location first to add products.
         </Text>
       ) : null}
       <InlineStatusMessage status={cacheStatus} />

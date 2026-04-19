@@ -19,7 +19,7 @@ export const useCacheCreation = () => {
 
   const handleCreateCache = useCallback(async (ownedEventId) => {
     if (!ownedEventId) {
-      return Alert.alert('Error', 'Create an event first before adding products.');
+      return Alert.alert('Error', 'Create a location first before adding products.');
     }
 
     const cacheFormError = validateCacheForm({
@@ -58,7 +58,7 @@ export const useCacheCreation = () => {
         CachePoints: points,
       });
 
-      setCacheStatus({ tone: 'success', message: 'Product created for this indoor event.' });
+      setCacheStatus({ tone: 'success', message: 'Product created for this Private event.' });
       resetCacheForm();
     } catch (error) {
       setCacheStatus({ tone: 'error', message: error?.message || 'Failed to create product.' });

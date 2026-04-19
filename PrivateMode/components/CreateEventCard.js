@@ -33,11 +33,11 @@ export default function CreateEventCard({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.header}>Event Owner</Text>
+      <Text style={styles.header}>Lo</Text>
       <InlineStatusMessage status={createEventStatus} />
       <TextInput
         style={styles.input}
-        placeholder="Event Name"
+        placeholder="Location Name"
         value={eventName}
         onChangeText={onEventNameChange}
         editable={!isCreatingEvent}
@@ -50,7 +50,7 @@ export default function CreateEventCard({
         editable={!isCreatingEvent}
       />
 
-      <Text style={styles.label}>Event Type</Text>
+      <Text style={styles.label}>Location Type</Text>
       <View style={styles.chipRow}>
         {eventTypes.map((type) => {
           const isSelected = eventType === type;
@@ -103,12 +103,12 @@ export default function CreateEventCard({
         textStyle={styles.buttonText}
         loading={isCreatingEvent}
         onPress={onCreateEvent}
-        label="Create Indoor Event"
+        label="Create Location"
       />
 
       {ownedEventId ? (
         <View style={styles.inviteCodePanel}>
-          <Text style={styles.inviteCodeLabel}>Event Invite Code:</Text>
+          <Text style={styles.inviteCodeLabel}>Location Invite Code:</Text>
           <Text style={styles.inviteCodeValue}>{ownedEventId}</Text>
           <View style={styles.qrWrapper}>
             <QRCode

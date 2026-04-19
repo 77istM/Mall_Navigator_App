@@ -13,7 +13,7 @@ export const validateInviteCode = (inviteCode) => {
   const numericEventId = Number(code);
 
   if (!code || Number.isNaN(numericEventId) || numericEventId <= 0) {
-    return 'Enter a valid numeric invite code shared by the event owner.';
+    return 'Enter a valid numeric invite code shared by the Location.';
   }
 
   return null;
@@ -26,10 +26,10 @@ export const validateEventForm = ({ eventName, eventDescription, startInHours, d
   const duration = asPositiveNumber(durationHours);
 
   if (!trimmedName) {
-    return 'Event name is required.';
+    return 'Location Name is required.';
   }
   if (trimmedName.length < 8) {
-    return 'Event name must be at least 8 characters long.';
+    return 'Location Name must be at least 8 characters long.';
   }
   if (trimmedDescription && trimmedDescription.length < 4) {
     return 'Event description must be at least 4 characters long.';

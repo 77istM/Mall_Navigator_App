@@ -81,7 +81,7 @@ export default function PrivateDashboardScreen({ navigation, route }) {
   // Handle navigation to map
   const handleOpenEventMap = useCallback(() => {
     if (!eventMgmt.activeEventId) {
-      return Alert.alert('Error', 'Join or create an event first.');
+      return Alert.alert('Error', 'Join or Create a location first.');
     }
 
     navigation.navigate('GlobalTabs', {
@@ -93,8 +93,8 @@ export default function PrivateDashboardScreen({ navigation, route }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.pageTitle}>Indoor Mode</Text>
-      <Text style={styles.subtitle}>Families, Schools, Companies, University Activities</Text>
+      <Text style={styles.pageTitle}>Private Mode</Text>
+      <Text style={styles.subtitle}>Shopping, Dinings, Exploring, Fun</Text>
 
       <JoinEventCard
         styles={styles}
@@ -167,7 +167,7 @@ export default function PrivateDashboardScreen({ navigation, route }) {
       />
 
       <TouchableOpacity style={styles.openMapButton} onPress={handleOpenEventMap}>
-        <Text style={styles.buttonText}>Open Indoor Map + Leaderboard</Text>
+        <Text style={styles.buttonText}>Open Private Map + Leaderboard</Text>
       </TouchableOpacity>
     </ScrollView>
   );
