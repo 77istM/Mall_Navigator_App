@@ -31,7 +31,7 @@ export default function CreateCacheCard({
 }) {
   return (
     <View style={styles.card}>
-      <Text style={styles.header}>Owner: Create Caches</Text>
+      <Text style={styles.header}>Owner: Create Items</Text>
       {!ownedEventId ? (
         <Text style={{ color: 'red', fontSize: 12, marginTop: 4, marginBottom: 8 }}>
           Create an event first to add caches.
@@ -121,7 +121,7 @@ export default function CreateCacheCard({
         textStyle={styles.buttonText}
         loading={isCreatingCache}
         onPress={onCreateCache}
-        label="Create Cache"
+        label="Create Item"
       />
     </View>
   );

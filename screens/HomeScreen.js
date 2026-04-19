@@ -5,21 +5,21 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Geo Quest</Text>
+      <Text style={styles.title}>Mall Navigator App</Text>
       <Text style={styles.subtitle}>Choose your mode to begin</Text>
 
       <TouchableOpacity 
         style={styles.globalButton}
         onPress={() => navigation.navigate('GlobalTabs')}
       >
-        <Text style={styles.buttonText}>Global Mode</Text>
+        <Text style={styles.buttonText}>Outdoor Mode</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
         style={styles.privateButton}
         onPress={() => navigation.navigate('PrivateDashboard')}
       >
-        <Text style={styles.buttonText}>Private Mode</Text>
+        <Text style={styles.buttonText}>Indoor Mode</Text>
       </TouchableOpacity>
     </View>
   );
