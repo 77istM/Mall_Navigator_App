@@ -21,6 +21,14 @@ export default function HomeScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>Private Mode</Text>
       </TouchableOpacity>
+
+      
+      <TouchableOpacity 
+        style={styles.staticButton}
+        onPress={() => navigation.navigate('StaticMode')}
+      >
+        <Text style={styles.buttonText}>Static Mode</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -30,6 +38,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 32, fontWeight: 'bold', marginBottom: 10, color: '#333' },
   subtitle: { fontSize: 16, color: '#666', marginBottom: 40 },
   globalButton: { backgroundColor: '#28a745', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center', marginBottom: 15 },
+  staticButton: { backgroundColor: '#1f2937', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center', marginBottom: 15 },
   privateButton: { backgroundColor: '#007bff', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center' },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: '600' }
 });
