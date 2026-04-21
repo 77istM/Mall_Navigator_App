@@ -39,6 +39,6 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 16, color: '#666', marginBottom: 40 },
   globalButton: { backgroundColor: '#28a745', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center', marginBottom: 15 },
   staticButton: { backgroundColor: '#1f2937', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center', marginBottom: 15 },
-  privateButton: { backgroundColor: '#007bff', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center' },
+  privateButton: { backgroundColor: '#007bff', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center', marginBottom: 15 },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: '600' }
 });
